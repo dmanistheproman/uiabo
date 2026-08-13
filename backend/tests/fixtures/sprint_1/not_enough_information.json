@@ -1,0 +1,12 @@
+{
+  "concern_label": "Not Enough Information",
+  "misinformation_risk_score": null,
+  "uncertainty": "High",
+  "uncertainty_reasons": [
+    "No sufficiently relevant evidence was found."
+  ],
+  "explanation": "There is not enough reliable evidence to assess this claim.",
+  "recommended_action": "Check an authoritative source before believing or forwarding this claim.",
+  "assessed_evidence": []
+}
+

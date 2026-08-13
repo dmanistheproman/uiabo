@@ -1,0 +1,35 @@
+{
+  "result_id": "fixture-result-tax-1",
+  "processing_status": "completed",
+  "original_text": "A new $500 community tax starts next week.",
+  "extracted_claim": "A new $500 community tax starts next week.",
+  "claim_category": "factual",
+  "checkable": true,
+  "concern_label": "High Concern",
+  "misinformation_risk_score": 82,
+  "uncertainty": "Medium",
+  "uncertainty_reasons": [
+    "Only one highly relevant authoritative source was used in this fixture."
+  ],
+  "explanation": "The available synthetic announcement directly contradicts the submitted claim.",
+  "recommended_action": "Do not forward the claim yet. Review a verified authoritative source first.",
+  "evidence": [
+    {
+      "evidence_id": "evidence-tax-1",
+      "title": "Synthetic agency clarification",
+      "url": "https://sources.example/agency/tax-clarification",
+      "publisher": "Synthetic Government Agency",
+      "published_at": "2026-08-10",
+      "passage": "No new $500 community tax will begin next week.",
+      "source_type": "government",
+      "stance": "contradicting",
+      "quality_score": 0.9
+    }
+  ],
+  "warnings": [
+    "Synthetic fixture only; do not present this evidence to users."
+  ],
+  "pipeline_version": "sprint-1-v1",
+  "created_at": "2026-08-20T10:00:05Z"
+}
+
