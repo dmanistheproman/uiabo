@@ -14,6 +14,6 @@ prepared_text.json
 
 `not_enough_information.json` provides the required no-score safe-exit example.
 
-More extensive working examples currently exist in `C:\Dev\sprint_1_samples`.
+More extensive working examples are stored in the repository's top-level `sprint_1_samples` folder.
 
 Fixture evidence must be clearly marked as synthetic. Never present fixture URLs as real citations.

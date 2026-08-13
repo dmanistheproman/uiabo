@@ -1,0 +1,110 @@
+{
+  "owner": "Chu Wai Chung",
+  "component": "Fact-check and evidence retrieval",
+  "receives": "ClaimAnalysis",
+  "returns": "RetrievalResult",
+  "fixture_warning": "The evidence and URLs below are synthetic test data, not real sources.",
+  "samples": [
+    {
+      "scenario_id": "tax_contradicted",
+      "input": {
+        "extracted_claim": "A new $500 community tax starts next week.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "This describes a specific public event that can be checked using public evidence.",
+        "claim_confidence": 0.86
+      },
+      "expected_output": {
+        "retrieval_status": "completed",
+        "evidence": [
+          {
+            "evidence_id": "evidence-tax-1",
+            "title": "Example agency clarification on community tax message",
+            "url": "https://sources.example/agency/tax-clarification",
+            "publisher": "Example Government Agency",
+            "published_at": "2026-08-10",
+            "passage": "No new $500 community tax will begin next week.",
+            "source_type": "government",
+            "retrieval_score": 0.93,
+            "retrieved_at": "2026-08-20T10:00:00Z"
+          },
+          {
+            "evidence_id": "evidence-tax-2",
+            "title": "Example fact check about the community tax message",
+            "url": "https://sources.example/fact-checks/community-tax",
+            "publisher": "Example Fact Checker",
+            "published_at": "2026-08-11",
+            "passage": "The circulating message about a new $500 community tax is incorrect.",
+            "source_type": "fact_check",
+            "retrieval_score": 0.89,
+            "retrieved_at": "2026-08-20T10:00:01Z"
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "scenario_id": "grant_supported",
+      "input": {
+        "extracted_claim": "A $300 community support grant will open on 1 September 2026.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement gives a specific amount, event and date that can be checked.",
+        "claim_confidence": 0.94
+      },
+      "expected_output": {
+        "retrieval_status": "completed",
+        "evidence": [
+          {
+            "evidence_id": "evidence-grant-1",
+            "title": "Example community support grant announcement",
+            "url": "https://sources.example/agency/community-grant",
+            "publisher": "Example Government Agency",
+            "published_at": "2026-08-12",
+            "passage": "Applications for the $300 community support grant open on 1 September 2026.",
+            "source_type": "government",
+            "retrieval_score": 0.96,
+            "retrieved_at": "2026-08-20T10:05:00Z"
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "scenario_id": "no_evidence",
+      "input": {
+        "extracted_claim": "A purple express bus route will begin in Tengah tomorrow.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "This describes a specific public transport event.",
+        "claim_confidence": 0.84
+      },
+      "expected_output": {
+        "retrieval_status": "no_evidence",
+        "evidence": [],
+        "warnings": [
+          "No sufficiently relevant evidence was found."
+        ]
+      }
+    },
+    {
+      "scenario_id": "retrieval_failed",
+      "input": {
+        "extracted_claim": "A new recycling rule begins next month.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "This describes a public rule that can be checked.",
+        "claim_confidence": 0.81
+      },
+      "simulated_condition": "The search service times out.",
+      "expected_output": {
+        "retrieval_status": "failed",
+        "evidence": [],
+        "warnings": [
+          "Evidence search could not be completed because the search service timed out."
+        ]
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,248 @@
+{
+  "owner": "Ho Sze Wei, Donovan",
+  "component": "Pipeline integration and Firestore storage",
+  "receives": [
+    "PreparedText",
+    "ClaimAnalysis",
+    "RetrievalResult",
+    "AssessmentResult"
+  ],
+  "returns": "TextAnalysisResult",
+  "fixture_warning": "The evidence and URLs below are synthetic test data, not real sources.",
+  "samples": [
+    {
+      "scenario_id": "tax_contradicted",
+      "component_outputs": {
+        "prepared_text": {
+          "original_text": "A new $500 community tax starts next week.",
+          "normalised_text": "A new $500 community tax starts next week.",
+          "language": "en",
+          "warnings": []
+        },
+        "claim_analysis": {
+          "extracted_claim": "A new $500 community tax starts next week.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "This describes a specific public event that can be checked using public evidence.",
+          "claim_confidence": 0.86
+        },
+        "retrieval_result": {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "evidence-tax-1",
+              "title": "Example agency clarification on community tax message",
+              "url": "https://sources.example/agency/tax-clarification",
+              "publisher": "Example Government Agency",
+              "published_at": "2026-08-10",
+              "passage": "No new $500 community tax will begin next week.",
+              "source_type": "government",
+              "retrieval_score": 0.93,
+              "retrieved_at": "2026-08-20T10:00:00Z"
+            }
+          ],
+          "warnings": []
+        },
+        "assessment_result": {
+          "concern_label": "High Concern",
+          "misinformation_risk_score": 82,
+          "uncertainty": "Medium",
+          "uncertainty_reasons": [
+            "Only one highly relevant authoritative source was used in this fixture."
+          ],
+          "explanation": "The available official announcement directly contradicts the submitted claim.",
+          "recommended_action": "Do not forward the claim yet. Review the cited announcement first.",
+          "assessed_evidence": [
+            {
+              "evidence_id": "evidence-tax-1",
+              "stance": "contradicting",
+              "quality_score": 0.9,
+              "assessment_reason": "The announcement directly states that the claimed tax will not begin."
+            }
+          ]
+        }
+      },
+      "expected_output": {
+        "result_id": "fixture-result-tax-1",
+        "processing_status": "completed",
+        "original_text": "A new $500 community tax starts next week.",
+        "extracted_claim": "A new $500 community tax starts next week.",
+        "claim_category": "factual",
+        "checkable": true,
+        "concern_label": "High Concern",
+        "misinformation_risk_score": 82,
+        "uncertainty": "Medium",
+        "uncertainty_reasons": [
+          "Only one highly relevant authoritative source was used in this fixture."
+        ],
+        "explanation": "The available official announcement directly contradicts the submitted claim.",
+        "recommended_action": "Do not forward the claim yet. Review the cited announcement first.",
+        "evidence": [
+          {
+            "evidence_id": "evidence-tax-1",
+            "title": "Example agency clarification on community tax message",
+            "url": "https://sources.example/agency/tax-clarification",
+            "publisher": "Example Government Agency",
+            "published_at": "2026-08-10",
+            "passage": "No new $500 community tax will begin next week.",
+            "source_type": "government",
+            "stance": "contradicting",
+            "quality_score": 0.9
+          }
+        ],
+        "warnings": [],
+        "pipeline_version": "sprint-1-v1",
+        "created_at": "2026-08-20T10:00:05Z"
+      }
+    },
+    {
+      "scenario_id": "opinion_no_claim",
+      "component_outputs": {
+        "prepared_text": {
+          "original_text": "Chicken rice is the best food in Singapore.",
+          "normalised_text": "Chicken rice is the best food in Singapore.",
+          "language": "en",
+          "warnings": []
+        },
+        "claim_analysis": {
+          "extracted_claim": null,
+          "claim_category": "opinion",
+          "checkable": false,
+          "classification_reason": "This is a personal preference rather than an objectively checkable fact.",
+          "claim_confidence": 0.97
+        },
+        "retrieval_result": null,
+        "assessment_result": {
+          "concern_label": "Not Enough Information",
+          "misinformation_risk_score": null,
+          "uncertainty": "High",
+          "uncertainty_reasons": [
+            "No objectively checkable factual claim was found."
+          ],
+          "explanation": "This statement is an opinion, so it cannot be assessed as a factual misinformation claim.",
+          "recommended_action": "Treat this as a personal opinion rather than a verified fact.",
+          "assessed_evidence": []
+        }
+      },
+      "expected_output": {
+        "result_id": "fixture-result-opinion-1",
+        "processing_status": "completed",
+        "original_text": "Chicken rice is the best food in Singapore.",
+        "extracted_claim": null,
+        "claim_category": "opinion",
+        "checkable": false,
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No objectively checkable factual claim was found."
+        ],
+        "explanation": "This statement is an opinion, so it cannot be assessed as a factual misinformation claim.",
+        "recommended_action": "Treat this as a personal opinion rather than a verified fact.",
+        "evidence": [],
+        "warnings": [],
+        "pipeline_version": "sprint-1-v1",
+        "created_at": "2026-08-20T10:15:05Z"
+      }
+    },
+    {
+      "scenario_id": "no_evidence",
+      "component_outputs": {
+        "prepared_text": {
+          "original_text": "A purple express bus route will begin in Tengah tomorrow.",
+          "normalised_text": "A purple express bus route will begin in Tengah tomorrow.",
+          "language": "en",
+          "warnings": []
+        },
+        "claim_analysis": {
+          "extracted_claim": "A purple express bus route will begin in Tengah tomorrow.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "This describes a specific public transport event.",
+          "claim_confidence": 0.84
+        },
+        "retrieval_result": {
+          "retrieval_status": "no_evidence",
+          "evidence": [],
+          "warnings": [
+            "No sufficiently relevant evidence was found."
+          ]
+        },
+        "assessment_result": {
+          "concern_label": "Not Enough Information",
+          "misinformation_risk_score": null,
+          "uncertainty": "High",
+          "uncertainty_reasons": [
+            "No sufficiently relevant evidence was found."
+          ],
+          "explanation": "There is not enough reliable evidence to assess this claim.",
+          "recommended_action": "Check an official transport source before believing or forwarding this claim.",
+          "assessed_evidence": []
+        }
+      },
+      "expected_output": {
+        "result_id": "fixture-result-no-evidence-1",
+        "processing_status": "completed",
+        "original_text": "A purple express bus route will begin in Tengah tomorrow.",
+        "extracted_claim": "A purple express bus route will begin in Tengah tomorrow.",
+        "claim_category": "factual",
+        "checkable": true,
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No sufficiently relevant evidence was found."
+        ],
+        "explanation": "There is not enough reliable evidence to assess this claim.",
+        "recommended_action": "Check an official transport source before believing or forwarding this claim.",
+        "evidence": [],
+        "warnings": [
+          "No sufficiently relevant evidence was found."
+        ],
+        "pipeline_version": "sprint-1-v1",
+        "created_at": "2026-08-20T10:20:05Z"
+      }
+    },
+    {
+      "scenario_id": "retrieval_failed",
+      "component_outputs": {
+        "prepared_text": {
+          "original_text": "A new recycling rule begins next month.",
+          "normalised_text": "A new recycling rule begins next month.",
+          "language": "en",
+          "warnings": []
+        },
+        "claim_analysis": {
+          "extracted_claim": "A new recycling rule begins next month.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "This describes a public rule that can be checked.",
+          "claim_confidence": 0.81
+        },
+        "retrieval_result": {
+          "retrieval_status": "failed",
+          "evidence": [],
+          "warnings": [
+            "Evidence search could not be completed because the search service timed out."
+          ]
+        },
+        "assessment_result": null
+      },
+      "expected_api_error": {
+        "http_status": 503,
+        "body": {
+          "detail": {
+            "error_code": "RETRIEVAL_UNAVAILABLE",
+            "message": "Analysis could not be completed because evidence search is temporarily unavailable."
+          }
+        }
+      },
+      "expected_storage": {
+        "processing_status": "failed",
+        "failure_stage": "evidence_retrieval",
+        "retryable": true
+      }
+    }
+  ]
+}
+

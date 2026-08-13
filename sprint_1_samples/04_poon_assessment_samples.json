@@ -1,0 +1,208 @@
+{
+  "owner": "Poon Chun Ping",
+  "component": "Evidence assessment, scoring and explanation",
+  "receives": [
+    "ClaimAnalysis",
+    "RetrievalResult"
+  ],
+  "returns": "AssessmentResult",
+  "fixture_warning": "The evidence and scores below are synthetic examples. The team must document and evaluate the real scoring rules.",
+  "samples": [
+    {
+      "scenario_id": "tax_contradicted",
+      "input": {
+        "claim_analysis": {
+          "extracted_claim": "A new $500 community tax starts next week.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "This describes a specific public event that can be checked using public evidence.",
+          "claim_confidence": 0.86
+        },
+        "retrieval_result": {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "evidence-tax-1",
+              "title": "Example agency clarification on community tax message",
+              "url": "https://sources.example/agency/tax-clarification",
+              "publisher": "Example Government Agency",
+              "published_at": "2026-08-10",
+              "passage": "No new $500 community tax will begin next week.",
+              "source_type": "government",
+              "retrieval_score": 0.93,
+              "retrieved_at": "2026-08-20T10:00:00Z"
+            }
+          ],
+          "warnings": []
+        }
+      },
+      "expected_output": {
+        "concern_label": "High Concern",
+        "misinformation_risk_score": 82,
+        "uncertainty": "Medium",
+        "uncertainty_reasons": [
+          "Only one highly relevant authoritative source was used in this fixture."
+        ],
+        "explanation": "The available official announcement directly contradicts the submitted claim.",
+        "recommended_action": "Do not forward the claim yet. Review the cited announcement first.",
+        "assessed_evidence": [
+          {
+            "evidence_id": "evidence-tax-1",
+            "stance": "contradicting",
+            "quality_score": 0.9,
+            "assessment_reason": "The announcement directly states that the claimed tax will not begin."
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "grant_supported",
+      "input": {
+        "claim_analysis": {
+          "extracted_claim": "A $300 community support grant will open on 1 September 2026.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "The statement gives a specific amount, event and date that can be checked.",
+          "claim_confidence": 0.94
+        },
+        "retrieval_result": {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "evidence-grant-1",
+              "title": "Example community support grant announcement",
+              "url": "https://sources.example/agency/community-grant",
+              "publisher": "Example Government Agency",
+              "published_at": "2026-08-12",
+              "passage": "Applications for the $300 community support grant open on 1 September 2026.",
+              "source_type": "government",
+              "retrieval_score": 0.96,
+              "retrieved_at": "2026-08-20T10:05:00Z"
+            }
+          ],
+          "warnings": []
+        }
+      },
+      "expected_output": {
+        "concern_label": "Low Concern",
+        "misinformation_risk_score": 15,
+        "uncertainty": "Medium",
+        "uncertainty_reasons": [
+          "Only one highly relevant authoritative source was used in this fixture."
+        ],
+        "explanation": "The available official announcement supports the amount and opening date in the submitted claim.",
+        "recommended_action": "Read the cited announcement for application details before sharing the claim.",
+        "assessed_evidence": [
+          {
+            "evidence_id": "evidence-grant-1",
+            "stance": "supporting",
+            "quality_score": 0.94,
+            "assessment_reason": "The announcement directly confirms the grant amount and opening date."
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "opinion_no_claim",
+      "input": {
+        "claim_analysis": {
+          "extracted_claim": null,
+          "claim_category": "opinion",
+          "checkable": false,
+          "classification_reason": "This is a personal preference rather than an objectively checkable fact.",
+          "claim_confidence": 0.97
+        },
+        "retrieval_result": null
+      },
+      "expected_output": {
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No objectively checkable factual claim was found."
+        ],
+        "explanation": "This statement is an opinion, so it cannot be assessed as a factual misinformation claim.",
+        "recommended_action": "Treat this as a personal opinion rather than a verified fact.",
+        "assessed_evidence": []
+      }
+    },
+    {
+      "scenario_id": "no_evidence",
+      "input": {
+        "claim_analysis": {
+          "extracted_claim": "A purple express bus route will begin in Tengah tomorrow.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "This describes a specific public transport event.",
+          "claim_confidence": 0.84
+        },
+        "retrieval_result": {
+          "retrieval_status": "no_evidence",
+          "evidence": [],
+          "warnings": [
+            "No sufficiently relevant evidence was found."
+          ]
+        }
+      },
+      "expected_output": {
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No sufficiently relevant evidence was found."
+        ],
+        "explanation": "There is not enough reliable evidence to assess this claim.",
+        "recommended_action": "Check an official transport source before believing or forwarding this claim.",
+        "assessed_evidence": []
+      }
+    },
+    {
+      "scenario_id": "neutral_evidence",
+      "input": {
+        "claim_analysis": {
+          "extracted_claim": "A community event begins on Monday.",
+          "claim_category": "factual",
+          "checkable": true,
+          "classification_reason": "This gives a specific event start day.",
+          "claim_confidence": 0.91
+        },
+        "retrieval_result": {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "evidence-event-1",
+              "title": "Example community event information",
+              "url": "https://sources.example/events/community-event",
+              "publisher": "Example Community Organisation",
+              "published_at": "2026-08-15",
+              "passage": "The community event will include food stalls and performances.",
+              "source_type": "other",
+              "retrieval_score": 0.72,
+              "retrieved_at": "2026-08-20T10:10:00Z"
+            }
+          ],
+          "warnings": []
+        }
+      },
+      "expected_output": {
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "The retrieved source does not state the event's start day."
+        ],
+        "explanation": "The retrieved information mentions the event but does not confirm whether it begins on Monday.",
+        "recommended_action": "Check the organiser's official schedule before forwarding this claim.",
+        "assessed_evidence": [
+          {
+            "evidence_id": "evidence-event-1",
+            "stance": "neutral",
+            "quality_score": 0.45,
+            "assessment_reason": "The passage is related to the event but does not address its start day."
+          }
+        ]
+      }
+    }
+  ]
+}
+

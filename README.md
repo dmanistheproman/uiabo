@@ -45,8 +45,22 @@ uiabo/
 |   |-- tests/
 |   |   `-- test_analysis.py
 |   `-- requirements.txt
+|-- evaluation/              # Datasets, scoring rules and reports
+|-- sprint_1_samples/        # Shared JSON interfaces for each member
 `-- README.md
 ```
+
+## Sprint 1 team samples
+
+The [`sprint_1_samples`](sprint_1_samples) folder contains separate JSON examples for each member's pipeline component:
+
+- Yi Da: input preparation and `PreparedText`
+- Matthew: claim extraction and `ClaimAnalysis`
+- Chu: fact-check/evidence retrieval and `RetrievalResult`
+- Poon: evidence assessment and `AssessmentResult`
+- Donovan: integration and the final `TextAnalysisResult`
+
+These samples allow components to be developed in parallel before the previous component is finished. The claims, evidence and URLs are synthetic test fixtures and must not be shown to users as genuine fact checks.
 
 ## Requirements
 
