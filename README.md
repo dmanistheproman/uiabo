@@ -4,7 +4,7 @@ uiabo is a Final Year Project that aims to help users assess text and online con
 
 ## Current status
 
-The initial FastAPI backend is working. It can accept text and return the planned analysis response structure, but the misinformation analysis is currently mocked.
+The FastAPI backend and Sprint 1 pipeline structure are working. Input preparation, shared interfaces, pipeline control flow, safe stopping rules, Firestore result storage, and API error handling are implemented. The other three team components still need to be connected before the endpoint can produce a real misinformation assessment.
 
 Completed so far:
 
@@ -16,6 +16,12 @@ Completed so far:
 - Automated API tests
 - Firebase Admin SDK setup
 - Successful Firestore write-and-read smoke test
+- Shared Pydantic contracts for every Sprint 1 handoff
+- Pipeline orchestration and final result assembly
+- Safe `Not Enough Information` results for non-checkable claims and missing evidence
+- Controlled failures that never return a made-up score
+- Saving completed and failed pipeline runs to Firestore
+- Unit, API, contract, orchestration, and repository tests
 - Service-account credentials kept outside the repository
 
 Not yet implemented:
@@ -26,7 +32,6 @@ Not yet implemented:
 - Source credibility checks
 - Risk and uncertainty calculations
 - Evidence-based explanations and citations
-- Saving analysis results to Firestore
 - Authentication, mobile application, and operational dashboards
 
 ## Project structure
@@ -35,11 +40,12 @@ Not yet implemented:
 uiabo/
 |-- backend/
 |   |-- app/
+|   |   |-- pipeline/       # Sprint 1 components and shared interfaces
 |   |   |-- routers/        # API routes
-|   |   |-- services/       # Analysis logic
+|   |   |-- services/       # Compatibility service layer
 |   |   |-- firebase.py     # Firestore client
 |   |   |-- main.py         # FastAPI application
-|   |   `-- schemas.py      # Request and response models
+|   |   `-- schemas.py      # API request and error models
 |   |-- scripts/
 |   |   `-- firestore_smoke_test.py
 |   |-- tests/
@@ -120,21 +126,20 @@ Example request:
 
 The submitted text must contain between 1 and 5,000 characters.
 
-Example response:
+Until the three remaining team components are connected, valid text reaches the pipeline and returns a controlled `503` response such as:
 
 ```json
 {
-  "result_id": "generated-uuid",
-  "extracted_claim": "Singapore is introducing a new $500 tax next week.",
-  "concern_label": "Needs Caution",
-  "misinformation_risk_score": 50,
-  "uncertainty": "High",
-  "explanation": "This is a mock analysis result. Real misinformation analysis has not been implemented yet.",
-  "evidence": []
+  "detail": {
+    "error_code": "CLAIM_ANALYSIS_NOT_READY",
+    "message": "Claim analysis has not been integrated yet.",
+    "stage": "claim_analysis",
+    "retryable": false
+  }
 }
 ```
 
-The label, score, uncertainty, and explanation above are hard-coded placeholders. They must not be treated as a real assessment.
+This is intentional: the API no longer returns the old hard-coded score of `50`. When Matthew, Chu, and Poon's components are connected, the same endpoint returns the agreed `TextAnalysisResult` shown in [`sprint_1_samples/05_donovan_integration_samples.json`](sprint_1_samples/05_donovan_integration_samples.json).
 
 ## Run the tests
 
@@ -148,6 +153,12 @@ The current tests cover:
 
 - `GET /health`
 - `POST /analysis/text`
+- Input preparation and validation
+- Every shared component interface
+- Complete orchestration with sample component outputs
+- Non-checkable claims and missing-evidence stopping rules
+- Component, contract, and Firestore failures
+- Firestore result serialization
 
 ## Firebase and Firestore
 
@@ -160,11 +171,11 @@ $env:GOOGLE_APPLICATION_CREDENTIALS = "C:\path\to\service-account.json"
 
 Never commit the service-account JSON file or other credentials to the repository.
 
-The smoke test writes and reads a document in the `system_tests` collection. Firestore is not yet connected to the text-analysis endpoint.
+The smoke test writes and reads a document in the `system_tests` collection. The text-analysis pipeline saves completed and failed runs in the `analysis_results` collection. Tests use a fake or in-memory repository and do not require Firebase credentials.
 
 ## Next development priority
 
-The next milestone is a first evidence-backed text misinformation prototype:
+The next milestone is to connect the three teammate components to the prepared pipeline:
 
 1. Extract and classify a factual claim.
 2. Search existing fact checks.
@@ -175,12 +186,11 @@ The next milestone is a first evidence-backed text misinformation prototype:
 7. Generate a simple explanation with citations.
 8. Evaluate the pipeline using a small test dataset.
 
-The plan is to replace one mocked stage at a time and test each stage before moving on.
+Replace the explicit `*_NOT_READY` functions in [`backend/app/pipeline/orchestration/dependencies.py`](backend/app/pipeline/orchestration/dependencies.py) with the real component functions. Each function must accept and return the shared model documented in [`backend/app/pipeline/orchestration/README.md`](backend/app/pipeline/orchestration/README.md).
 
 ## Planned later work
 
 - Link and webpage analysis
-- Firestore storage for submissions and results
 - Firebase Authentication and account roles
 - React Native Android application
 - Usage limits and premium features

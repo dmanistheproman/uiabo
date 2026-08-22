@@ -1,6 +1,9 @@
-from typing import Literal
-
 from pydantic import BaseModel, Field
+
+from app.pipeline.shared.models import (
+    EvidenceItem,
+    TextAnalysisResult,
+)
 
 
 class TextAnalysisRequest(BaseModel):
@@ -10,39 +13,21 @@ class TextAnalysisRequest(BaseModel):
     )
 
 
-class EvidenceItem(BaseModel):
-    title: str
-    url: str
-    stance: Literal[
-        "supporting",
-        "contradicting",
-        "neutral"
-    ]
+class PipelineErrorDetail(BaseModel):
+    error_code: str
+    message: str
+    stage: str
+    retryable: bool
 
 
-class TextAnalysisResult(BaseModel):
-    result_id: str
+class PipelineErrorResponse(BaseModel):
+    detail: PipelineErrorDetail
 
-    extracted_claim: str
 
-    concern_label: Literal[
-        "Low Concern",
-        "Needs Caution",
-        "High Concern",
-        "Not Enough Information"
-    ]
-
-    misinformation_risk_score: int = Field(
-        ge=0,
-        le=100
-    )
-
-    uncertainty: Literal[
-        "Low",
-        "Medium",
-        "High"
-    ]
-
-    explanation: str
-
-    evidence: list[EvidenceItem]
+__all__ = [
+    "EvidenceItem",
+    "PipelineErrorDetail",
+    "PipelineErrorResponse",
+    "TextAnalysisRequest",
+    "TextAnalysisResult",
+]
