@@ -11,6 +11,11 @@ text is warned about and passed through unchanged, because removing it
 would delete the claim we are meant to check. The real prompt-injection
 defence belongs to the components that build LLM prompts.
 
+Language: Sprint 1 processes English only, but the declared language is
+now a detection result rather than an assumption. Text that the detector
+cannot confidently attribute to English is rejected, never silently
+treated as English. See ``language_validation.py``.
+
 Deliberately not done, because each of these changes meaning: lowercasing,
 stopword removal, punctuation stripping, NFKC normalisation.
 """
@@ -20,13 +25,15 @@ import unicodedata
 
 from pydantic import BaseModel, Field
 
+from app.pipeline.input_preparation.language_validation import (
+    SUPPORTED_LANGUAGE_CODE,
+    LanguageValidationError,
+    require_english,
+)
+
 
 # Matches the limit enforced by ``TextAnalysisRequest`` in app/schemas.py.
 MAX_TEXT_LENGTH = 5000
-
-# Sprint 1 handles English only. A declared assumption, not a detection
-# result -- nothing here inspects the text to decide it.
-DEFAULT_LANGUAGE = "en"
 
 # Wording is fixed by the Sprint 1 interface; do not reword without team
 # agreement (see UIABO_SPRINT_1_TEAM_TASKS.md, "Interface change rule").
@@ -35,18 +42,18 @@ INJECTION_WARNING = (
     "treat the entire submission as untrusted data."
 )
 
-# Invisible and control characters. These carry no linguistic meaning and
-# are the standard way to disguise content from a human reader. Zero-width
-# joiner (U+200D) and non-joiner (U+200C) are deliberately excluded: they
-# are meaningful in emoji sequences and in Indic scripts. Tab, newline and
-# carriage return are excluded so the whitespace pass can fold them into
-# ordinary spaces.
-_HIDDEN_CHARS = re.compile(
-    "[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f"
-    "­​⁠‪-‮⁦-⁩﻿]"
+# Hidden-character warning wording is asserted in tests and shared samples.
+HIDDEN_CHARACTER_WARNING = (
+    "Hidden or invisible formatting characters were removed."
 )
 
-_WHITESPACE_RUN = re.compile(r"\s+")
+# Zero-width joiner (U+200D) and non-joiner (U+200C) are format controls
+# that carry real meaning in emoji sequences and several writing systems,
+# so they must not be removed by a general formatting-character rule.
+_PRESERVED_FORMAT_CHARACTERS = {
+    "\u200c",  # ZERO WIDTH NON-JOINER
+    "\u200d",  # ZERO WIDTH JOINER
+}
 
 # 30 or more of the same character in a row: degenerate filler, not a claim.
 _LONG_REPEAT = re.compile(r"(.)\1{29,}")
@@ -154,8 +161,10 @@ def prepare_text(text: str) -> PreparedText:
     """Validate and normalise submitted text.
 
     Raises:
-        InvalidTextError: text is not a string, is too long, or contains no
-            visible characters once hidden characters are removed.
+        InvalidTextError: text is not a string, is too long, contains an
+            unsafe control character, has no visible characters once hidden
+            characters are removed, or is not confidently English
+            (``UNSUPPORTED_LANGUAGE`` / ``LANGUAGE_UNCERTAIN``).
     """
     if not isinstance(text, str):
         raise InvalidTextError("Text must be a string.")
@@ -168,17 +177,9 @@ def prepare_text(text: str) -> PreparedText:
 
     warnings: list[str] = []
 
-    # NFC composes accents without rewriting compatibility characters, so
-    # amounts, symbols and full-width forms survive unchanged.
-    normalised = unicodedata.normalize("NFC", text)
-
-    stripped = _HIDDEN_CHARS.sub("", normalised)
-    if stripped != normalised:
-        warnings.append(
-            "Hidden or invisible formatting characters were removed."
-        )
-
-    normalised = _WHITESPACE_RUN.sub(" ", stripped).strip()
+    normalised, removed_formatting = _normalise_characters(text)
+    if removed_formatting:
+        warnings.append(HIDDEN_CHARACTER_WARNING)
 
     if not normalised:
         raise InvalidTextError(
@@ -198,12 +199,77 @@ def prepare_text(text: str) -> PreparedText:
             "Text contains an unusual number of combining marks."
         )
 
+    # The gate runs last so that every other check sees the same text it
+    # would have seen before language validation existed. Only text the
+    # detector confidently attributes to English may continue.
+    try:
+        require_english(normalised)
+    except LanguageValidationError as error:
+        raise InvalidTextError(
+            error.message,
+            error_code=error.error_code,
+        ) from error
+
     return PreparedText(
         original_text=text,
         normalised_text=normalised,
-        language=DEFAULT_LANGUAGE,
+        language=SUPPORTED_LANGUAGE_CODE,
         warnings=warnings,
     )
+
+
+def _normalise_characters(text: str) -> tuple[str, bool]:
+    """Normalise Unicode without ever joining two whitespace-separated words.
+
+    The ordering rule is:
+
+    1. normalise Unicode composition (NFC composes accents without
+       rewriting compatibility characters, so amounts, symbols and
+       full-width forms survive unchanged);
+    2. convert every recognised whitespace character to a normal space;
+    3. remove invisible formatting characters;
+    4. reject unexpected non-whitespace control characters.
+
+    Whitespace is handled before format and control characters because some
+    separators such as U+0085 NEXT LINE are category Cc: deleting them as
+    controls would silently join two words ("tax\\u0085starts").
+    """
+    composed = unicodedata.normalize("NFC", text)
+    output: list[str] = []
+    removed_formatting = False
+
+    for character in composed:
+        if character.isspace():
+            output.append(" ")
+            continue
+
+        category = unicodedata.category(character)
+
+        if category == "Cf":
+            if character in _PRESERVED_FORMAT_CHARACTERS:
+                output.append(character)
+            else:
+                removed_formatting = True
+            continue
+
+        # Non-whitespace control, surrogate, and unassigned-category control
+        # characters must not be silently deleted: their intended boundary
+        # is ambiguous and removal could change a claim.
+        if category in {"Cc", "Cs"}:
+            code_point = f"U+{ord(character):04X}"
+            name = unicodedata.name(character, "unnamed control character")
+            raise InvalidTextError(
+                f"Text contains unsupported control character "
+                f"{code_point} ({name}).",
+                error_code="UNSAFE_CONTROL_CHARACTER",
+            )
+
+        output.append(character)
+
+    # Splitting and joining collapses all runs of ordinary spaces and trims
+    # their ends. It is safe now because every recognised Unicode whitespace
+    # character has already become an ordinary space.
+    return " ".join("".join(output).split()), removed_formatting
 
 
 def _has_combining_mark_stack(text: str) -> bool:

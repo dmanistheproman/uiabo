@@ -199,7 +199,7 @@ def test_component_not_ready_is_saved_as_a_failed_run() -> None:
     )
 
     with pytest.raises(PipelineComponentError) as raised:
-        pipeline.analyze("A test claim.")
+        pipeline.analyze("A new community tax starts next week.")
 
     assert raised.value.error_code == "CLAIM_ANALYSIS_NOT_READY"
     assert repository.failures["fixture-result-tax-1"].retryable is False
@@ -226,7 +226,7 @@ def test_invalid_component_output_is_a_contract_error() -> None:
     )
 
     with pytest.raises(PipelineContractError) as raised:
-        pipeline.analyze("A test claim.")
+        pipeline.analyze("A new community tax starts next week.")
 
     assert raised.value.stage == "claim_analysis"
     assert raised.value.http_status == 500
@@ -245,7 +245,7 @@ def test_every_retrieved_item_requires_an_assessment() -> None:
     )
 
     with pytest.raises(PipelineContractError) as raised:
-        pipeline.analyze("A test claim.")
+        pipeline.analyze("A new community tax starts next week.")
 
     assert raised.value.stage == "result_assembly"
 
@@ -265,7 +265,7 @@ def test_duplicate_warnings_are_returned_once() -> None:
         },
     )
 
-    result = pipeline.analyze("A test claim.")
+    result = pipeline.analyze("A new community tax starts next week.")
 
     assert result.warnings == [warning]
 
@@ -284,7 +284,7 @@ def test_completed_result_must_be_saved() -> None:
     pipeline = _orchestrator(repository=AlwaysFailingRepository())
 
     with pytest.raises(PipelinePersistenceError) as raised:
-        pipeline.analyze("A test claim.")
+        pipeline.analyze("A new community tax starts next week.")
 
     assert raised.value.error_code == "RESULT_STORAGE_FAILED"
     assert raised.value.retryable is True

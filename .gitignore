@@ -1,9 +1,11 @@
 # Python virtual environment
 backend/.venv/
+docs/input_preparation_additionals/.venv/
 
 # Python cache
 __pycache__/
 *.py[cod]
+.pytest_cache/
 
 # Environment variables / secrets
 .env
