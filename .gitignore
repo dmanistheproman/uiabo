@@ -10,6 +10,7 @@ __pycache__/
 # Environment variables / secrets
 .env
 .env.*
+!mobile/.env.example
 
 # VS Code
 .vscode/

@@ -4,7 +4,7 @@ uiabo is a Final Year Project that aims to help users assess text and online con
 
 ## Current status
 
-The FastAPI backend and Sprint 1 pipeline structure are working. Input preparation, shared interfaces, pipeline control flow, safe stopping rules, Firestore result storage, and API error handling are implemented. The other three team components still need to be connected before the endpoint can produce a real misinformation assessment.
+The FastAPI backend and Sprint 1 pipeline structure are working. Input preparation, evidence assessment, shared interfaces, pipeline control flow, safe stopping rules, Firestore result storage, and API error handling are implemented. The other two team components still need to be connected before the endpoint can produce a real misinformation assessment.
 
 Completed so far:
 
@@ -23,16 +23,23 @@ Completed so far:
 - Saving completed and failed pipeline runs to Firestore
 - Unit, API, contract, orchestration, and repository tests
 - Service-account credentials kept outside the repository
+- Firebase ID-token verification in FastAPI
+- Protected account profile endpoints
+- Free account and daily allowance creation in Firestore
+- Expo/React Native Android app foundation
+- Email/password registration, verification, login, password reset, profile, and logout flows
+- Accessible free-user home screen with premium features visibly locked
 
 Not yet implemented:
 
 - Real claim extraction and classification
 - Fact-check and evidence retrieval
-- Evidence assessment and ranking
+- Further evidence-assessment tuning and integration validation
 - Source credibility checks
 - Risk and uncertainty calculations
 - Evidence-based explanations and citations
-- Authentication, mobile application, and operational dashboards
+- Text-check and result-history mobile screens
+- Premium payments and operational dashboards
 
 ## Project structure
 
@@ -40,6 +47,8 @@ Not yet implemented:
 uiabo/
 |-- backend/
 |   |-- app/
+|   |   |-- accounts/       # User profiles and free usage allowances
+|   |   |-- auth/           # Firebase token verification
 |   |   |-- pipeline/       # Sprint 1 components and shared interfaces
 |   |   |-- routers/        # API routes
 |   |   |-- services/       # Compatibility service layer
@@ -52,6 +61,7 @@ uiabo/
 |   |   `-- test_analysis.py
 |   `-- requirements.txt
 |-- evaluation/              # Datasets, scoring rules and reports
+|-- mobile/                  # Expo/React Native Android application
 |-- sprint_1_samples/        # Shared JSON interfaces for each member
 `-- README.md
 ```
@@ -72,6 +82,7 @@ These samples allow components to be developed in parallel before the previous c
 
 - Python 3
 - A Firebase project and Cloud Firestore database for the Firestore smoke test
+- Node.js and Expo Go or an Android emulator for the mobile application
 
 ## Backend setup
 
@@ -139,7 +150,15 @@ Until the three remaining team components are connected, valid text reaches the 
 }
 ```
 
-This is intentional: the API no longer returns the old hard-coded score of `50`. When Matthew, Chu, and Poon's components are connected, the same endpoint returns the agreed `TextAnalysisResult` shown in [`sprint_1_samples/05_donovan_integration_samples.json`](sprint_1_samples/05_donovan_integration_samples.json).
+This is intentional: the API no longer returns the old hard-coded score of `50`. When Matthew and Chu's components are connected, the same endpoint will use those components together with Poon's evidence assessment to return the agreed `TextAnalysisResult` shown in [`sprint_1_samples/05_donovan_integration_samples.json`](sprint_1_samples/05_donovan_integration_samples.json).
+
+### `PUT /account/me`
+
+Creates or refreshes the signed-in user's own free profile. It requires a Firebase ID token in the `Authorization: Bearer <token>` header. An unverified account is stored with `pending_verification` status.
+
+### `GET /account/me`
+
+Returns the verified user's own profile and allowance. Unverified, invalid, expired, revoked, suspended, and deactivated accounts are rejected.
 
 ## Run the tests
 
@@ -159,6 +178,12 @@ The current tests cover:
 - Non-checkable claims and missing-evidence stopping rules
 - Component, contract, and Firestore failures
 - Firestore result serialization
+- Firebase authentication token handling
+- Account creation, email-verification gating, suspension, and free allowances
+
+## Mobile app
+
+The working authentication slice is in [`mobile`](mobile). Follow [`mobile/README.md`](mobile/README.md) to configure Firebase, select the correct backend address, run the Android app, and perform the full account test.
 
 ## Firebase and Firestore
 
@@ -175,7 +200,7 @@ The smoke test writes and reads a document in the `system_tests` collection. The
 
 ## Next development priority
 
-The next milestone is to connect the three teammate components to the prepared pipeline:
+The next milestone is to connect the two remaining teammate components to the prepared pipeline and verify the complete flow:
 
 1. Extract and classify a factual claim.
 2. Search existing fact checks.
@@ -191,8 +216,8 @@ Replace the explicit `*_NOT_READY` functions in [`backend/app/pipeline/orchestra
 ## Planned later work
 
 - Link and webpage analysis
-- Firebase Authentication and account roles
-- React Native Android application
+- Premium subscriptions and role-management tools
+- Connect text analysis and result history to the Android application
 - Usage limits and premium features
 - Administrator and data-engineer dashboards
 - OCR and image-caption analysis
