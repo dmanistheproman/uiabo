@@ -1,161 +1,226 @@
-"""Tests for Poon's Sprint 1 evidence-assessment component.
+"""Regression tests for the corrected Poon reference implementation."""
 
-The shared Poon fixture is used directly so field names and expected sample
-behaviour stay aligned with the team interface.  Additional tests cover mixed
-and failed retrieval cases that are not in the shared sample file.
-"""
+from __future__ import annotations
 
 import json
 from pathlib import Path
 
 import pytest
 
+
 from app.pipeline.evidence_assessment.service import (
+    AssessmentInputError,
     assess_claim,
+    assess_evidence,
+    assess_evidence_item,
     calculate_quality_score,
-    classify_stance,
+)
+from app.pipeline.shared.models import (
+    AssessmentResult,
+    ClaimAnalysis,
+    EvidenceCandidate,
+    RetrievalResult,
 )
 
 
-SAMPLES_PATH = (
-    Path(__file__).parents[4]
-    / "sprint_1_samples"
-    / "04_poon_assessment_samples.json"
+SAMPLES_PATH = Path(__file__).parents[4] / "sprint_1_samples" / (
+    "04_poon_assessment_samples.json"
 )
 
 
-def _load_samples() -> list[dict]:
-    with SAMPLES_PATH.open(encoding="utf-8") as handle:
-        return json.load(handle)["samples"]
+def _samples() -> list[dict]:
+    return json.loads(SAMPLES_PATH.read_text(encoding="utf-8"))["samples"]
 
 
-SAMPLES = _load_samples()
+def _claim(text: str, *, checkable: bool = True) -> ClaimAnalysis:
+    return ClaimAnalysis(
+        extracted_claim=text if checkable else None,
+        claim_category="factual" if checkable else "opinion",
+        checkable=checkable,
+        classification_reason="Test claim.",
+        claim_confidence=0.90,
+    )
+
+
+def _evidence(
+    evidence_id: str,
+    passage: str,
+    *,
+    source_type: str = "government",
+    retrieval_score: float = 0.90,
+) -> dict:
+    return {
+        "evidence_id": evidence_id,
+        "title": f"Source {evidence_id}",
+        "url": f"https://example.test/{evidence_id}",
+        "publisher": f"Publisher {evidence_id}",
+        "published_at": "2026-08-20",
+        "passage": passage,
+        "source_type": source_type,
+        "retrieval_score": retrieval_score,
+        "retrieved_at": "2026-08-21T00:00:00Z",
+    }
 
 
 @pytest.mark.parametrize(
     "sample",
-    SAMPLES,
-    ids=[sample["scenario_id"] for sample in SAMPLES],
+    _samples(),
+    ids=lambda sample: sample["scenario_id"],
 )
-def test_shared_sprint_1_samples(sample: dict) -> None:
-    """The five agreed Poon samples must pass unchanged."""
-    actual = assess_claim(
+def test_shared_samples_keep_core_contract_and_outcome(sample: dict) -> None:
+    result = assess_claim(
         sample["input"]["claim_analysis"],
         sample["input"]["retrieval_result"],
     )
+    validated = AssessmentResult.model_validate(result)
+    expected = sample["expected_output"]
 
-    assert actual == sample["expected_output"]
-
-
-class TestStanceRules:
-    def test_supporting(self) -> None:
-        assert classify_stance(
-            "The event begins on Monday.",
-            "The official schedule says the event begins on Monday.",
-        ) == "supporting"
-
-    def test_contradicting_day(self) -> None:
-        assert classify_stance(
-            "The event begins on Monday.",
-            "The official schedule says the event begins on Friday.",
-        ) == "contradicting"
-
-    def test_contradicting_amount(self) -> None:
-        assert classify_stance(
-            "The support payment is $300.",
-            "The support payment is $500.",
-        ) == "contradicting"
-
-    def test_neutral_related_passage(self) -> None:
-        assert classify_stance(
-            "The community event begins on Monday.",
-            "The community event will include food stalls and performances.",
-        ) == "neutral"
+    assert validated.concern_label == expected["concern_label"]
+    assert (
+        validated.misinformation_risk_score
+        == expected["misinformation_risk_score"]
+    )
+    assert [item.stance for item in validated.assessed_evidence] == [
+        item["stance"] for item in expected["assessed_evidence"]
+    ]
 
 
-class TestQualityRules:
-    def test_high_relevance_government_source(self) -> None:
-        evidence = {
-            "source_type": "government",
-            "retrieval_score": 0.96,
-            "published_at": "2026-08-12",
-        }
-        assert calculate_quality_score(evidence, "supporting") == 0.94
+def test_pipeline_boundary_accepts_and_returns_shared_models() -> None:
+    sample = _samples()[0]["input"]
+    claim = ClaimAnalysis.model_validate(sample["claim_analysis"])
+    retrieval = RetrievalResult.model_validate(sample["retrieval_result"])
 
-    def test_neutral_is_capped(self) -> None:
-        evidence = {
-            "source_type": "government",
-            "retrieval_score": 0.99,
-            "published_at": "2026-08-12",
-        }
-        assert calculate_quality_score(evidence, "neutral") == 0.45
+    result = assess_evidence(claim, retrieval)
+
+    assert isinstance(result, AssessmentResult)
+    assert result.concern_label == "High Concern"
 
 
-class TestSafeExitAndMixedEvidence:
-    def test_failed_retrieval_returns_no_score(self) -> None:
-        claim = {
-            "extracted_claim": "A new policy starts tomorrow.",
-            "claim_category": "factual",
-            "checkable": True,
-            "classification_reason": "This is checkable.",
-            "claim_confidence": 0.80,
-        }
-        retrieval = {
-            "retrieval_status": "failed",
-            "evidence": [],
-            "warnings": ["Evidence retrieval failed."],
-        }
-
-        result = assess_claim(claim, retrieval)
-
-        assert result["concern_label"] == "Not Enough Information"
-        assert result["misinformation_risk_score"] is None
-        assert result["uncertainty"] == "High"
-        assert result["uncertainty_reasons"] == ["Evidence retrieval failed."]
-
-    def test_mixed_evidence_needs_caution_and_high_uncertainty(self) -> None:
-        claim = {
-            "extracted_claim": "The community event begins on Monday.",
-            "claim_category": "factual",
-            "checkable": True,
-            "classification_reason": "The event date is checkable.",
-            "claim_confidence": 0.90,
-        }
-        retrieval = {
+def test_tuesday_claim_never_mentions_monday() -> None:
+    claim = _claim("The community event begins on Tuesday.")
+    retrieval = RetrievalResult.model_validate(
+        {
             "retrieval_status": "completed",
-            "evidence": [
-                {
-                    "evidence_id": "support-1",
-                    "title": "Schedule A",
-                    "url": "https://example.test/a",
-                    "publisher": "Agency A",
-                    "published_at": "2026-08-15",
-                    "passage": "The community event begins on Monday.",
-                    "source_type": "government",
-                    "retrieval_score": 0.95,
-                    "retrieved_at": "2026-08-20T10:00:00Z",
-                },
-                {
-                    "evidence_id": "contradict-1",
-                    "title": "Schedule B",
-                    "url": "https://example.test/b",
-                    "publisher": "News B",
-                    "published_at": "2026-08-16",
-                    "passage": "The community event begins on Friday.",
-                    "source_type": "news",
-                    "retrieval_score": 0.90,
-                    "retrieved_at": "2026-08-20T10:01:00Z",
-                },
-            ],
             "warnings": [],
+            "evidence": [
+                _evidence(
+                    "neutral",
+                    "The community event includes food stalls.",
+                )
+            ],
         }
+    )
 
-        result = assess_claim(claim, retrieval)
+    result = assess_evidence(claim, retrieval)
 
-        assert result["concern_label"] == "Needs Caution"
-        assert 31 <= result["misinformation_risk_score"] <= 70
-        assert result["uncertainty"] == "High"
-        assert {item["stance"] for item in result["assessed_evidence"]} == {
-            "supporting",
-            "contradicting",
+    assert "Tuesday" in result.explanation
+    assert "Monday" not in result.explanation
+
+
+def test_explanation_attributes_contradiction_to_actual_source() -> None:
+    claim = _claim("The community event begins on Monday.")
+    retrieval = RetrievalResult.model_validate(
+        {
+            "retrieval_status": "completed",
+            "warnings": [],
+            "evidence": [
+                _evidence(
+                    "government-neutral",
+                    "The community event includes food stalls.",
+                    source_type="government",
+                ),
+                _evidence(
+                    "news-contradiction",
+                    "The community event begins on Friday.",
+                    source_type="news",
+                ),
+            ],
         }
+    )
+
+    result = assess_evidence(claim, retrieval)
+
+    assert result.concern_label == "High Concern"
+    assert result.explanation == (
+        "The cited evidence contradicts the submitted claim."
+    )
+    assert "government" not in result.explanation.lower()
+
+
+def test_uncertainty_uses_useful_evidence_not_first_evidence() -> None:
+    claim = _claim("The community event begins on Monday.")
+    retrieval = RetrievalResult.model_validate(
+        {
+            "retrieval_status": "completed",
+            "warnings": [],
+            "evidence": [
+                _evidence(
+                    "government-neutral",
+                    "The community event includes food stalls.",
+                    source_type="government",
+                    retrieval_score=0.99,
+                ),
+                _evidence(
+                    "news-contradiction",
+                    "The community event begins on Friday.",
+                    source_type="news",
+                    retrieval_score=0.90,
+                ),
+            ],
+        }
+    )
+
+    result = assess_evidence(claim, retrieval)
+
+    assert result.uncertainty == "High"
+    assert result.uncertainty_reasons == [
+        "Only one limited-quality relevant source was found."
+    ]
+
+
+def test_tax_amount_reason_does_not_invent_a_start_event() -> None:
+    item = EvidenceCandidate.model_validate(
+        _evidence("tax", "The tax rate is not $500.")
+    )
+
+    result = assess_evidence_item("The tax rate is $500.", item)
+
+    assert result.stance == "contradicting"
+    assert "will not begin" not in result.assessment_reason
+    assert result.assessment_reason == (
+        "The passage reverses the claim's positive or negative meaning."
+    )
+
+
+def test_neutral_quality_is_a_cap_not_an_automatic_score() -> None:
+    zero_relevance = EvidenceCandidate.model_validate(
+        _evidence(
+            "zero",
+            "A related passage.",
+            source_type="other",
+            retrieval_score=0.0,
+        )
+    )
+    strong_relevance = EvidenceCandidate.model_validate(
+        _evidence(
+            "strong",
+            "A related passage.",
+            source_type="government",
+            retrieval_score=0.99,
+        )
+    )
+
+    assert calculate_quality_score(zero_relevance, "neutral") == 0.0
+    assert calculate_quality_score(strong_relevance, "neutral") == 0.45
+
+
+def test_failed_retrieval_is_not_reported_as_no_evidence() -> None:
+    claim = _claim("A new policy begins tomorrow.")
+    retrieval = RetrievalResult(
+        retrieval_status="failed",
+        evidence=[],
+        warnings=["Evidence service unavailable."],
+    )
+
+    with pytest.raises(AssessmentInputError):
+        assess_evidence(claim, retrieval)

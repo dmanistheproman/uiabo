@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from app.pipeline.evidence_assessment.service import assess_evidence
 from app.pipeline.input_preparation.service import prepare_text
 from app.pipeline.orchestration.repository import InMemoryResultRepository
 from app.pipeline.orchestration.service import PipelineOrchestrator
@@ -79,6 +80,25 @@ def test_complete_pipeline_assembles_and_saves_result() -> None:
     assert result.misinformation_risk_score == 82
     assert result.evidence[0].stance == "contradicting"
     assert result.evidence[0].quality_score == 0.9
+    assert repository.results[result.result_id] == result
+
+
+def test_real_evidence_assessment_integrates_with_orchestrator() -> None:
+    """Poon's typed component can replace Donovan's assessment fixture."""
+    repository = InMemoryResultRepository()
+    pipeline = _orchestrator(
+        repository=repository,
+        assess_evidence=assess_evidence,
+    )
+
+    result = pipeline.analyze(
+        "A new $500 community tax starts next week."
+    )
+
+    assert result.concern_label == "High Concern"
+    assert result.misinformation_risk_score == 82
+    assert result.evidence[0].stance == "contradicting"
+    assert result.evidence[0].quality_score == 0.90
     assert repository.results[result.result_id] == result
 
 
