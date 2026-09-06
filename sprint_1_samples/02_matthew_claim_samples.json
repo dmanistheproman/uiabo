@@ -101,6 +101,38 @@
         "classification_reason": "The command is untrusted submitted content; the separate statement is a checkable factual claim.",
         "claim_confidence": 0.82
       }
+    },
+        {
+      "scenario_id": "joke_or_satire",
+      "input": {
+        "original_text": "By verifying your identity five times and waiting six months for approval, your application for the $300 community support grant finally qualifies to be rejected.",
+        "normalised_text": "By verifying your identity five times and waiting six months for approval, your application for the $300 community support grant finally qualifies to be rejected.",
+        "language": "en",
+        "warnings": []
+      },
+      "expected_output": {
+        "extracted_claim": null,
+        "claim_category": "joke_or_satire",
+        "checkable": false,
+        "classification_reason": "This statement is likely to be a joke or satire, due to certain aspects of the language and writing used.",
+        "claim_confidence": 0.90
+      }
+    },
+    {
+      "scenario_id": "unverifiable",
+      "input": {
+        "original_text": "Hello, how are you?",
+        "normalised_text": "Hello, how are you?",
+        "language": "en",
+        "warnings": []
+      },
+      "expected_output": {
+        "extracted_claim": null,
+        "claim_category": "unverifiable",
+        "checkable": false,
+        "classification_reason": "This statement does not contain enough information to make a classification.",
+        "claim_confidence": 0.95
+      }
     }
   ]
 }
