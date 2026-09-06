@@ -48,3 +48,5 @@ typing_extensions==4.16.0
 urllib3==2.7.0
 uvicorn==0.52.1
 lingua-language-detector==2.2.0
+python-dotenv==1.2.3
+ollama
