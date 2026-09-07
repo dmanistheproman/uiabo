@@ -31,7 +31,7 @@ def _utc_now() -> datetime:
 
 
 def _new_free_allowance(uid: str, now: datetime) -> dict[str, Any]:
-    period_start = now.astimezone(timezone.utc).replace(
+    period_start = now.astimezone(timezone(timedelta(hours=8))).replace(
         hour=0,
         minute=0,
         second=0,
@@ -55,7 +55,12 @@ def _new_free_allowance(uid: str, now: datetime) -> dict[str, Any]:
 def _profile_view(
     profile_data: dict[str, Any],
     allowance_data: dict[str, Any] | None,
+    now: datetime | None = None,
 ) -> UserProfile:
+    role = profile_data.get("role")
+    if (now is not None and role in {"free", "premium"}
+            and (allowance_data is None or allowance_data["reset_at"] <= now or allowance_data.get("tier") != role)):
+        allowance_data = (_new_premium_allowance if role == "premium" else _new_free_allowance)(profile_data["uid"], now)
     allowance = None
     if allowance_data is not None:
         allowance = UsageAllowance.model_validate(allowance_data)
@@ -65,6 +70,15 @@ def _profile_view(
             "allowance": allowance,
         }
     )
+
+
+def _new_premium_allowance(uid: str, now: datetime) -> dict[str, Any]:
+    """Calendar-month allowance for a server-granted premium role."""
+    start = now.astimezone(timezone(timedelta(hours=8))).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end = (start.replace(year=start.year + 1, month=1) if start.month == 12 else start.replace(month=start.month + 1))
+    return {"user_id": uid, "tier": "premium", "period_type": "monthly",
+        "period_start": start, "period_end": end, "submission_limit": 60,
+        "successful_submissions": 0, "remaining_submissions": 60, "reset_at": end, "updated_at": now}
 
 
 def _updated_profile_data(
@@ -134,7 +148,7 @@ class FirestoreAccountRepository:
         allowance_data = (
             allowance_snapshot.to_dict() if allowance_snapshot.exists else None
         )
-        return _profile_view(profile_snapshot.to_dict(), allowance_data)
+        return _profile_view(profile_snapshot.to_dict(), allowance_data, self._clock())
 
     def ensure_free_profile(
         self,
@@ -166,7 +180,7 @@ class FirestoreAccountRepository:
         if not allowance_snapshot.exists and allowance is not None:
             batch.set(allowance_reference, allowance)
         batch.commit()
-        return _profile_view(profile_data, allowance)
+        return _profile_view(profile_data, allowance, now)
 
 
 class InMemoryAccountRepository:
@@ -185,7 +199,7 @@ class InMemoryAccountRepository:
         profile = self.profiles.get(uid)
         if profile is None:
             return None
-        return _profile_view(profile, self.allowances.get(uid))
+        return _profile_view(profile, self.allowances.get(uid), self._clock())
 
     def ensure_free_profile(
         self,
@@ -202,7 +216,7 @@ class InMemoryAccountRepository:
         self.profiles[user.uid] = profile
         if user.uid not in self.allowances and profile["role"] == "free":
             self.allowances[user.uid] = _new_free_allowance(user.uid, now)
-        return _profile_view(profile, self.allowances.get(user.uid))
+        return _profile_view(profile, self.allowances.get(user.uid), now)
 
 
 @lru_cache

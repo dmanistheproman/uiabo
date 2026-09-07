@@ -1,0 +1,45 @@
+{
+  "scope": "FastAPI TestClient with live Ollama, real input preparation and default pipeline wiring; in-memory storage substitutes for Firestore. Retrieval remains unavailable.",
+  "cases": [
+    {
+      "scenario": "opinion",
+      "status_code": 200,
+      "response": {
+        "result_id": "afa4e9d7-a8f3-456f-ad9e-28eb74ffdcc8",
+        "processing_status": "completed",
+        "original_text": "Chicken rice is the best food in Singapore.",
+        "extracted_claim": null,
+        "claim_category": "opinion",
+        "checkable": false,
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No objectively checkable factual claim was found."
+        ],
+        "explanation": "This statement was classified as opinion, so it cannot be assessed as a factual misinformation claim.",
+        "recommended_action": "Treat this as non-factual content rather than a verified fact.",
+        "evidence": [],
+        "warnings": [],
+        "pipeline_version": "sprint-1-v1",
+        "created_at": "2026-09-06T10:13:33.261340Z"
+      },
+      "duration_seconds": 3.76
+    },
+    {
+      "scenario": "factual",
+      "status_code": 503,
+      "response": {
+        "detail": {
+          "error_code": "EVIDENCE_RETRIEVAL_NOT_READY",
+          "message": "Evidence retrieval has not been integrated yet.",
+          "stage": "evidence_retrieval",
+          "retryable": false
+        }
+      },
+      "duration_seconds": 3.09
+    }
+  ],
+  "saved_completed": 1,
+  "saved_failed": 1
+}

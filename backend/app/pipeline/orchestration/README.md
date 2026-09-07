@@ -23,6 +23,13 @@ __init__.py      # Makes the main classes easy to import
 
 Shared models and controlled errors are in `../shared/`.
 
+Authenticated app requests use `with_repository()` to isolate intermediate output
+in memory. `app/analyses/store.py` then saves the final result with its Firebase
+owner and updates the allowance in one Firestore transaction. Retries with the
+same idempotency key return the saved result without another charge. The standalone
+repository remains available for pipeline evaluation; its legacy records without
+an owner are not exposed in app history.
+
 ## How teammates connect their work
 
 Each component can use any internal implementation, but its public function must follow these inputs and outputs:
@@ -47,4 +54,4 @@ In `dependencies.py`, import each completed function and replace the matching `_
 - A technical retrieval failure returns a controlled API error. It is not reported as missing evidence.
 - Invalid component output returns a contract error and is never shown as a normal assessment.
 
-The final integration cannot return a real assessment until Matthew, Chu, and Poon's functions are implemented and connected.
+All four text stages are connected. Evidence retrieval uses Google Fact Check and Tavily. Search failures without usable evidence return `RETRIEVAL_UNAVAILABLE`; partial failures with evidence retain warnings. Claim-provider failures stop earlier with a controlled claim-analysis error rather than a completed `Not Enough Information` result. Stance/scoring remains Poon's lexical prototype and needs broader accuracy evaluation.

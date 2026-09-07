@@ -12,10 +12,14 @@ This folder contains the first working Android app slice. It uses Expo and React
 - View and change the user's name
 - Sign out with confirmation
 - Display the free daily allowance returned by FastAPI
-- Show image and audio features as locked premium features
+- TDM home grid: text, webpage link, image + caption, OCR, image context and AI image; no audio
+- Free/premium allowance display, with upcoming image tools clearly marked
+- Submit English text to the live pipeline, display progress/errors, and show cited results
+- View and reopen the signed-in user's saved results from Firestore
+- Share a result through the Android share sheet and open its source links
 - Send a fresh Firebase ID token with every backend account request
 
-The text checker and result history cards are placeholders. They are clearly marked **Coming next** and are not connected yet.
+Text checking and result history are connected. Webpage analysis and image features remain explicitly unavailable in this prototype; the webpage tab offers a way to check copied text. Premium accounts have 60 checks per calendar month. Image eligibility does not mean those pipelines are implemented.
 
 ## One-time Firebase setup
 
@@ -49,7 +53,7 @@ Do not expose this development server directly to the internet.
 ```powershell
 cd C:\Dev\uiabo\mobile
 npm install
-npx expo start
+npx.cmd expo start --lan
 ```
 
 Scan the QR code using Expo Go on Android, or press `a` to open an Android emulator. Restart Expo after changing `.env`.
@@ -64,17 +68,36 @@ Scan the QR code using Expo Go on Android, or press `a` to open an Android emula
 6. In Firestore, confirm that documents with the same Firebase UID appear in `users` and `usage_allowances`.
 7. Open the verification email and follow its link.
 8. Return to the app and select **I have verified my email**.
-9. Confirm that the home screen shows the user's name, free plan, and one remaining text check.
-10. Open **Profile**, change the name, save it, and verify the `users` Firestore document changed.
-11. Sign out and sign in again.
-12. Use **Forgot password?** to test the reset-email flow.
+9. Confirm that the home screen shows the user's name, plan and server-provided allowance. Free users receive one completed check per day; premium users receive 60 per calendar month. Both reset at midnight Singapore time.
+10. Open **Check text**, enter a short English claim, and submit. Verify progress, a result with uncertainty and citations, and a reduced allowance.
+11. Open **Results**, refresh and reopen the saved result. Verify that an interrupted request can be recovered without charging twice when the same request key is retried.
+12. Verify the Firestore `analysis_results` document contains the authenticated `user_id`, `input_type`, evidence snapshot and timestamps. Failed checks should leave the allowance unchanged.
+13. Open **Profile**, change the name, save it, and verify the `users` Firestore document changed.
+14. Sign out and sign in again.
+15. Use **Forgot password?** to test the reset-email flow.
 
 ## Main files
 
-- `App.js` decides whether to show setup, authentication, verification, home, or profile.
+- `App.js` handles authentication and Home, Results, Help and Profile navigation, including the text and result screens.
 - `src/config/firebase.js` initializes Firebase Auth and persists the login session through React Native AsyncStorage.
 - `src/auth/AuthContext.js` contains registration, login, verification, reset, profile, and logout actions.
-- `src/services/api.js` attaches a fresh Firebase bearer token to FastAPI requests.
+- `src/services/api.js` attaches a fresh Firebase bearer token to FastAPI requests. Text submissions also carry an idempotency key and a 180-second client timeout.
 - `src/screens/` contains the user-facing screens.
 - `src/components/` contains reusable large, accessible buttons and screen layout.
 - `.env.example` lists the local configuration values required to run the app.
+
+## Local Android development
+
+On this Windows machine, `npx.cmd` avoids PowerShell script execution-policy issues.
+If Expo's localhost mode binds only to IPv6 and the emulator cannot download the
+bundle, start Metro with `--lan` and open `exp://10.0.2.2:8081` in Expo Go. The backend
+address remains `http://10.0.2.2:8000`. No provider API keys belong in this app.
+
+The backend reads the project-root `.env`, including the service-account path.
+Text checks and result routes require verified Firebase tokens and active accounts;
+the client cannot choose the result owner, role or allowance. Shared results contain
+an explanation and citation URLs, not a publicly accessible Firestore record.
+
+The September 7 integration report and emulator captures are in
+`../evaluation/reports/app-integration/`. Source interpretation remains a prototype:
+review citations before treating any concern label as reliable.

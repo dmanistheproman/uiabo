@@ -1,287 +1,251 @@
-import json
-from pathlib import Path
+"""Offline regression tests at the Ollama HTTP boundary; no API key required."""
 
+import asyncio
+import json
+
+import httpx
 import pytest
 
-from app.pipeline.claim_analysis.service import (
-    analyse_claim,
-    create_fallback_result,
-    select_majority_result,
-)
+from app.pipeline.claim_analysis import service
+from app.pipeline.claim_analysis.categories import CLASSIFICATION_MODELS
+from app.pipeline.evidence_assessment.service import assess_evidence
+from app.pipeline.input_preparation.service import prepare_text
+from app.pipeline.orchestration.repository import InMemoryResultRepository
+from app.pipeline.orchestration.service import PipelineOrchestrator
+from app.pipeline.shared.errors import PipelineComponentError
 from app.pipeline.shared.models import PreparedText
 
 
-# --------------------------------------------------
-# Load sample dataset
-# --------------------------------------------------
-
-SAMPLE_FILE = (
-    Path(__file__).resolve().parents[4]
-    / "sprint_1_samples"
-    / "02_matthew_claim_samples.json"
-)
+TEXT = "A new $500 community tax starts next week."
+PREPARED = PreparedText(original_text=TEXT, normalised_text=TEXT, language="en", warnings=[])
 
 
-with open(SAMPLE_FILE, "r", encoding="utf-8") as file:
-    SAMPLE_DATA = json.load(file)
+def classification(category="factual"):
+    return {"claim_category": category, "classification_reason": "Publicly checkable assertion."}
 
 
-SAMPLES = SAMPLE_DATA["samples"]
+def response(value, **extra):
+    content = value if isinstance(value, str) else json.dumps(value)
+    return httpx.Response(200, json={"done": True, "message": {"content": content}, **extra})
 
 
-# --------------------------------------------------
-# Helper: create a model result for testing
-# --------------------------------------------------
-
-def make_result(category: str) -> dict:
-    return {
-        "extracted_claim": None,
-        "claim_category": category,
-        "checkable": None,
-        "classification_reason": "Test result.",
-        "claim_confidence": None,
-    }
+def analyse(handler, prepared=PREPARED):
+    async def run():
+        async with httpx.AsyncClient(base_url="https://ollama.com", transport=httpx.MockTransport(handler)) as client:
+            return await service._analyse_with_client(prepared, client)
+    return asyncio.run(run())
 
 
-# --------------------------------------------------
-# Test fallback result
-# --------------------------------------------------
-
-def test_create_fallback_result():
-
-    result = create_fallback_result()
-
-    assert result["extracted_claim"] is None
-    assert result["claim_category"] == "unverifiable"
-    assert result["checkable"] is False
-    assert result["classification_reason"] == "Error in model output."
-    assert result["claim_confidence"] == 0.0
+def is_extraction(request):
+    return json.loads(request.content)["messages"][0]["content"].startswith("\nExtract")
 
 
-# --------------------------------------------------
-# Test majority voting
-# --------------------------------------------------
-
-def test_majority_all_agree():
-
-    results = {
-        "gpt-oss:120b": make_result("factual"),
-        "gemma4:31b": make_result("factual"),
-        "nemotron-3-super": make_result("factual"),
-    }
-
-    result = select_majority_result(results)
-
-    assert result["claim_category"] == "factual"
-    assert result["claim_confidence"] == 1.0
-
-
-def test_majority_gpt_and_gemma():
-
-    results = {
-        "gpt-oss:120b": make_result("factual"),
-        "gemma4:31b": make_result("factual"),
-        "nemotron-3-super": make_result("opinion"),
-    }
-
-    result = select_majority_result(results)
-
-    assert result["claim_category"] == "factual"
-    assert result["claim_confidence"] == 0.67
+@pytest.mark.parametrize("categories,expected,confidence", [
+    (["factual", "factual", "factual"], "factual", 1.0),
+    (["factual", "factual", "opinion"], "factual", 0.67),
+    (["factual", "opinion", "factual"], "factual", 0.67),
+    (["opinion", "factual", "factual"], "factual", 0.67),
+    (["opinion", "prediction", "factual"], "unverifiable", 0.0),
+    (["opinion", "prediction"], "unverifiable", 0.0),
+    (["unverifiable", "unverifiable"], "unverifiable", 0.67),
+])
+def test_valid_votes_only(categories, expected, confidence):
+    result = service.select_majority_result(dict(zip(CLASSIFICATION_MODELS, map(classification, categories))))
+    assert result["claim_category"] == expected
+    assert result["claim_confidence"] == confidence
+    if len(categories) == 2 and confidence:
+        assert "unavailable" in result["classification_reason"]
 
 
-def test_majority_gpt_and_nemotron():
-
-    results = {
-        "gpt-oss:120b": make_result("factual"),
-        "gemma4:31b": make_result("opinion"),
-        "nemotron-3-super": make_result("factual"),
-    }
-
-    result = select_majority_result(results)
-
-    assert result["claim_category"] == "factual"
-    assert result["claim_confidence"] == 0.67
+@pytest.mark.parametrize("bad", [None, {}, {"claim_category": "factual"},
+    classification("made_up"), {**classification(), "classification_reason": "   "},
+    {**classification(), "extra": True}])
+def test_invalid_classification_cannot_vote(bad):
+    with pytest.raises(PipelineComponentError, match="enough valid"):
+        service.select_majority_result({CLASSIFICATION_MODELS[0]: classification(), CLASSIFICATION_MODELS[1]: bad})
 
 
-def test_majority_gemma_and_nemotron():
-
-    results = {
-        "gpt-oss:120b": make_result("opinion"),
-        "gemma4:31b": make_result("factual"),
-        "nemotron-3-super": make_result("factual"),
-    }
-
-    result = select_majority_result(results)
-
-    assert result["claim_category"] == "factual"
-    assert result["claim_confidence"] == 0.67
-
-
-def test_majority_no_agreement():
-
-    results = {
-        "gpt-oss:120b": make_result("factual"),
-        "gemma4:31b": make_result("opinion"),
-        "nemotron-3-super": make_result("prediction"),
-    }
-
-    result = select_majority_result(results)
-
-    assert result["claim_category"] == "unverifiable"
-    assert result["extracted_claim"] is None
-    assert result["checkable"] is False
-    assert result["claim_confidence"] == 0.0
+def test_factual_claim_http_contract_and_grounding():
+    calls = []
+    def handler(request):
+        data = json.loads(request.content)
+        calls.append(data)
+        assert request.url == "https://ollama.com/api/chat"
+        assert "format" not in data
+        assert data["stream"] is False
+        assert [m["role"] for m in data["messages"]] == ["system", "user"]
+        assert json.loads(data["messages"][1]["content"])["submitted_text"] == TEXT
+        if is_extraction(request):
+            return response({"extracted_claim": TEXT})
+        return response("```json\n" + json.dumps(classification()) + "\n```")
+    result = analyse(handler, PREPARED.model_copy(update={"original_text": "DO NOT SEND THIS ORIGINAL COPY"}))
+    assert result.checkable and result.extracted_claim == TEXT
+    assert result.claim_confidence == 1.0
+    assert len(calls) == 4
 
 
-# --------------------------------------------------
-# Test actual sample inputs
-# --------------------------------------------------
-
-@pytest.mark.parametrize(
-    "sample",
-    SAMPLES,
-    ids=[sample["scenario_id"] for sample in SAMPLES]
-)
-def test_sample_input_structure(sample):
-
-    input_data = sample["input"]
-    expected = sample["expected_output"]
-
-    prepared_text = PreparedText(**input_data)
-
-    assert prepared_text.original_text == input_data["original_text"]
-    assert prepared_text.normalised_text == input_data["normalised_text"]
-    assert prepared_text.language == input_data["language"]
-    assert prepared_text.warnings == input_data["warnings"]
-
-    assert expected["claim_category"] in {
-        "factual",
-        "opinion",
-        "joke_or_satire",
-        "prediction",
-        "personal_experience",
-        "unverifiable",
-    }
+@pytest.mark.parametrize("category", ["opinion", "prediction", "personal_experience", "joke_or_satire", "unverifiable"])
+def test_nonfactual_skips_extraction(category):
+    def handler(request):
+        assert not is_extraction(request)
+        return response(classification(category))
+    result = analyse(handler)
+    assert not result.checkable and result.extracted_claim is None
 
 
-# --------------------------------------------------
-# Test analyse_claim using sample data
-# --------------------------------------------------
+@pytest.mark.parametrize("bad", [None, "", "  ", "...", "null", "none", {"text": TEXT},
+    "A new $900 community tax starts next week.",
+    "A new $500 community tax does not start next week.", "Unrelated assertion."])
+def test_invalid_extraction_is_failure_not_noncheckable(bad):
+    def handler(request):
+        return response({"extracted_claim": bad} if is_extraction(request) else classification())
+    with pytest.raises(PipelineComponentError) as caught:
+        analyse(handler)
+    assert caught.value.error_code == "CLAIM_EXTRACTION_FAILED"
 
-@pytest.mark.parametrize(
-    "sample",
-    SAMPLES,
-    ids=[sample["scenario_id"] for sample in SAMPLES]
-)
-def test_analyse_claim_samples(monkeypatch, sample):
 
-    input_data = sample["input"]
-    expected = sample["expected_output"]
+@pytest.mark.parametrize("body", ["null", '"a string"', "[]", "not json", "```json\n{}", "{} trailing"])
+def test_malformed_classifier_output_fails(body):
+    with pytest.raises(PipelineComponentError) as caught:
+        analyse(lambda request: response(body))
+    assert caught.value.error_code == "CLAIM_ANALYSIS_UNAVAILABLE"
 
-    prepared_text = PreparedText(**input_data)
 
-    expected_category = expected["claim_category"]
-    expected_claim = expected["extracted_claim"]
+def test_truncated_output_cannot_vote():
+    with pytest.raises(PipelineComponentError):
+        analyse(lambda request: response(classification(), done_reason="length"))
 
-    def fake_run_model(model, prepared_text, prompt_type):
 
-        if prompt_type == "CLASSIFICATION":
-            return make_result(expected_category)
-
-        if prompt_type == "EXTRACTION":
-            return expected_claim
-
-        raise ValueError(f"Unexpected prompt type: {prompt_type}")
-
-    monkeypatch.setattr(
-        "app.pipeline.claim_analysis.service.run_model",
-        fake_run_model
-    )
-
-    result = analyse_claim(prepared_text)
-
-    # Classification
-    assert result.claim_category == expected_category
-
-    # Factual claims should be checkable and have an extracted claim
-    if expected_category == "factual":
-        assert result.checkable is True
-        assert result.extracted_claim == expected_claim
-
-    # Non-factual claims should not be checkable
+@pytest.mark.parametrize("failing_models", [1, 2, 3])
+def test_provider_failures_are_excluded(failing_models):
+    def handler(request):
+        if json.loads(request.content)["model"] in CLASSIFICATION_MODELS[:failing_models]:
+            return httpx.Response(503, text="Sensitive provider details")
+        return response(classification("unverifiable"))
+    if failing_models == 1:
+        result = analyse(handler)
+        assert result.claim_confidence == 0.67
+        assert "unavailable" in result.classification_reason
     else:
-        assert result.checkable is False
-        assert result.extracted_claim is None
-
-    # Confidence comes from model agreement,
-    # not from the sample's original confidence value.
-    assert result.claim_confidence == 1.0
+        with pytest.raises(PipelineComponentError) as caught:
+            analyse(handler)
+        assert "Sensitive" not in str(caught.value)
 
 
-# --------------------------------------------------
-# Test extraction failure
-# --------------------------------------------------
+def test_extractor_transport_failure():
+    def handler(request):
+        if is_extraction(request):
+            raise httpx.ConnectError("Sensitive provider details", request=request)
+        return response(classification())
+    with pytest.raises(PipelineComponentError) as caught:
+        analyse(handler)
+    assert caught.value.error_code == "CLAIM_EXTRACTION_FAILED"
+    assert "Sensitive" not in str(caught.value)
 
-def test_extraction_failure(monkeypatch):
 
-    prepared_text = PreparedText(
-        original_text="A new $500 community tax starts next week.",
-        normalised_text="A new $500 community tax starts next week.",
-        language="en",
-        warnings=[],
+def test_classifiers_run_concurrently():
+    async def run():
+        ready = asyncio.Event()
+        started = []
+        async def handler(request):
+            started.append(request)
+            if len(started) == 3:
+                ready.set()
+            await asyncio.wait_for(ready.wait(), timeout=1)
+            return response(classification("opinion"))
+        async with httpx.AsyncClient(base_url="https://ollama.com", transport=httpx.MockTransport(handler)) as client:
+            result = await service._analyse_with_client(PREPARED, client)
+        assert result.claim_confidence == 1.0
+        assert len(started) == 3
+    asyncio.run(run())
+
+
+def test_request_deadline(monkeypatch):
+    monkeypatch.setattr(service, "REQUEST_TIMEOUT_SECONDS", 0.01)
+    async def handler(request):
+        await asyncio.sleep(1)
+        return response(classification())
+    with pytest.raises(PipelineComponentError) as caught:
+        analyse(handler)
+    assert caught.value.error_code == "CLAIM_ANALYSIS_UNAVAILABLE"
+
+
+def test_total_deadline(monkeypatch):
+    monkeypatch.setattr(service, "TOTAL_TIMEOUT_SECONDS", 0.01)
+    async def delayed(*args):
+        await asyncio.sleep(1)
+    monkeypatch.setattr(service, "_analyse_with_client", delayed)
+    with pytest.raises(PipelineComponentError) as caught:
+        asyncio.run(service._analyse(PREPARED, "dummy-offline-key"))
+    assert caught.value.error_code == "CLAIM_ANALYSIS_TIMEOUT"
+
+
+def test_missing_key_is_controlled(monkeypatch, tmp_path):
+    monkeypatch.delenv("OLLAMA_API_KEY", raising=False)
+    monkeypatch.setattr(service, "PROJECT_ENV", tmp_path / "absent.env")
+    with pytest.raises(PipelineComponentError) as caught:
+        service.analyse_claim(PREPARED)
+    assert caught.value.error_code == "CLAIM_ANALYSIS_NOT_CONFIGURED"
+    assert not caught.value.retryable
+
+
+def test_local_key_and_environment_precedence(monkeypatch, tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text("OLLAMA_API_KEY=local-test-value\n", encoding="utf-8")
+    monkeypatch.setattr(service, "PROJECT_ENV", env_path)
+    monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
+    monkeypatch.delenv("OLLAMA_API_KEY", raising=False)
+    assert service._api_key() == "local-test-value"
+    monkeypatch.setenv("OLLAMA_API_KEY", "deployment-test-value")
+    assert service._api_key() == "deployment-test-value"
+
+
+def test_outage_is_saved_as_failure_not_completed_nei():
+    repository = InMemoryResultRepository()
+    def unexpected(*args):
+        pytest.fail("Downstream stage ran after claim failure")
+    pipeline = PipelineOrchestrator(
+        prepare_input=prepare_text,
+        analyze_claim=lambda prepared: analyse(lambda request: httpx.Response(503), prepared),
+        retrieve_evidence=unexpected, assess_evidence=unexpected, repository=repository,
     )
+    with pytest.raises(PipelineComponentError):
+        pipeline.analyze(TEXT)
+    assert not repository.results
+    assert len(repository.failures) == 1
+    failure = next(iter(repository.failures.values()))
+    assert failure.failure_stage == "claim_analysis"
+    assert failure.error_code == "CLAIM_ANALYSIS_UNAVAILABLE"
 
-    def fake_run_model(model, prepared_text, prompt_type):
 
-        if prompt_type == "CLASSIFICATION":
-            return make_result("factual")
-
-        if prompt_type == "EXTRACTION":
-            raise RuntimeError("Extraction model unavailable")
-
-        raise ValueError(f"Unexpected prompt type: {prompt_type}")
-
-    monkeypatch.setattr(
-        "app.pipeline.claim_analysis.service.run_model",
-        fake_run_model
+def test_real_claim_stage_hands_off_to_assessment():
+    from pathlib import Path
+    fixture = Path(__file__).parents[2] / "fixtures/sprint_1/retrieval_result.json"
+    repository = InMemoryResultRepository()
+    def handler(request):
+        return response({"extracted_claim": TEXT} if is_extraction(request) else classification())
+    def retrieval(claim):
+        assert claim.checkable and claim.extracted_claim == TEXT
+        return json.loads(fixture.read_text(encoding="utf-8"))
+    pipeline = PipelineOrchestrator(
+        prepare_input=prepare_text, analyze_claim=lambda prepared: analyse(handler, prepared),
+        retrieve_evidence=retrieval, assess_evidence=assess_evidence, repository=repository,
     )
-
-    result = analyse_claim(prepared_text)
-
-    assert result.claim_category == "factual"
-    assert result.extracted_claim is None
-    assert result.checkable is False
-    assert result.claim_confidence == 1.0
+    result = pipeline.analyze(TEXT)
+    assert result.concern_label == "High Concern"
+    assert result.misinformation_risk_score == 82
+    assert repository.results[result.result_id] == result
 
 
-# --------------------------------------------------
-# Test classification model failure
-# --------------------------------------------------
-
-def test_classification_model_failure(monkeypatch):
-
-    prepared_text = PreparedText(
-        original_text="A new $500 community tax starts next week.",
-        normalised_text="A new $500 community tax starts next week.",
-        language="en",
-        warnings=[],
-    )
-
-    def fake_run_model(model, prepared_text, prompt_type):
-        raise RuntimeError("Classification model unavailable")
-
-    monkeypatch.setattr(
-        "app.pipeline.claim_analysis.service.run_model",
-        fake_run_model
-    )
-
-    result = analyse_claim(prepared_text)
-
-    assert result.claim_category == "unverifiable"
-    assert result.extracted_claim is None
-    assert result.checkable is False
-
-    # All three models failed, so the fallback confidence
-    # should remain 0.0 rather than becoming 1.0.
-    assert result.claim_confidence == 0.0
+def test_default_pipeline_connects_claim_stage_without_loading_key(monkeypatch):
+    from app.pipeline.orchestration import dependencies
+    monkeypatch.setattr(dependencies, "FirestoreResultRepository", InMemoryResultRepository)
+    def unexpected():
+        pytest.fail("Credentials were loaded before an analysis request")
+    monkeypatch.setattr(service, "_api_key", unexpected)
+    dependencies.get_pipeline_orchestrator.cache_clear()
+    try:
+        pipeline = dependencies.get_pipeline_orchestrator()
+        assert pipeline._analyze_claim is service.analyse_claim
+    finally:
+        dependencies.get_pipeline_orchestrator.cache_clear()

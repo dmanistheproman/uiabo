@@ -11,6 +11,15 @@ __pycache__/
 .env
 .env.*
 !mobile/.env.example
+firebase-secrets/
+*service-account*.json
+*.pem
+*.key
+
+# Local document working files and archived comparison samples
+~$*
+submission/**/backups/
+submission/**/FYP-26-S2-XX*
 
 # VS Code
 .vscode/

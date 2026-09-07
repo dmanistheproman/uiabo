@@ -4,7 +4,7 @@ uiabo is a Final Year Project that aims to help users assess text and online con
 
 ## Current status
 
-The FastAPI backend and Sprint 1 pipeline structure are working. Input preparation, evidence assessment, shared interfaces, pipeline control flow, safe stopping rules, Firestore result storage, and API error handling are implemented. The other two team components still need to be connected before the endpoint can produce a real misinformation assessment.
+The FastAPI backend now connects all four Sprint 1 text stages: input preparation, Matthew's Ollama Cloud claim analysis, Google Fact Check/Tavily evidence retrieval, and Poon's baseline evidence assessment. It can return results with real source citations. Live testing confirms the flow works, but also exposes limitations in the lexical stance/scoring baseline; these results are not a validated accuracy claim.
 
 Completed so far:
 
@@ -20,6 +20,8 @@ Completed so far:
 - Pipeline orchestration and final result assembly
 - Safe `Not Enough Information` results for non-checkable claims and missing evidence
 - Controlled failures that never return a made-up score
+- Live claim extraction and classification with validated model responses and timeouts
+- Google Fact Check discovery, Tavily source extraction and scoped evidence search
 - Saving completed and failed pipeline runs to Firestore
 - Unit, API, contract, orchestration, and repository tests
 - Service-account credentials kept outside the repository
@@ -29,16 +31,15 @@ Completed so far:
 - Expo/React Native Android app foundation
 - Email/password registration, verification, login, password reset, profile, and logout flows
 - Accessible free-user home screen with premium features visibly locked
+- TDM-style mobile text checks, result details, citations and authenticated result history
+- Atomic Firestore result saving and allowance charging, with idempotent request retries
 
 Not yet implemented:
 
-- Real claim extraction and classification
-- Fact-check and evidence retrieval
 - Further evidence-assessment tuning and integration validation
-- Source credibility checks
-- Risk and uncertainty calculations
-- Evidence-based explanations and citations
-- Text-check and result-history mobile screens
+- Broader source-catalogue review and coverage evaluation
+- Calibrated risk/uncertainty scores and semantic evidence assessment
+- Evaluation of explanation and citation accuracy
 - Premium payments and operational dashboards
 
 ## Project structure
@@ -62,9 +63,17 @@ uiabo/
 |   `-- requirements.txt
 |-- evaluation/              # Datasets, scoring rules and reports
 |-- mobile/                  # Expo/React Native Android application
+|-- submission/              # UIABO source documents and preliminary PTD/PUM
 |-- sprint_1_samples/        # Shared JSON interfaces for each member
 `-- README.md
 ```
+
+## Submission documents
+
+The [submission folder](submission/README.md) contains the team's PRD, URS and TDM,
+plus the updated preliminary technical documentation and draft user manual.
+Each preliminary document includes editable Word sections and a list of remaining
+information or implementation work.
 
 ## Sprint 1 team samples
 
@@ -80,7 +89,9 @@ These samples allow components to be developed in parallel before the previous c
 
 ## Requirements
 
-- Python 3
+- Python 3.11 or newer
+- An Ollama Cloud API key for live claim analysis
+- Google Fact Check Tools API and Tavily keys for live evidence retrieval
 - A Firebase project and Cloud Firestore database for the Firestore smoke test
 - Node.js and Expo Go or an Android emulator for the mobile application
 
@@ -94,6 +105,8 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
+
+Copy the project-root `.env.instructions` template to `uiabo/.env` and supply `OLLAMA_API_KEY`, `GOOGLE_FACT_CHECK_API_KEY`, and `TAVILY_API_KEY`. The backend loads this file automatically; existing environment variables take precedence. Enable Fact Check Tools API in the Google key's project. Supply the Tavily key itself, rather than its MCP URL. Restart the backend after changing keys. Keep `.env` local and never put these keys in the mobile app. No local Ollama installation or model download is required.
 
 ## Run the API
 
@@ -137,20 +150,28 @@ Example request:
 
 The submitted text must contain between 1 and 5,000 characters.
 
-Until the three remaining team components are connected, valid text reaches the pipeline and returns a controlled `503` response such as:
+`POST /analysis/text` now requires a verified Firebase ID token in the Bearer
+header and an active profile. Send an `Idempotency-Key` header (up to 64 letters,
+digits or hyphens) and reuse it when recovering an interrupted request. A completed
+request is returned again without rerunning the pipeline or charging twice. Each
+new check needs a new key. Free accounts receive one completed check per day;
+server-granted Premium accounts receive 60 per calendar month. Periods reset at
+midnight Singapore time. Failed checks are saved without charging the allowance.
+
+With all provider keys and Firestore configured, text runs through the full pipeline. Non-checkable content skips retrieval. A successful search with insufficient evidence returns `Not Enough Information` and no risk score. A technical search failure with no usable evidence returns a controlled `503` response:
 
 ```json
 {
   "detail": {
-    "error_code": "CLAIM_ANALYSIS_NOT_READY",
-    "message": "Claim analysis has not been integrated yet.",
-    "stage": "claim_analysis",
-    "retryable": false
+    "error_code": "RETRIEVAL_UNAVAILABLE",
+    "message": "Analysis could not be completed because evidence search is temporarily unavailable.",
+    "stage": "evidence_retrieval",
+    "retryable": true
   }
 }
 ```
 
-This is intentional: the API no longer returns the old hard-coded score of `50`. When Matthew and Chu's components are connected, the same endpoint will use those components together with Poon's evidence assessment to return the agreed `TextAnalysisResult` shown in [`sprint_1_samples/05_donovan_integration_samples.json`](sprint_1_samples/05_donovan_integration_samples.json).
+Missing provider configuration, insufficient valid classifier responses, extraction failures, and timeouts also return controlled errors. Partial search failures can still return usable evidence with warnings. The successful response follows `TextAnalysisResult` in [`sprint_1_samples/05_donovan_integration_samples.json`](sprint_1_samples/05_donovan_integration_samples.json); those shared fixture values remain synthetic examples.
 
 ### `PUT /account/me`
 
@@ -159,6 +180,13 @@ Creates or refreshes the signed-in user's own free profile. It requires a Fireba
 ### `GET /account/me`
 
 Returns the verified user's own profile and allowance. Unverified, invalid, expired, revoked, suspended, and deactivated accounts are rejected.
+
+### `GET /analysis/results` and `GET /analysis/results/{result_id}`
+
+Return the signed-in user's saved completed and failed checks. The history endpoint
+accepts `limit` (1-50, default 20) and a `cursor` from `next_cursor`. Other users'
+records and legacy records without an owner are not exposed. Results are stored
+under `analysis_results/{result_id}` with `user_id` and `input_type`, as in the TDM.
 
 ## Run the tests
 
@@ -173,6 +201,8 @@ The current tests cover:
 - `GET /health`
 - `POST /analysis/text`
 - Input preparation and validation
+- Claim-analysis HTTP contracts, response validation, voting, failures and deadlines (mocked HTTP; no key required)
+- Retrieval provider adapters, fallback, source filtering, deduplication, failure handling and real assessment integration (mocked HTTP)
 - Every shared component interface
 - Complete orchestration with sample component outputs
 - Non-checkable claims and missing-evidence stopping rules
@@ -180,6 +210,22 @@ The current tests cover:
 - Firestore result serialization
 - Firebase authentication token handling
 - Account creation, email-verification gating, suspension, and free allowances
+
+For an opt-in live claim-analysis check (uses Ollama Cloud allowance), run from `backend`:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.claim_analysis_smoke_test --report ../evaluation/reports/claim_live_local.json
+```
+
+This sends the eight synthetic Matthew samples to the configured cloud models. It checks categories, checkability and extracted spans; it does not search evidence, establish factual truth, or write to Firestore. See [`backend/app/pipeline/claim_analysis/README.md`](backend/app/pipeline/claim_analysis/README.md) for implementation limits.
+
+To test all live text stages through FastAPI using in-memory storage:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.text_pipeline_smoke_test --report ../evaluation/reports/text_pipeline_live_local.json
+```
+
+This consumes Ollama and Tavily allowance and Google API quota. It makes no Firestore writes. See the [retrieval implementation notes](backend/app/pipeline/evidence_retrieval/README.md) and [September 7 integration report](evaluation/reports/chu_retrieval_evaluation.md).
 
 ## Mobile app
 
@@ -200,7 +246,7 @@ The smoke test writes and reads a document in the `system_tests` collection. The
 
 ## Next development priority
 
-The next milestone is to connect the two remaining teammate components to the prepared pipeline and verify the complete flow:
+The Android text-check flow and Firestore are connected. The next milestone is evaluation of real evidence and scores across the flow:
 
 1. Extract and classify a factual claim.
 2. Search existing fact checks.
@@ -211,16 +257,15 @@ The next milestone is to connect the two remaining teammate components to the pr
 7. Generate a simple explanation with citations.
 8. Evaluate the pipeline using a small test dataset.
 
-Replace the explicit `*_NOT_READY` functions in [`backend/app/pipeline/orchestration/dependencies.py`](backend/app/pipeline/orchestration/dependencies.py) with the real component functions. Each function must accept and return the shared model documented in [`backend/app/pipeline/orchestration/README.md`](backend/app/pipeline/orchestration/README.md).
+Runtime functions are connected in [`backend/app/pipeline/orchestration/dependencies.py`](backend/app/pipeline/orchestration/dependencies.py). They follow the shared models documented in [`backend/app/pipeline/orchestration/README.md`](backend/app/pipeline/orchestration/README.md).
 
 ## Planned later work
 
 - Link and webpage analysis
 - Premium subscriptions and role-management tools
-- Connect text analysis and result history to the Android application
 - Usage limits and premium features
 - Administrator and data-engineer dashboards
 - OCR and image-caption analysis
 - Security, accessibility, performance, deployment, and user testing
 
-Deepfake or AI-generated-image detection is currently considered a stretch goal until its scope is confirmed.
+Deepfake detection is required for the final submission. Audio analysis is excluded. The September 12 prototype targets basic Sprint 1 text checking in the Android app; the final submission is expected in November.

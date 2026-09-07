@@ -14,4 +14,4 @@ input_preparation
 
 Each folder has one primary owner, but all changes still require review. Components must follow the agreed JSON interfaces in `C:\Dev\UIABO_SPRINT_1_TEAM_TASKS.md`.
 
-The API now calls the Sprint 1 orchestrator. Components that have not yet been integrated return a controlled `*_NOT_READY` error; the backend no longer returns the old hard-coded risk score of 50.
+The API calls all four live text stages through the Sprint 1 orchestrator. Google Fact Check and Tavily provide retrieval; model/search failures return controlled errors. Risk scores come from Poon's lexical baseline, which still needs accuracy evaluation against real evidence.

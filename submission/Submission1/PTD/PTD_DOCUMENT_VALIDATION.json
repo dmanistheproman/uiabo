@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-07",
+  "pages": 177,
+  "blank_pages": [],
+  "combined_docx_images": 136,
+  "section_docx_count": 19,
+  "provider_secret_scan": "passed",
+  "field_and_identity_checks": "passed",
+  "basis": "Documentation validation; no new pipeline accuracy claim or full test rerun."
+}

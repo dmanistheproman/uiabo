@@ -89,3 +89,13 @@ def test_verifier_maps_firebase_outage_to_503(monkeypatch) -> None:
     assert raised.value.detail["error_code"] == (
         "AUTHENTICATION_SERVICE_UNAVAILABLE"
     )
+
+
+def test_verifier_keeps_revocation_checks_with_bounded_clock_tolerance(monkeypatch):
+    monkeypatch.setattr(dependencies, "get_firebase_app", lambda: object())
+    def verify(token, *, check_revoked, clock_skew_seconds):
+        assert check_revoked is True
+        assert clock_skew_seconds == 5
+        return {"uid": "verified-test-user"}
+    monkeypatch.setattr(dependencies.firebase_auth, "verify_id_token", verify)
+    assert dependencies.verify_firebase_id_token("test-token")["uid"] == "verified-test-user"

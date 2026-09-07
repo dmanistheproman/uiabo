@@ -38,7 +38,8 @@ def verify_firebase_id_token(token: str) -> dict[str, Any]:
     """Verify a client ID token and return its trusted Firebase claims."""
     try:
         get_firebase_app()
-        return firebase_auth.verify_id_token(token, check_revoked=True)
+        # Small clock differences can otherwise reject a freshly issued token.
+        return firebase_auth.verify_id_token(token, check_revoked=True, clock_skew_seconds=5)
     except (
         ValueError,
         firebase_auth.ExpiredIdTokenError,

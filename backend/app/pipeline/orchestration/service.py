@@ -66,6 +66,13 @@ class PipelineOrchestrator:
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._pipeline_version = pipeline_version
 
+    def with_repository(self, repository: ResultRepository) -> "PipelineOrchestrator":
+        """Give one authenticated request its own persistence boundary."""
+        return PipelineOrchestrator(
+            prepare_input=self._prepare_input, analyze_claim=self._analyze_claim,
+            retrieve_evidence=self._retrieve_evidence, assess_evidence=self._assess_evidence,
+            repository=repository, clock=self._clock, pipeline_version=self._pipeline_version)
+
     def analyze(self, text: str) -> TextAnalysisResult:
         """Run the complete text pipeline and save a completed result.
 
@@ -358,4 +365,3 @@ def _combine_evidence(
 
 def _unique(values: list[str]) -> list[str]:
     return list(dict.fromkeys(values))
-

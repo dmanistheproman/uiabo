@@ -1,0 +1,80 @@
+{
+  "scope": "Real Firebase ID tokens, live API/pipeline, real Firestore using isolated test accounts.",
+  "duration_seconds": 11.72,
+  "result": {
+    "result_id": "e1925c087b30b8a3233f2cb3a771cfa4",
+    "processing_status": "completed",
+    "original_text": "Singapore became independent on 9 August 1965.",
+    "extracted_claim": "Singapore became independent on 9 August 1965",
+    "claim_category": "factual",
+    "checkable": true,
+    "concern_label": "Low Concern",
+    "misinformation_risk_score": 25,
+    "uncertainty": "Low",
+    "uncertainty_reasons": [
+      "Multiple relevant sources provide consistent evidence."
+    ],
+    "explanation": "The cited evidence supports the submitted claim.",
+    "recommended_action": "Review the supporting cited evidence before sharing the claim.",
+    "evidence": [
+      {
+        "evidence_id": "source-5f27029b7d66697a",
+        "title": "[PDF] international law, history & policy: singapore in the early years",
+        "url": "https://cil.nus.edu.sg/wp-content/uploads/2019/09/International%20Law,%20History%20and%20Policy%20Singapore%20in%20the%20Early%20Years.pdf",
+        "publisher": "National University of Singapore",
+        "published_at": null,
+        "passage": "Under Article II of the Act, Singapore ceased to be a State in the Federation on 9 August 1965 (\u2018Singapore Day\u2019) and became \u2018an independent and sovereign state separate from and independent of Malaysia\u2019 . Article IV further provided that the Government of Malaysia would \u2018take such steps as may be appropriate and available to them to secure the enactment by the Parliament the Grenadines, and Trinidad and Tobago. It lasted from 1958 to 1962.",
+        "source_type": "academic",
+        "stance": "supporting",
+        "quality_score": 0.88
+      },
+      {
+        "evidence_id": "source-42783f452ee5105b",
+        "title": "Singapore separates from Malaysia and becomes independent - NLB",
+        "url": "https://nlb.gov.sg/main/article-detail?cmsuuid=dc1efe7a-8159-40b2-9244-cdb078755013",
+        "publisher": "nlb.gov.sg",
+        "published_at": null,
+        "passage": "The proclamation declaring Singapore\u2019s independence was announced on Radio Singapore at 10:00 am on 9 August 1965. Simultaneously in Kuala Lumpur, the Tunku announced the separation to the federal parliament. He then moved a resolution to enact the Constitution of Malaysia (Singapore Amendment) Bill, 1965, that would allow Singapore to leave Malaysia and become an independent and sovereign state.",
+        "source_type": "government",
+        "stance": "supporting",
+        "quality_score": 0.82
+      },
+      {
+        "evidence_id": "source-3e7157524c00e73b",
+        "title": "Proclamation of the Republic of Singapore, Singapore, 9 August 1965",
+        "url": "https://roots.gov.sg/stories-landing/stories/the-singapore-story-through-60-objects/self-government-and-independence/proclaimation/story",
+        "publisher": "roots.gov.sg",
+        "published_at": null,
+        "passage": "#### Collection of the National Archives of Singapore. Proclamation of the Republic of Singapore, Singapore, 9 August 1965 This landmark document proclaims Singapore\u2019s separation from Malaysia and its beginnings as an independent and sovereign republic. It was drafted by Minister for Law Edmund Barker and signed by Prime Minister Lee Kuan Yew. It announced the constitutional change set in motion by the separation agreement and eventually effected through legislation passed in both the Malaysian and Singapore parliaments.",
+        "source_type": "government",
+        "stance": "supporting",
+        "quality_score": 0.82
+      },
+      {
+        "evidence_id": "source-985460db0cf7966a",
+        "title": "Singapore's separation from Malaysia - NLB",
+        "url": "https://nlb.gov.sg/main/article-detail?cmsuuid=9641f35d-3ae5-41d8-9fa6-7ca8b845ea53",
+        "publisher": "nlb.gov.sg",
+        "published_at": null,
+        "passage": "was announced on Radio Singapore at 10 am on 9 August 1965.93 The Tunku simultaneously announced the separation to the federal parliament in Kuala Lumpur. He then moved a resolution to enact the Constitution of Malaysia (Singapore Amendment) Bill, 1965, that would allow Singapore to leave Malaysia and become an independent and sovereign state. The bill was passed with a 126-0 vote and given the royal assent by the end of the day.94 The press conference called by Lee at 4.30 pm was broadcast on Singapore television.95 During the press conference, Lee explained why the separation had been inevitable despite his long-standing belief in the merger, and called on the people to remain resolute and calm.",
+        "source_type": "government",
+        "stance": "supporting",
+        "quality_score": 0.82
+      }
+    ],
+    "warnings": [],
+    "pipeline_version": "sprint-1-v1",
+    "created_at": "2026-09-07T02:11:25.678927Z"
+  },
+  "checks": {
+    "idempotent_retry_same_result": true,
+    "owner_history_read": true,
+    "owner_detail_read": true,
+    "other_user_rejected_404": true,
+    "second_submission_rejected_429": true,
+    "remaining_allowance_zero": true,
+    "firestore_owner_and_evidence_verified": true,
+    "direct_firestore_unauthenticated_read_rejected": true,
+    "direct_firestore_other_user_read_rejected": true
+  }
+}

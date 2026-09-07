@@ -1,100 +1,264 @@
-from typing import Any, Callable, Optional
+"""Google fact-check discovery with Tavily source extraction and search fallback."""
+
+import asyncio
+from collections.abc import Callable, Mapping
+from datetime import date, datetime, timezone
+from email.utils import parsedate_to_datetime
+from hashlib import sha256
+import math
+import os
+from pathlib import Path
+import re
+from typing import Any
+
+from dotenv import load_dotenv
+import httpx
+
+from app.pipeline.shared.models import ClaimAnalysis, EvidenceCandidate, RetrievalResult
+from . import providers
+from .sources import SourceNotAllowed, canonical_url, source_details
+
 
 EvidenceSearch = Callable[[str], list[dict[str, Any]]]
-
+PROJECT_ENV = Path(__file__).resolve().parents[4] / ".env"
 MIN_RETRIEVAL_SCORE = 0.60
+TOTAL_TIMEOUT_SECONDS = 65.0
+MAX_EVIDENCE = 6
+STOP_WORDS = set("a an and are as at be been being by for from had has have in is it of on or that the this to was were will with would".split())
+PROVIDER_ERRORS = (httpx.HTTPError, TimeoutError, ValueError, TypeError, KeyError)
 
 
-def retrieve_evidence(
-    claim_analysis: dict[str, Any],
-    search_func: Optional[EvidenceSearch] = None
-) -> dict[str, Any]:
+def _tokens(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", text.casefold())) - STOP_WORDS
 
-    checkable = claim_analysis.get("checkable", False)
-    extracted_claim = claim_analysis.get("extracted_claim")
 
-    if not checkable or not extracted_claim:
-        return {
-            "retrieval_status": "no_evidence",
-            "evidence": [],
-            "warnings": [
-                "The claim is not checkable, so evidence retrieval was skipped."
-            ]
-        }
+def relevance(claim: str, passage: str) -> float:
+    words = _tokens(claim)
+    return len(words & _tokens(passage)) / len(words) if words else 0.0
 
-    if search_func is None:
-        return {
-            "retrieval_status": "failed",
-            "evidence": [],
-            "warnings": [
-                "Evidence retrieval has not been connected yet."
-            ]
-        }
 
+def select_passage(claim: str, text: str, review_rating: str | None = None) -> str:
+    """Keep a contiguous group of source sentences including nearby context.
+
+    This lexical window is not a semantic verifier. Never use a generated answer
+    or Google's repeated reviewed-claim text in place of a source passage.
+    """
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("Missing source passage")
+    text = re.sub(r"\s+", " ", text[:100000]).strip()
+    if isinstance(review_rating, str) and review_rating.strip():
+        # Prefer the publisher's claim-and-verdict block when both Google and
+        # the extracted page identify that rating. Do not manufacture a verdict
+        # from metadata or return a headline that merely repeats the rumour.
+        match = re.search(r"\b(?:rating|verdict)\s*:\s*" + re.escape(review_rating.strip()) + r"\b", text, re.I)
+        if match:
+            labels = list(re.finditer(r"\bclaim\s*:", text[:match.start()], re.I))
+            start = labels[-1].start() if labels and match.start() - labels[-1].start() < 900 else max(0, match.start() - 300)
+            return text[start:start + 1800]
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    index = max(range(len(sentences)), key=lambda i: relevance(claim, sentences[i]))
+    # A bounded context window keeps adjacent qualifications and rebuttals.
+    passage = " ".join(sentences[max(0, index - 1):index + 3])
+    if len(passage) > 1800:
+        # Avoid taking a navigation-heavy prefix of a huge unsplit page.
+        words = list(re.finditer(r"\S+", passage))
+        windows = [passage[words[i].start():words[min(i + 219, len(words) - 1)].end()]
+                   for i in range(0, len(words), 100)]
+        passage = max(windows, key=lambda value: relevance(claim, value))[:1800]
+    return passage
+
+
+def _date(value: Any) -> date | None:
+    if not isinstance(value, str):
+        return None
     try:
-        results = search_func(extracted_claim)
+        return date.fromisoformat(value[:10])
+    except ValueError:
+        try:
+            return parsedate_to_datetime(value).date()
+        except (ValueError, TypeError, OverflowError):
+            return None
 
+
+def _candidate(claim: str, *, url: str, title: str, content: str,
+               score: float | None = None, published_at=None, fact_check=False,
+               review_rating: str | None = None) -> EvidenceCandidate | None:
+    clean_url = canonical_url(url)
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("Missing citation title")
+    passage = select_passage(claim, content, review_rating)
+    overlap = relevance(claim, passage)
+    if score is None:
+        score = overlap
+    if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(score) or not 0 <= score <= 1:
+        raise ValueError("Invalid relevance score")
+    # Provider ranking is only relevance, never truth. Require actual passage
+    # overlap as well so a high provider score cannot rescue unrelated content.
+    score = min(score, overlap)
+    if score < MIN_RETRIEVAL_SCORE:
+        return None
+    publisher, source_type = source_details(clean_url)
+    return EvidenceCandidate(
+        evidence_id="source-" + sha256(clean_url.encode()).hexdigest()[:16],
+        title=title.strip(), url=clean_url, publisher=publisher,
+        published_at=_date(published_at), passage=passage,
+        source_type="fact_check" if fact_check else source_type,
+        retrieval_score=round(score, 4), retrieved_at=datetime.now(timezone.utc))
+
+
+def _deduplicate(items: list[EvidenceCandidate]) -> list[EvidenceCandidate]:
+    urls, passages, identifiers = set(), set(), set()
+    kept = []
+    for item in sorted(items, key=lambda item: item.retrieval_score, reverse=True):
+        # Preserve meaningful query parameters but collapse http/https variants.
+        url = re.sub(r"^https?://", "", str(item.url)).rstrip("/")
+        passage = " ".join(item.passage.casefold().split())
+        if url in urls or passage in passages or item.evidence_id in identifiers:
+            continue
+        urls.add(url)
+        passages.add(passage)
+        identifiers.add(item.evidence_id)
+        kept.append(item)
+    return kept[:MAX_EVIDENCE]
+
+
+def _finish(items: list[EvidenceCandidate], warnings: list[str], failed: bool) -> RetrievalResult:
+    evidence = _deduplicate(items)
+    if evidence:
+        return RetrievalResult(retrieval_status="completed", evidence=evidence, warnings=warnings)
+    if failed:
+        return RetrievalResult(retrieval_status="failed", warnings=warnings or ["Evidence search is unavailable."])
+    return RetrievalResult(retrieval_status="no_evidence", warnings=warnings + ["No sufficiently relevant evidence was found."])
+
+
+async def _retrieve_with_client(claim: str, client: httpx.AsyncClient,
+                                google_key: str, tavily_key: str) -> RetrievalResult:
+    query = " ".join(claim.split())[:400]
+    warnings, evidence = [], []
+    failed = False
+    reviews = {}
+    try:
+        claims = await providers.google_search(client, query, google_key)
+        for item in claims:
+            if not isinstance(item.get("text"), str) or not isinstance(item.get("claimReview", []), list):
+                raise ValueError("Invalid reviewed claim")
+            if relevance(claim, item["text"]) < MIN_RETRIEVAL_SCORE:
+                continue
+            for review in item.get("claimReview", []):
+                if not isinstance(review, dict):
+                    raise ValueError("Invalid review")
+                language = review.get("languageCode", "en")
+                if not isinstance(language, str):
+                    raise ValueError("Invalid review language")
+                if language.split("-")[0] != "en":
+                    continue
+                try:
+                    url = canonical_url(review.get("url"))
+                except SourceNotAllowed:
+                    continue
+                reviews.setdefault(url, review)
+        reviews = dict(list(reviews.items())[:3])
+    except PROVIDER_ERRORS:
+        failed = True
+        warnings.append("Google Fact Check was unavailable or returned an invalid response; tried Tavily search.")
+
+    if reviews:
+        try:
+            extracted = await providers.tavily_extract(client, list(reviews), tavily_key)
+            seen = set()
+            for item in extracted["results"]:
+                if not isinstance(item, dict):
+                    raise ValueError("Invalid extracted page")
+                url = canonical_url(item.get("url"))
+                if url not in reviews:
+                    continue  # Never attach another page's metadata to this text.
+                review = reviews[url]
+                candidate = _candidate(claim, url=url, title=review.get("title"),
+                    content=item.get("raw_content"), published_at=review.get("reviewDate"), fact_check=True,
+                    review_rating=review.get("textualRating"))
+                seen.add(url)
+                if candidate:
+                    evidence.append(candidate)
+            if set(reviews) - seen or extracted.get("failed_results"):
+                failed = True
+                warnings.append("Some fact-check pages could not be extracted; tried additional search.")
+        except PROVIDER_ERRORS:
+            failed = True
+            warnings.append("Fact-check source extraction failed; tried Tavily search.")
+
+    if len(_deduplicate(evidence)) < 2:
+        try:
+            results = await providers.tavily_search(client, query, tavily_key)
+            invalid = 0
+            for item in results:
+                try:
+                    canonical_url(item.get("url"))
+                except SourceNotAllowed:
+                    continue  # Enforce catalogue even if the provider ignores it.
+                except ValueError:
+                    invalid += 1
+                    continue
+                try:
+                    if "score" not in item or item["score"] is None:
+                        raise ValueError("Missing provider relevance score")
+                    candidate = _candidate(claim, url=item["url"], title=item.get("title"),
+                        content=item.get("content"), score=item.get("score"),
+                        published_at=item.get("published_date"))
+                    if candidate:
+                        evidence.append(candidate)
+                except (ValueError, TypeError):
+                    invalid += 1
+            if invalid:
+                failed = True
+                warnings.append("Some search results had invalid citation or passage data and were discarded.")
+        except PROVIDER_ERRORS:
+            failed = True
+            warnings.append("Tavily evidence search was unavailable or returned an invalid response.")
+    return _finish(evidence, warnings, failed)
+
+
+async def _live(claim: str, google_key: str, tavily_key: str) -> RetrievalResult:
+    try:
+        async with asyncio.timeout(TOTAL_TIMEOUT_SECONDS):
+            async with httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0), follow_redirects=False) as client:
+                return await _retrieve_with_client(claim, client, google_key, tavily_key)
     except TimeoutError:
-        return {
-            "retrieval_status": "failed",
-            "evidence": [],
-            "warnings": [
-                "Evidence search could not be completed because the search service timed out."
-            ]
-        }
-
-    except Exception as error:
-        return {
-            "retrieval_status": "failed",
-            "evidence": [],
-            "warnings": [
-                f"Evidence search could not be completed: {error}"
-            ]
-        }
-
-    relevant_results = []
-
-    for evidence in results:
-        score = evidence.get("retrieval_score", 0)
-
-        if score >= MIN_RETRIEVAL_SCORE:
-            relevant_results.append(evidence)
-
-    relevant_results = _remove_duplicates(relevant_results)
-
-    if not relevant_results:
-        return {
-            "retrieval_status": "no_evidence",
-            "evidence": [],
-            "warnings": [
-                "No sufficiently relevant evidence was found."
-            ]
-        }
-
-    return {
-        "retrieval_status": "completed",
-        "evidence": relevant_results,
-        "warnings": []
-    }
+        return RetrievalResult(retrieval_status="failed", warnings=["Evidence retrieval exceeded its time limit."])
 
 
-def _remove_duplicates(
-    evidence_list: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
+def _injected(claim: str, search_func: EvidenceSearch) -> RetrievalResult:
+    """Keep Chu's dictionary-based fake-search hook for existing team tests."""
+    try:
+        results = search_func(claim)
+        if not isinstance(results, list):
+            raise ValueError("Invalid search result")
+        evidence = [EvidenceCandidate.model_validate(item) for item in results]
+        return _finish([item for item in evidence if item.retrieval_score >= MIN_RETRIEVAL_SCORE], [], False)
+    except TimeoutError:
+        return RetrievalResult(retrieval_status="failed", warnings=[
+            "Evidence search could not be completed because the search service timed out."])
+    except Exception:
+        # Do not expose provider exception strings, URLs or keys to the API.
+        return RetrievalResult(retrieval_status="failed", warnings=["Evidence search could not be completed."])
 
-    seen_urls = set()
-    unique_evidence = []
 
-    for evidence in evidence_list:
-        url = evidence.get("url")
-
-        if not url:
-            continue
-
-        if url in seen_urls:
-            continue
-
-        seen_urls.add(url)
-        unique_evidence.append(evidence)
-
-    return unique_evidence
+def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
+                      search_func: EvidenceSearch | None = None) -> RetrievalResult | dict[str, Any]:
+    """Typed production handoff; dictionary callers retain Chu's JSON interface."""
+    typed = isinstance(claim_analysis, ClaimAnalysis)
+    claim = ClaimAnalysis.model_validate(claim_analysis)
+    if not claim.checkable:
+        result = RetrievalResult(retrieval_status="no_evidence", warnings=[
+            "The claim is not checkable, so evidence retrieval was skipped."])
+    elif search_func is not None:
+        result = _injected(claim.extracted_claim, search_func)
+    else:
+        load_dotenv(PROJECT_ENV, override=False)
+        google_key = os.environ.get("GOOGLE_FACT_CHECK_API_KEY", "").strip()
+        tavily_key = os.environ.get("TAVILY_API_KEY", "").strip()
+        if not google_key or not tavily_key:
+            result = RetrievalResult(retrieval_status="failed", warnings=[
+                "Evidence retrieval requires GOOGLE_FACT_CHECK_API_KEY and TAVILY_API_KEY on the backend."])
+        else:
+            result = asyncio.run(_live(claim.extracted_claim, google_key, tavily_key))
+    return result if typed else result.model_dump(mode="json")

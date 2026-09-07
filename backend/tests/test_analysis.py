@@ -1,4 +1,5 @@
 import json
+import pytest
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -20,7 +21,14 @@ RESULT_FIXTURE = (
 )
 
 
+@pytest.fixture(autouse=True)
+def authenticated_analysis(signed_analysis):
+    return signed_analysis
+
+
 class SuccessfulPipeline:
+    def with_repository(self, repository):
+        return self
     def analyze(self, text: str) -> TextAnalysisResult:
         del text
         with RESULT_FIXTURE.open(encoding="utf-8") as handle:
@@ -28,6 +36,8 @@ class SuccessfulPipeline:
 
 
 class UnavailablePipeline:
+    def with_repository(self, repository):
+        return self
     def analyze(self, text: str) -> TextAnalysisResult:
         del text
         raise PipelineComponentError(
