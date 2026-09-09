@@ -1,0 +1,20 @@
+{
+  "revision": "0.2",
+  "date": "2026-09-08",
+  "artifact": "FYP-26-S3-30_PrelimUserManual_DRAFT.docx",
+  "scope": "Implemented features only",
+  "chapters": 4,
+  "editable_section_files": 5,
+  "word_pages": 19,
+  "empty_pages": 0,
+  "actual_android_captures": 4,
+  "capture_hash_preservation": "passed",
+  "chapter_order_and_numbering": "passed",
+  "unimplemented_feature_walkthrough_scan": "passed",
+  "credential_scan": "passed",
+  "word_contents_and_page_fields": "updated",
+  "pdf_generated": false,
+  "existing_pdf_unchanged": true,
+  "verification_basis": "Current source review and existing 7 September Android/Firestore captures; no new end-to-end or clean-machine test claimed",
+  "visual_review": "Representative pages rendered directly from Word"
+}

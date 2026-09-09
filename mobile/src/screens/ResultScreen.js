@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { PageBody, PageHeader } from '../components/AppShell';
@@ -5,6 +6,7 @@ import Button from '../components/Button';
 import { ConcernBadge, concernColours } from './ResultsScreen';
 
 export default function ResultScreen({ result, onNavigate }) {
+  const [expandedSources, setExpandedSources] = useState({});
   const failed = result.processing_status === 'failed';
   const label = failed ? 'Failed' : result.concern_label;
   const score = result.misinformation_risk_score;
@@ -31,7 +33,10 @@ export default function ResultScreen({ result, onNavigate }) {
       {result.evidence?.map((item, index) => <View key={item.evidence_id} style={styles.card}>
         <View style={styles.between}><Text style={styles.publisher}>{index + 1}. {item.publisher}</Text><Text style={styles.stance}>{item.stance}</Text></View>
         <Pressable accessibilityRole="link" onPress={() => openSource(item.url)}><Text style={styles.sourceTitle}>{item.title} ↗</Text></Pressable>
-        <Text selectable style={styles.copy}>{item.passage}</Text>
+        {!!item.assessment_reason && <Text style={styles.copy}>{item.assessment_reason}</Text>}
+        {!!item.evidence_quote && <View style={styles.action}><Text style={styles.label}>Quoted evidence</Text><Text selectable style={styles.copy}>{item.evidence_quote}</Text></View>}
+        {(!item.evidence_quote || expandedSources[item.evidence_id]) && <Text selectable style={styles.copy}>{item.passage}</Text>}
+        {!!item.evidence_quote && <Pressable accessibilityRole="button" accessibilityState={{ expanded: !!expandedSources[item.evidence_id] }} onPress={() => setExpandedSources(current => ({ ...current, [item.evidence_id]: !current[item.evidence_id] }))} style={styles.sourceButton}><Text style={styles.sourceButtonText}>{expandedSources[item.evidence_id] ? 'Hide source context' : 'Read source context'}</Text></Pressable>}
         <Text style={styles.date}>{item.published_at ? `Published ${item.published_at}` : 'Publication date unavailable'}</Text>
         <Pressable accessibilityRole="link" accessibilityLabel={`Open source ${index + 1}`} onPress={() => openSource(item.url)} style={styles.sourceButton}><Feather name="external-link" size={15} color="#126589" /><Text style={styles.sourceButtonText}>Open source</Text></Pressable>
       </View>)}

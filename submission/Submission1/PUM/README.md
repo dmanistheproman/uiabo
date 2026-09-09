@@ -1,27 +1,35 @@
-# UIABO preliminary user manual draft
+# UIABO Preliminary User Manual ? implemented features
 
-Start with **FYP-26-S3-30_PrelimUserManual_DRAFT.docx**, or edit the five Word
-sections in **PUMParts/**:
+Use **FYP-26-S3-30_PrelimUserManual_DRAFT.docx**, version 0.2, dated
+8 September 2026. The current Word manual covers implemented functions only.
 
-1. Cover, Document Control and Contents
-2. Introduction
-3. Initial Installation Instructions
-4. Key Features
-5. Initial GUIs
+Its structure follows the supplied sample:
 
-The combined PDF is provided for review. The previous team's sample PDF remains
-in the original local submission folder and is excluded from this repository. Current and proposed functionality are labelled throughout the draft.
+1. Introduction
+2. The Initial Installation Instructions
+3. Key Features of uiabo
+4. Initial GUIs of uiabo
 
-- **PUM_MISSING_INFORMATION.md** — information still needed and differences to resolve.
-- **PUMParts/PUM_SOURCES_AND_GAPS.md** — section-by-section source map and figure provenance.
-- **assets/** — original TDM image extracts and copies of existing Android captures.
-- **build_pum_sections.py** — rebuilds the editable sections and combined Word draft.
+The manual has 19 pages, refreshed Word contents/page fields and four actual
+Android captures. It covers account access, text checks, result interpretation,
+source links, saved history, sharing, profile-name editing, Help and the working
+free/Premium text allowances.
 
-Rebuilding replaces generated Word files. Preserve any manual edits first.
-After editing the combined document, update the contents/page fields in Word and
-export a fresh PDF. This is draft version 0.1 for team review.
+- `PUMParts_Implemented/`: five current editable Word section files.
+- `assets_implemented/`: the four actual Android captures used in this edition.
+- `PUM_UPDATE_SUMMARY.md`: structural mapping and implementation evidence.
+- `PUM_MISSING_INFORMATION.md`: documentation gaps kept outside the user manual.
+- `PUM_DOCUMENT_VALIDATION.json`: the validation record.
+- `build_implemented_pum.py`: Word-only builder for this edition. Requires
+  python-docx and docxcompose, the prior installation section and repository
+  evaluation captures. Preserve manual edits before rebuilding.
 
-The initial export contains **38 pages and 21 figures**. Word contents/page fields
-were refreshed; PDF text and rendered sample pages were inspected. The generated
-documents contain no live provider API keys. Installation steps were checked
-against the current local project, not tested on a newly provisioned computer.
+The PDF remains the previous 7 September, 38-page draft and is not the current
+implemented-only manual. No PDF was generated for this revision. The older
+`PUMParts/`, `assets/` and `build_pum_sections.py` are retained as earlier inputs;
+that older builder includes proposed functions and must not be used to regenerate
+this edition. Previous Word/notes are backed up locally in `backups/`.
+
+Edit the current combined Word document or current chapter files, keeping copies
+consistent. Refresh contents and page fields after edits. The original local
+submission folder and the repository copy are not automatically synchronized.

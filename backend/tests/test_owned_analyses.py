@@ -13,7 +13,7 @@ from app.auth.models import AuthenticatedUser
 from app.main import app
 from app.pipeline.orchestration.dependencies import get_pipeline_orchestrator
 from app.pipeline.shared.errors import PipelineComponentError
-from app.pipeline.shared.models import FailedAnalysisRecord, TextAnalysisResult
+from app.pipeline.shared.models import EvidenceProvenance, FailedAnalysisRecord, TextAnalysisResult
 
 
 FIXTURE = json.loads((Path(__file__).parent / "fixtures/sprint_1/text_analysis_result.json").read_text())
@@ -53,6 +53,30 @@ def test_result_saved_with_owner_and_allowance_charged_once(context):
     assert store.documents["analysis_results", result_id]["user_id"] == "analysis-user"
     assert store.documents["usage_allowances", "analysis-user"]["successful_submissions"] == 1
     assert submit(client, "second").status_code == 429
+    assert pipeline.calls == 1
+
+
+def test_source_provenance_survives_submit_history_and_idempotent_replay(context):
+    client, store, _, pipeline = context
+    original_analyze = pipeline.analyze
+    def analyze(text):
+        result = original_analyze(text)
+        result.evidence[0].provenance = EvidenceProvenance(source_policy="government_namespace",
+            source_reason="Restricted government namespace.", origin_group="gov", discovery_method="web_search",
+            relevance="direct", relevance_reason="The passage addresses the claim.",
+            relevance_quote=result.evidence[0].passage, applicability="established",
+            applicability_reason="Same scope and applicable period.")
+        return result
+    pipeline.analyze = analyze
+    first = submit(client)
+    assert first.status_code == 200
+    body = first.json()
+    result_id = body["result_id"]
+    provenance = body["evidence"][0]["provenance"]
+    assert provenance["source_policy"] == "government_namespace"
+    assert store.documents["analysis_results", result_id]["evidence"][0]["provenance"] == provenance
+    assert client.get(f"/analysis/results/{result_id}").json()["evidence"][0]["provenance"] == provenance
+    assert submit(client).json() == body
     assert pipeline.calls == 1
 
 

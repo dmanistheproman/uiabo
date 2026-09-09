@@ -1,0 +1,52 @@
+{
+  "scope": "Replay of saved factual claim with live retrieval/assessment; no Firestore writes.",
+  "claim": {
+    "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+    "claim_category": "factual",
+    "checkable": true,
+    "classification_reason": "Replaying saved factual claim",
+    "claim_confidence": 1.0
+  },
+  "alternative_queries": [
+    "Thailand entry requirements cash 20,000 baht"
+  ],
+  "retrieval": {
+    "retrieval_status": "completed",
+    "evidence": [
+      {
+        "evidence_id": "source-077d88d5553f4a2b",
+        "title": "How to Apply for a Visa?/Do I need a visa? - สถานเอกอัครราชทูต ณ กรุงโคเปนเฮเกน",
+        "url": "https://copenhagen.thaiembassy.org/en/page/how-to-apply-for-a-visa-2?menu=6062f00f84b6257bb378d352",
+        "publisher": "Royal Thai Embassy",
+        "author": null,
+        "published_at": null,
+        "passage": "Foreigners entering Thailand under the Tourist Visa Exemption category mustpossess adequate finances for the duration of stay in Thailand (i.e., cash 10,000 Baht per person and 20,000 Baht per family). Proof of onward travel (confirmed air, train, bus or boat tickets) to leave Thailand within 30 days of the arrival date (\\\\otherwise a tourist visa must be obtained). 3.",
+        "source_type": "government",
+        "retrieval_score": 0.6,
+        "retrieved_at": "2026-09-08T11:58:19.718385Z"
+      }
+    ],
+    "warnings": []
+  },
+  "assessment": {
+    "concern_label": "Not Enough Information",
+    "misinformation_risk_score": null,
+    "uncertainty": "High",
+    "uncertainty_reasons": [
+      "The retrieved evidence does not directly answer the claim.",
+      "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+    ],
+    "explanation": "There is not enough reliable evidence to assess this claim.",
+    "recommended_action": "Check an authoritative source before believing or forwarding the claim.",
+    "assessed_evidence": [
+      {
+        "evidence_id": "source-077d88d5553f4a2b",
+        "stance": "neutral",
+        "quality_score": 0.45,
+        "assessment_reason": "The passage states the cash requirement is 10,000 Baht per person and 20,000 Baht per family for entry to Thailand, but the claim asserts a blanket 20,000 Baht cash requirement to enter Phuket, which is not directly confirmed or contradicted by the passage.",
+        "evidence_quote": null
+      }
+    ]
+  },
+  "duration_seconds": 7.59
+}

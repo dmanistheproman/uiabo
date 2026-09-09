@@ -1,0 +1,175 @@
+{
+  "run_at_utc": "2026-09-08T11:47:21.007439+00:00",
+  "scope": "Live pipeline diagnosis for Phuket cash claim; in-memory only, no allowance charges or Firestore writes.",
+  "cases": [
+    {
+      "input": "I need to have 20000 baht in cash to enter phuket",
+      "duration_seconds": 8.33,
+      "response": {
+        "result_id": "2c3a48bf-f6e9-4083-a598-93123498a0ad",
+        "processing_status": "completed",
+        "original_text": "I need to have 20000 baht in cash to enter phuket",
+        "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+        "claim_category": "factual",
+        "checkable": true,
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No sufficiently relevant evidence was found."
+        ],
+        "explanation": "There is not enough reliable evidence to assess this claim.",
+        "recommended_action": "Check an authoritative source before believing or forwarding this claim.",
+        "evidence": [],
+        "warnings": [
+          "No sufficiently relevant evidence was found."
+        ],
+        "pipeline_version": "sprint-1-semantic-v2r2:gpt-oss:120b",
+        "created_at": "2026-09-08T11:47:21.007504Z"
+      },
+      "retrieval": [
+        {
+          "retrieval_status": "no_evidence",
+          "evidence": [],
+          "warnings": [
+            "No sufficiently relevant evidence was found."
+          ]
+        }
+      ]
+    },
+    {
+      "input": "Tourists entering Thailand under the visa exemption scheme must carry cash equivalent to at least 20,000 baht per person.",
+      "duration_seconds": 15.99,
+      "response": {
+        "result_id": "4110de1d-9fee-430f-9345-a1d32c097e83",
+        "processing_status": "completed",
+        "original_text": "Tourists entering Thailand under the visa exemption scheme must carry cash equivalent to at least 20,000 baht per person.",
+        "extracted_claim": "Tourists entering Thailand under the visa exemption scheme must carry cash equivalent to at least 20,000 baht per person.",
+        "claim_category": "factual",
+        "checkable": true,
+        "concern_label": "Low Concern",
+        "misinformation_risk_score": 25,
+        "uncertainty": "Medium",
+        "uncertainty_reasons": [
+          "Multiple sources were found, but their overall quality is limited.",
+          "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+        ],
+        "explanation": "The cited government evidence supports the submitted claim. Royal Thai Embassy: The passage explicitly states the cash requirement of 20,000 baht per person for tourists under the visa exemption scheme, directly confirming the claim.",
+        "recommended_action": "Review the supporting cited evidence before sharing the claim.",
+        "evidence": [
+          {
+            "evidence_id": "source-28d465daf09fb179",
+            "title": "Tourist visa exemption scheme -",
+            "url": "https://thaiconsulatela.thaiembassy.org/en/publicservice/tourist-visa-exemption-scheme?cate=61a801802e7fba2cfb0ce7e2",
+            "publisher": "Royal Thai Embassy",
+            "published_at": null,
+            "passage": "## Visa Exemption conditions • Entering the Kingdom through land/sea border checkpoints under Tourist Visa Exemption Scheme is permitted only twice in a calendar year, except nationals of Malaysia, Brunei Darussalam, Indonesia, and Singapore who may enter Thailand through such checkpoints more than twice in a calendar year. • Travelers entering Thailand under the Tourist Visa Exemption Scheme must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family. Royal Thai Consulate-General, Los Angeles สถานกงสุลใหญ่ ณ นครลอสแอนเจลิส Address : 611 North Larchmont Blvd., 2nd Floor, Los Angeles CA 90004 Office Hours : Monday - Friday, Time: 09.00 - 16.00 (323) 962-9574 (323) 962-2128 (/cdn-cgi/l/email-protection) Follow us: [...] Tourist visa exemption scheme ———————————————— ## Passport holders from the following countries / territory are not required to obtain a visa when entering Thailand for tourism purposes and will be permitted to stay in the Kingdom for a period not exceeding 30 days\\\\ Visa-Exemption-Scheme-7-Dec-1-212x300.pdf) ## U.S. Passport Holders are not required to obtain a visa when entering Thailand for tourism purposes and will be permitted to stay in Thailand for a period not exceeding 30 days\\\\ on each visit ## Visa Exemption conditions [...] ข้ามไปยังเนื้อหาหลัก Home Services for Thais Thai Passport Thai ID Card Legalization Protection for Thais Mobile Consular Visa Visa information Visa Types & Requirements",
+            "source_type": "government",
+            "stance": "supporting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states the cash requirement of 20,000 baht per person for tourists under the visa exemption scheme, directly confirming the claim.",
+            "evidence_quote": "Travelers entering Thailand under the Tourist Visa Exemption Scheme must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family."
+          },
+          {
+            "evidence_id": "source-ce53e23c7ca4886b",
+            "title": "New Visa Exemption and Visa on Arrival to Thailand",
+            "url": "https://washingtondc.thaiembassy.org/en/page/visaexempt-voajul2024",
+            "publisher": "Royal Thai Embassy",
+            "published_at": null,
+            "passage": "Before the maximum stay of 90 days are eligible to apply for a new type of visa in Thailand. New Visa Exemption 60 Days (PDF) Remarks: Travelers entering Thailand under the Tourist Visa Exemption Scheme must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family. Please note that the Visa Exemption applies only to foreigners holding passports issued by the countries listed above. Other travel documents issued to",
+            "source_type": "government",
+            "stance": "supporting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states the cash requirement of at least 20,000 baht per person for tourists using the visa exemption scheme, which directly matches the claim.",
+            "evidence_quote": "Travelers entering Thailand under the Tourist Visa Exemption Scheme must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family."
+          },
+          {
+            "evidence_id": "source-522cb07923e5abe5",
+            "title": "Tourist Visa Exemption & Visa-on-Arrival - Royal Thai Embassy, Doha",
+            "url": "https://doha.thaiembassy.org/en/publicservice/tourist-visa-exemption-visa-on-arrival?menu=5d7e6a3c15e39c032c006dbb&page=5d7e6a3c15e39c032c006dba",
+            "publisher": "Royal Thai Embassy",
+            "published_at": null,
+            "passage": "3. Travellers entering Thailand under the tourist visa exemption schemes must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family. VISA-ON-ARRIVAL [...] Application form, fully completed (this form can be obtained at the designated ports of entry into Thailand) One recent photo Proof of means of living expenses at the amount of 10,000 Baht per person and 20,000 Baht per family accordingly Passport with at least 6 month validity and at least 2 blank pages Fully paid onward travel tickets which are usable within 30 days of the date of entry Fee of 2,000 Baht (cash only in Thai Baht/non-refundable) Visitors who enter the Kingdom with Visa on Arrival generally cannot file an application for extension of stay, except in special cases of illness which prevents them from travelling. In this case, the application can be submitted at the Office of Immigration Bureau.",
+            "source_type": "government",
+            "stance": "supporting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states that tourists under the visa exemption scheme must have cash or equivalent of at least 20,000 baht per person, directly confirming the claim.",
+            "evidence_quote": "Travellers entering Thailand under the tourist visa exemption schemes must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family."
+          },
+          {
+            "evidence_id": "source-22a8a37343f79072",
+            "title": "Tourist Visa - Royal Thai Embassy, London",
+            "url": "https://london.thaiembassy.org/en/publicservice/84256-tourist-visa?menu=5f4b6eb3f6ae4b236972c562&page=5d6636cd15e39c3bd00072dd",
+            "publisher": "Royal Thai Embassy",
+            "published_at": null,
+            "passage": "Proof of adequate finances for the duration of stay in Thailand i.e. traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family. Proof of onward travel (confirmed air, train, bus or boat tickets) to leave Thailand within 30 days of the arrival date (\\\\otherwise a tourist visa must be obtained). Tourist Visa Exemption only applies to foreigners holding passports issued by listed countries.Travel documents for aliens issued by these countries are not acceptable.",
+            "source_type": "government",
+            "stance": "supporting",
+            "quality_score": 0.62,
+            "assessment_reason": "The passage states that travelers must have cash or traveller’s cheques equivalent to 20,000 baht per person, directly confirming the claim.",
+            "evidence_quote": "Proof of adequate finances for the duration of stay in Thailand i.e. traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family."
+          }
+        ],
+        "warnings": [],
+        "pipeline_version": "sprint-1-semantic-v2r2:gpt-oss:120b",
+        "created_at": "2026-09-08T11:47:29.342143Z"
+      },
+      "retrieval": [
+        {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "source-28d465daf09fb179",
+              "title": "Tourist visa exemption scheme -",
+              "url": "https://thaiconsulatela.thaiembassy.org/en/publicservice/tourist-visa-exemption-scheme?cate=61a801802e7fba2cfb0ce7e2",
+              "publisher": "Royal Thai Embassy",
+              "author": null,
+              "published_at": null,
+              "passage": "## Visa Exemption conditions • Entering the Kingdom through land/sea border checkpoints under Tourist Visa Exemption Scheme is permitted only twice in a calendar year, except nationals of Malaysia, Brunei Darussalam, Indonesia, and Singapore who may enter Thailand through such checkpoints more than twice in a calendar year. • Travelers entering Thailand under the Tourist Visa Exemption Scheme must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family. Royal Thai Consulate-General, Los Angeles สถานกงสุลใหญ่ ณ นครลอสแอนเจลิส Address : 611 North Larchmont Blvd., 2nd Floor, Los Angeles CA 90004 Office Hours : Monday - Friday, Time: 09.00 - 16.00 (323) 962-9574 (323) 962-2128 (/cdn-cgi/l/email-protection) Follow us: [...] Tourist visa exemption scheme ———————————————— ## Passport holders from the following countries / territory are not required to obtain a visa when entering Thailand for tourism purposes and will be permitted to stay in the Kingdom for a period not exceeding 30 days\\\\ Visa-Exemption-Scheme-7-Dec-1-212x300.pdf) ## U.S. Passport Holders are not required to obtain a visa when entering Thailand for tourism purposes and will be permitted to stay in Thailand for a period not exceeding 30 days\\\\ on each visit ## Visa Exemption conditions [...] ข้ามไปยังเนื้อหาหลัก Home Services for Thais Thai Passport Thai ID Card Legalization Protection for Thais Mobile Consular Visa Visa information Visa Types & Requirements",
+              "source_type": "government",
+              "retrieval_score": 0.8125,
+              "retrieved_at": "2026-09-08T11:47:39.375289Z"
+            },
+            {
+              "evidence_id": "source-ce53e23c7ca4886b",
+              "title": "New Visa Exemption and Visa on Arrival to Thailand",
+              "url": "https://washingtondc.thaiembassy.org/en/page/visaexempt-voajul2024",
+              "publisher": "Royal Thai Embassy",
+              "author": null,
+              "published_at": null,
+              "passage": "Before the maximum stay of 90 days are eligible to apply for a new type of visa in Thailand. New Visa Exemption 60 Days (PDF) Remarks: Travelers entering Thailand under the Tourist Visa Exemption Scheme must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family. Please note that the Visa Exemption applies only to foreigners holding passports issued by the countries listed above. Other travel documents issued to",
+              "source_type": "government",
+              "retrieval_score": 0.8125,
+              "retrieved_at": "2026-09-08T11:47:39.375506Z"
+            },
+            {
+              "evidence_id": "source-522cb07923e5abe5",
+              "title": "Tourist Visa Exemption & Visa-on-Arrival - Royal Thai Embassy, Doha",
+              "url": "https://doha.thaiembassy.org/en/publicservice/tourist-visa-exemption-visa-on-arrival?menu=5d7e6a3c15e39c032c006dbb&page=5d7e6a3c15e39c032c006dba",
+              "publisher": "Royal Thai Embassy",
+              "author": null,
+              "published_at": null,
+              "passage": "3. Travellers entering Thailand under the tourist visa exemption schemes must possess adequate cash of or equivalent to 20,000 Baht per person or 40,000 Baht per family. VISA-ON-ARRIVAL [...] Application form, fully completed (this form can be obtained at the designated ports of entry into Thailand) One recent photo Proof of means of living expenses at the amount of 10,000 Baht per person and 20,000 Baht per family accordingly Passport with at least 6 month validity and at least 2 blank pages Fully paid onward travel tickets which are usable within 30 days of the date of entry Fee of 2,000 Baht (cash only in Thai Baht/non-refundable) Visitors who enter the Kingdom with Visa on Arrival generally cannot file an application for extension of stay, except in special cases of illness which prevents them from travelling. In this case, the application can be submitted at the Office of Immigration Bureau.",
+              "source_type": "government",
+              "retrieval_score": 0.8125,
+              "retrieved_at": "2026-09-08T11:47:39.375791Z"
+            },
+            {
+              "evidence_id": "source-22a8a37343f79072",
+              "title": "Tourist Visa - Royal Thai Embassy, London",
+              "url": "https://london.thaiembassy.org/en/publicservice/84256-tourist-visa?menu=5f4b6eb3f6ae4b236972c562&page=5d6636cd15e39c3bd00072dd",
+              "publisher": "Royal Thai Embassy",
+              "author": null,
+              "published_at": null,
+              "passage": "Proof of adequate finances for the duration of stay in Thailand i.e. traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family. Proof of onward travel (confirmed air, train, bus or boat tickets) to leave Thailand within 30 days of the arrival date (\\\\otherwise a tourist visa must be obtained). Tourist Visa Exemption only applies to foreigners holding passports issued by listed countries.Travel documents for aliens issued by these countries are not acceptable.",
+              "source_type": "government",
+              "retrieval_score": 0.625,
+              "retrieved_at": "2026-09-08T11:47:39.375990Z"
+            }
+          ],
+          "warnings": []
+        }
+      ]
+    }
+  ]
+}

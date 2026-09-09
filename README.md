@@ -4,6 +4,8 @@ uiabo is a Final Year Project that aims to help users assess text and online con
 
 ## Current status
 
+The latest optional retrieval improvement is documented in [Broader retrieval prototype](backend/app/pipeline/evidence_retrieval/WEB_RETRIEVAL.md). It adds wider discovery, semantic relevance/scope checks and source provenance, with `catalogue` available for rollback. The [43-case review guide](evaluation/datasets/RETRIEVAL_REVIEW_GUIDE.md) explains the live comparison and the human review still required.
+
 The FastAPI backend now connects all four Sprint 1 text stages: input preparation, Matthew's Ollama Cloud claim analysis, Google Fact Check/Tavily evidence retrieval, and Poon's baseline evidence assessment. It can return results with real source citations. Live testing confirms the flow works, but also exposes limitations in the lexical stance/scoring baseline; these results are not a validated accuracy claim.
 
 Completed so far:
@@ -107,6 +109,17 @@ python -m pip install -r requirements.txt
 ```
 
 Copy the project-root `.env.instructions` template to `uiabo/.env` and supply `OLLAMA_API_KEY`, `GOOGLE_FACT_CHECK_API_KEY`, and `TAVILY_API_KEY`. The backend loads this file automatically; existing environment variables take precedence. Enable Fact Check Tools API in the Google key's project. Supply the Tavily key itself, rather than its MCP URL. Restart the backend after changing keys. Keep `.env` local and never put these keys in the mobile app. No local Ollama installation or model download is required.
+
+For the semantic assessment prototype, also set `EVIDENCE_ASSESSMENT_MODE=semantic`
+and `OLLAMA_ASSESSMENT_MODEL=gpt-oss:120b` in that local file, then restart the backend.
+It uses the same Ollama key to interpret retrieved passages and validate source
+quotations. Existing installations without this setting retain the lexical
+baseline; `EVIDENCE_ASSESSMENT_MODE=lexical` restores it explicitly. Model/provider
+failures remain retryable errors and do not consume an allowance.
+See the [assessment implementation notes](backend/app/pipeline/evidence_assessment/README.md)
+and [provisional evaluation guide](evaluation/datasets/STANCE_LABELLING_GUIDE.md).
+The app shows the quotation and source-specific explanation; numerical risk
+indicators remain prototype rules, not calibrated probabilities.
 
 ## Run the API
 

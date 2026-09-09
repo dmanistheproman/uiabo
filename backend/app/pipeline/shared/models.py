@@ -83,6 +83,30 @@ class ClaimAnalysis(PipelineModel):
         return self
 
 
+class EvidenceProvenance(PipelineModel):
+    """Observable retrieval decisions, not a certification of source truth."""
+
+    source_policy: Literal["catalogue", "government_namespace"]
+    source_reason: str = Field(min_length=1, max_length=500)
+    origin_group: str = Field(min_length=1, max_length=255)
+    discovery_method: Literal["google_fact_check", "preferred_search", "web_search", "source_link"]
+    relevance: Literal["direct", "context"]
+    relevance_reason: str = Field(min_length=1, max_length=800)
+    relevance_quote: str = Field(min_length=1, max_length=1800)
+    applicability: Literal["established", "missing_context", "different_scope", "uncertain_time"]
+    applicability_reason: str = Field(min_length=1, max_length=800)
+    condition_quotes: list[str] = Field(default_factory=list, max_length=4)
+
+
+class RetrievalTrace(PipelineModel):
+    """Bounded diagnostics for evaluation; no credentials or raw provider errors."""
+
+    search_requests: int = 0
+    extraction_urls: int = 0
+    relevance_calls: int = 0
+    decisions: list[dict[str, str]] = Field(default_factory=list)
+
+
 class EvidenceCandidate(PipelineModel):
     """One source returned by Chu's retrieval component."""
 
@@ -96,6 +120,7 @@ class EvidenceCandidate(PipelineModel):
     source_type: SourceType
     retrieval_score: Confidence
     retrieved_at: datetime
+    provenance: EvidenceProvenance | None = None
 
 
 class RetrievalResult(PipelineModel):
@@ -104,6 +129,7 @@ class RetrievalResult(PipelineModel):
     retrieval_status: RetrievalStatus
     evidence: list[EvidenceCandidate] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    trace: RetrievalTrace | None = None
 
     @model_validator(mode="after")
     def validate_status_and_evidence(self) -> "RetrievalResult":
@@ -128,6 +154,7 @@ class AssessedEvidence(PipelineModel):
     stance: EvidenceStance
     quality_score: Confidence
     assessment_reason: str = Field(min_length=1)
+    evidence_quote: str | None = None
 
 
 class AssessmentResult(PipelineModel):
@@ -170,6 +197,9 @@ class EvidenceItem(PipelineModel):
     source_type: SourceType
     stance: EvidenceStance
     quality_score: Confidence
+    assessment_reason: str | None = None
+    evidence_quote: str | None = None
+    provenance: EvidenceProvenance | None = None
 
 
 class TextAnalysisResult(PipelineModel):
@@ -223,4 +253,3 @@ class FailedAnalysisRecord(PipelineModel):
     warnings: list[str] = Field(default_factory=list)
     pipeline_version: str
     created_at: datetime
-

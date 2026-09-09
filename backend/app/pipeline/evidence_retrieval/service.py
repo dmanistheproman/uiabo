@@ -6,6 +6,7 @@ from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 from hashlib import sha256
 import math
+from functools import partial
 import os
 from pathlib import Path
 import re
@@ -15,7 +16,9 @@ from dotenv import load_dotenv
 import httpx
 
 from app.pipeline.shared.models import ClaimAnalysis, EvidenceCandidate, RetrievalResult
+from app.pipeline.shared.errors import PipelineComponentError
 from . import providers
+from .query_planning import format_search_amounts, plan_queries
 from .sources import SourceNotAllowed, canonical_url, source_details
 
 
@@ -24,11 +27,16 @@ PROJECT_ENV = Path(__file__).resolve().parents[4] / ".env"
 MIN_RETRIEVAL_SCORE = 0.60
 TOTAL_TIMEOUT_SECONDS = 65.0
 MAX_EVIDENCE = 6
-STOP_WORDS = set("a an and are as at be been being by for from had has have in is it of on or that the this to was were will with would".split())
+RETRIEVAL_VERSION = "retrieval-v2"
+STOP_WORDS = set("a an and are as at be been being by for from had has have in is it of on or that the this to was were will with would i me my we us our need needs".split())
 PROVIDER_ERRORS = (httpx.HTTPError, TimeoutError, ValueError, TypeError, KeyError)
 
 
 def _tokens(text: str) -> set[str]:
+    # Thousands separators are formatting, not different amounts. Preserve
+    # the claim itself; this normalisation is only for retrieval matching.
+    text = re.sub(r"\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b",
+                  lambda match: match.group(0).replace(",", ""), text)
     return set(re.findall(r"[a-z0-9]+", text.casefold())) - STOP_WORDS
 
 
@@ -132,8 +140,9 @@ def _finish(items: list[EvidenceCandidate], warnings: list[str], failed: bool) -
 
 
 async def _retrieve_with_client(claim: str, client: httpx.AsyncClient,
-                                google_key: str, tavily_key: str) -> RetrievalResult:
-    query = " ".join(claim.split())[:400]
+                                google_key: str, tavily_key: str,
+                                planning_key: str | None = None) -> RetrievalResult:
+    query = format_search_amounts(" ".join(claim.split()))[:400]
     warnings, evidence = [], []
     failed = False
     reviews = {}
@@ -214,6 +223,35 @@ async def _retrieve_with_client(claim: str, client: httpx.AsyncClient,
         except PROVIDER_ERRORS:
             failed = True
             warnings.append("Tavily evidence search was unavailable or returned an invalid response.")
+
+    # Natural wording can retrieve only forums or other out-of-scope pages.
+    # Try bounded policy/topic formulations before concluding there is no evidence.
+    # Keep both the approved source filter and ORIGINAL claim for passage ranking.
+    if not evidence and not failed and planning_key:
+        try:
+            queries = await plan_queries(client, claim, planning_key)
+            for expanded_query in queries:
+                results = await providers.tavily_search(client, expanded_query, tavily_key)
+                for item in results:
+                    try:
+                        canonical_url(item.get("url"))
+                        if item.get("score") is None:
+                            raise ValueError("Missing provider relevance score")
+                        candidate = _candidate(claim, url=item.get("url"), title=item.get("title"),
+                            content=item.get("content"), score=item.get("score"),
+                            published_at=item.get("published_date"))
+                        if candidate:
+                            evidence.append(candidate)
+                    except SourceNotAllowed:
+                        continue
+                    except (ValueError, TypeError):
+                        failed = True
+                        warnings.append("Some additional search results had invalid source data and were discarded.")
+                if evidence:
+                    break
+        except PROVIDER_ERRORS:
+            failed = True
+            warnings.append("Additional evidence search could not be completed.")
     return _finish(evidence, warnings, failed)
 
 
@@ -221,7 +259,8 @@ async def _live(claim: str, google_key: str, tavily_key: str) -> RetrievalResult
     try:
         async with asyncio.timeout(TOTAL_TIMEOUT_SECONDS):
             async with httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=5.0), follow_redirects=False) as client:
-                return await _retrieve_with_client(claim, client, google_key, tavily_key)
+                return await _retrieve_with_client(claim, client, google_key, tavily_key,
+                    planning_key=os.environ.get("OLLAMA_API_KEY", "").strip() or None)
     except TimeoutError:
         return RetrievalResult(retrieval_status="failed", warnings=["Evidence retrieval exceeded its time limit."])
 
@@ -243,7 +282,7 @@ def _injected(claim: str, search_func: EvidenceSearch) -> RetrievalResult:
 
 
 def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
-                      search_func: EvidenceSearch | None = None) -> RetrievalResult | dict[str, Any]:
+                      search_func: EvidenceSearch | None = None, *, mode: str | None = None) -> RetrievalResult | dict[str, Any]:
     """Typed production handoff; dictionary callers retain Chu's JSON interface."""
     typed = isinstance(claim_analysis, ClaimAnalysis)
     claim = ClaimAnalysis.model_validate(claim_analysis)
@@ -254,11 +293,38 @@ def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
         result = _injected(claim.extracted_claim, search_func)
     else:
         load_dotenv(PROJECT_ENV, override=False)
+        selected_mode = retrieval_mode() if mode is None else mode
+        if selected_mode not in {"catalogue", "web"}:
+            raise ValueError("Invalid retrieval mode")
         google_key = os.environ.get("GOOGLE_FACT_CHECK_API_KEY", "").strip()
         tavily_key = os.environ.get("TAVILY_API_KEY", "").strip()
         if not google_key or not tavily_key:
             result = RetrievalResult(retrieval_status="failed", warnings=[
                 "Evidence retrieval requires GOOGLE_FACT_CHECK_API_KEY and TAVILY_API_KEY on the backend."])
         else:
-            result = asyncio.run(_live(claim.extracted_claim, google_key, tavily_key))
+            if selected_mode == "web":
+                from .enhanced import live
+                key = os.environ.get("OLLAMA_API_KEY", "").strip()
+                result = (asyncio.run(live(claim.extracted_claim, google_key, tavily_key, key)) if key
+                    else RetrievalResult(retrieval_status="failed", warnings=[
+                        "Web retrieval requires OLLAMA_API_KEY for semantic relevance checks."]))
+            else:
+                result = asyncio.run(_live(claim.extracted_claim, google_key, tavily_key))
     return result if typed else result.model_dump(mode="json")
+
+
+def retrieval_mode():
+    load_dotenv(PROJECT_ENV, override=False)
+    mode = os.environ.get("EVIDENCE_RETRIEVAL_MODE", "catalogue").strip().lower()
+    if mode not in {"catalogue", "web"}:
+        raise PipelineComponentError("Invalid evidence retrieval mode.",
+            error_code="RETRIEVAL_INVALID_CONFIG", stage="evidence_retrieval", retryable=False)
+    return mode
+
+
+def configured_retriever():
+    mode = retrieval_mode()
+    if mode == "web":
+        from .enhanced import VERSION
+        return partial(retrieve_evidence, mode=mode), VERSION
+    return partial(retrieve_evidence, mode=mode), RETRIEVAL_VERSION

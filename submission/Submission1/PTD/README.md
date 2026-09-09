@@ -1,27 +1,34 @@
-# UIABO updated Preliminary Technical Documentation
+# UIABO Preliminary Technical Documentation
 
-The requested output is **Preliminary Technical Documentation.pdf**.
-The editable combined source is
-**FYP-26-S3-30_Preliminary_Technical_Documentation.docx**.
+The current report is **FYP-26-S3-30_Preliminary_Technical_Documentation.docx**,
+version 0.3, dated 8 September 2026. It follows the supplied sample's chapter order
+and is the file to use for this revision.
 
-- `PTDParts_Updated/`: cover and 18 updated editable chapters.
-- `PTDParts/`: original saved UIABO section drafts, retained unchanged.
-- `PTD_UPDATE_SUMMARY.md`: comparison with the new sample and a map of additions.
-- `PTD_MISSING_INFORMATION.md`: remaining evidence, implementation and decisions.
-Previous-team samples, the legacy builder and pre-update backups remain in the
-original local submission folder and are excluded from this repository.
+- `PTDParts_Reformatted/`: current editable cover and 19 report chapters.
+- `PTD_UPDATE_SUMMARY.md`: chapter mapping and changes made in this revision.
+- `PTD_MISSING_INFORMATION.md`: remaining work, with current section references.
+- `PTD_DOCUMENT_VALIDATION.json`: structural, preservation and layout checks.
+- `restructure_ptd.py`: reproduces this Word structure from the prior section
+  inputs and the submitted URS. Requires python-docx, docxcompose and pypdf.
 
-The original target PDF was a diet/nutrition sample. The replacement compiles the
-UIABO sections and records current progress without claiming unfinished features
-or evaluation as completed.
+The report begins with Introduction, Overview, Stakeholders and Data Collection,
+then follows the sample through planning, requirements, methodology, technical
+stack, user stories, use cases, system design, conclusion, glossary and appendix.
+The appendix retains testing, meeting minutes and references. The sample skips
+Chapter 19; this report uses continuous numbering and places the appendix at 19.
 
-`update_ptd.py` reproduces updated copies and the combined Word document from the
-original saved `PTDParts/`. Preserve any later edits before rebuilding. After Word
-edits, update the contents/page fields and export a fresh PDF. The older
-`build_ptd_sections.py` is not the entry point for this updated compilation.
+The Word document has 149 pages after contents/page fields were refreshed in
+Microsoft Word. All 43 use cases are editable tables; 58 role-specific story
+entries and 87 diagrams/screenshots are retained. Representative pages were
+rendered directly from Word for review without producing a PDF.
 
-Document validation: the updated PDF has **177 pages**, no empty pages, refreshed
-contents/page fields and correct UIABO identifiers. The combined source retains
-all original design media and includes three current Android captures (136 image
-placements overall). Representative pages were rendered and inspected. Provider
-credential scanning passed. See `PTD_DOCUMENT_VALIDATION.json` for the record.
+`Preliminary Technical Documentation.pdf` remains the 7 September, 177-page
+version. It was intentionally not regenerated for this Word-only request.
+`PTDParts_Updated/` holds the previous 18-chapter structure and is an input to the
+new builder; `PTDParts/` holds the earlier original sections. Do not run
+`update_ptd.py` to rebuild version 0.3: it creates the previous report structure.
+
+Preserve manual edits before running a builder. Rebuilding overwrites the
+combined Word report and generated chapter files. After manual edits, update
+contents and page fields in Word. The previous combined Word report is backed up
+locally under `backups/`; previous-team samples and backups remain local.

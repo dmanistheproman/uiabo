@@ -1,0 +1,694 @@
+{
+  "run_at_utc": "2026-09-08T16:16:16.857025+00:00",
+  "dataset": "retrieval_seed_v1",
+  "dataset_sha256": "37acf9288cc9d712bf0e7e11782e03ae00f26d177f319bf30dbffab2a018d108",
+  "code_sha256": {
+    "backend\\app\\pipeline\\__init__.py": "b6f7c7e0a043afd0d775d6c974584679f0b7015ec59650f657dcc6fd9ac96f93",
+    "backend\\app\\pipeline\\claim_analysis\\__init__.py": "96531a61393a1c8dc2802c5b96792d3b24c0b93b657ecbd2b890daea4e9769c8",
+    "backend\\app\\pipeline\\claim_analysis\\categories.py": "d1fc2b9b9ce3169eff6f19b3e37505fc181969663fc2300c9b9bff7e23956f5c",
+    "backend\\app\\pipeline\\claim_analysis\\service.py": "a23971622235adcee9cdec8e418fe29eaffb382c816dce5217e4481843d2ca92",
+    "backend\\app\\pipeline\\evidence_assessment\\__init__.py": "141156c7d6941baee00e5bfd3743922be9f7811b8135e4da79cf5ab97b9526e6",
+    "backend\\app\\pipeline\\evidence_assessment\\semantic.py": "a70540d28c747308f600697141f6873e7056c541d719ff2ede4d9e0823ade9df",
+    "backend\\app\\pipeline\\evidence_assessment\\service.py": "01296d711a5bc3fba219c39e4bf0929d4b5ef10db42591c85743e40867ee534d",
+    "backend\\app\\pipeline\\evidence_retrieval\\__init__.py": "784ff159613a1a34ff3d9882214cab1f2ba0648feee3cd1c9d9ecf0ff58af850",
+    "backend\\app\\pipeline\\evidence_retrieval\\enhanced.py": "10685c16080a9b1ec1a885629ada9b661cbbc08aa17728b621dd359a2513ced2",
+    "backend\\app\\pipeline\\evidence_retrieval\\providers.py": "2dabcd877e6f9b2b73ffc55431eb34d84afae048ca9a0f9c8ec4a48a15765d04",
+    "backend\\app\\pipeline\\evidence_retrieval\\query_planning.py": "15d786cb187205a70023936ec80ea0213a4d58d90d4452b7bd62e0c6df46878f",
+    "backend\\app\\pipeline\\evidence_retrieval\\relevance.py": "36fc1c8daab5752171e6e9a0603c9cbd27f40cf45e1eb459ef61413eaccff297",
+    "backend\\app\\pipeline\\evidence_retrieval\\service.py": "39203108b602c5ce0d65b82df2893baf574519b2c29b3a3b2cbbf7a72c1f2b5e",
+    "backend\\app\\pipeline\\evidence_retrieval\\source_policy.py": "c9d3f3f9c799d81ab16d929c31f5c1b65ad60c643a3ede3fa4515304d13c1642",
+    "backend\\app\\pipeline\\evidence_retrieval\\sources.py": "91e09ec57a937750ad4bff9800c5ffc698d5de684021187a9a42ddaeb67ea90c",
+    "backend\\app\\pipeline\\input_preparation\\__init__.py": "a1d7643639657ec28d3d99dfb34e7c2ffc04cc9a97dd66367d47b5151b3de49c",
+    "backend\\app\\pipeline\\input_preparation\\language_validation.py": "95cb06c2759beaabc991f51849f4e2c625222561ce7e69cb5cb0a448b0e6b7eb",
+    "backend\\app\\pipeline\\input_preparation\\service.py": "b8370b2c1e05c3a9d7bb7b858f4bee3f62bf3ab1c8301489d7f5f7a598a31685",
+    "backend\\app\\pipeline\\orchestration\\__init__.py": "cb29825160b07e47d6d1d3645a60b5c424810924eb8031ef881af7377e696bfd",
+    "backend\\app\\pipeline\\orchestration\\dependencies.py": "35d0654c0e8fa109e31c97f6aabe141e575dfa89b7dccaacbd1600a53435de2f",
+    "backend\\app\\pipeline\\orchestration\\repository.py": "10fbb884fdb04157258a5de0a0a928876659c15708c828b1dac2cd49d9094441",
+    "backend\\app\\pipeline\\orchestration\\service.py": "dcceb71389d661909200e6696c7316fdc785ffa9e988bfaa7ce8e3106b0e1825",
+    "backend\\app\\pipeline\\shared\\__init__.py": "b18ebce3428991c3cbed1ac1679b5e37de33545d5b6f74811ec9e4912eb209ed",
+    "backend\\app\\pipeline\\shared\\errors.py": "c1371c8c8e022c63492b451237b5c9545fe7eecd1c58fcc6b11db8d92113e25e",
+    "backend\\app\\pipeline\\shared\\models.py": "ae3c58d4d0c085633f0e7f36dcef6d125b308100d493ba3595f51ff0f63fe0a5"
+  },
+  "scope": "Live input/claim/retrieval/assessment with in-memory result assembly. Pending human label/citation review. No Firestore writes or Android test. Shared claim analysis between modes, alternating mode order. Domain diversity is limited; not an independent benchmark.",
+  "planned_cases": 3,
+  "cases": [
+    {
+      "id": "phuket_personal",
+      "input": "I need to have 20000 baht in cash to enter phuket",
+      "split": "regression",
+      "expected_provisional": "insufficient",
+      "claim_analysis": {
+        "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement makes a specific, objectively checkable claim about a cash requirement for entering Phuket.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "catalogue": {
+          "outcome": "insufficient",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "a82cd9c1-3f25-478a-9214-dc42d8c34fbc",
+            "processing_status": "completed",
+            "original_text": "I need to have 20000 baht in cash to enter phuket",
+            "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+            "claim_category": "factual",
+            "checkable": true,
+            "concern_label": "Not Enough Information",
+            "misinformation_risk_score": null,
+            "uncertainty": "High",
+            "uncertainty_reasons": [
+              "No sufficiently relevant evidence was found."
+            ],
+            "explanation": "There is not enough reliable evidence to assess this claim.",
+            "recommended_action": "Check an authoritative source before believing or forwarding this claim.",
+            "evidence": [],
+            "warnings": [
+              "No sufficiently relevant evidence was found."
+            ],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-v2",
+            "created_at": "2026-09-08T16:16:25.347995Z"
+          },
+          "duration_seconds": 19.71,
+          "retrieval": [
+            {
+              "retrieval_status": "no_evidence",
+              "evidence": [],
+              "warnings": [
+                "No sufficiently relevant evidence was found."
+              ],
+              "trace": null
+            }
+          ]
+        },
+        "web": {
+          "error_code": "RETRIEVAL_UNAVAILABLE",
+          "stage": "evidence_retrieval",
+          "duration_seconds": 25.33,
+          "retrieval": [
+            {
+              "retrieval_status": "failed",
+              "evidence": [],
+              "warnings": [
+                "Some page extractions could not be completed; any returned evidence was validated separately.",
+                "Some websites were used only as leads because their publisher identity was not established by the prototype source policy."
+              ],
+              "trace": {
+                "search_requests": 3,
+                "extraction_urls": 4,
+                "relevance_calls": 0,
+                "decisions": [
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/1185879642803804/posts/1474121027312996"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/ThailandTourism/comments/1pkkf8g/20k_baht_rule"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/khaolakthailand2019/posts/2289524434889199"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/travel-to-thailand/thailand-entry-requirements-2025-what-to-know-before-your-travel"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/destinationthailandvisa/posts/2452235181966090"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://instagram.com/p/DXPcDNsDF4e"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/ThailandTourism/comments/1td6tmz/is_it_true_there_is_an_enforced_policy_of_needing"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/thailand-visa/visa-on-arrival"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://tripadvisor.com/ShowTopic-g293915-i3686-k15495034-New_law_about_cash_when_entering_Thailand-Thailand.html"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://instagram.com/p/DXPcDNsDF4e?hl=en"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/thaivisacentre/posts/there-has-been-a-lot-of-confusion-in-the-community-recently-especially-after-a-f/1421502996685369"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://30sundays.club/blog/thailand-travel-guidelines-in-2026"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://tourismthailand.my/travel_visa.php"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/travel-to-thailand/thailand-entry-requirements"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/what-is-the-20000-baht-cash-requirement-for-entry-to-thailand"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/tag/dFJCWBlKU0VHXEFSXFBXREEYUFtHElxZREFI/cash-requirements-for-entry"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/is-20000-baht-cash-required-on-entering-thailand-with-a-multi-entry-non-o-visa-for-family-visits"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/what-are-the-current-requirements-for-carrying-cash-at-immigration-in-thailand"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://backpacklife.com/thailand/do-i-really-need-to-take-20000-baht-to-enter-thailand-2026-entry-rule-explained"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/what-are-the-cash-requirements-for-visa-exempt-entry-into-thailand"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://asq.in.th/question/what-is-the-20000-baht-cash-requirement-for-entry-to-thailand"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://asq.in.th/tag/dFJCWBlKU0VHXEFSXFBXREEYUFtHElxZREFI/cash-requirements-for-entry"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "food_opinion",
+      "input": "Chicken rice is the best food in Singapore.",
+      "split": "regression",
+      "expected_provisional": "insufficient",
+      "claim_analysis": {
+        "extracted_claim": null,
+        "claim_category": "opinion",
+        "checkable": false,
+        "classification_reason": "The statement expresses a personal preference about food, not a verifiable factual claim.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "catalogue": {
+          "outcome": "insufficient",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "bcbb6585-f110-4729-b49b-f0bb2a272ecb",
+            "processing_status": "completed",
+            "original_text": "Chicken rice is the best food in Singapore.",
+            "extracted_claim": null,
+            "claim_category": "opinion",
+            "checkable": false,
+            "concern_label": "Not Enough Information",
+            "misinformation_risk_score": null,
+            "uncertainty": "High",
+            "uncertainty_reasons": [
+              "No objectively checkable factual claim was found."
+            ],
+            "explanation": "This statement was classified as opinion, so it cannot be assessed as a factual misinformation claim.",
+            "recommended_action": "Treat this as non-factual content rather than a verified fact.",
+            "evidence": [],
+            "warnings": [],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-v2",
+            "created_at": "2026-09-08T16:16:58.418054Z"
+          },
+          "duration_seconds": 5.0,
+          "retrieval": []
+        },
+        "web": {
+          "outcome": "insufficient",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "bc7ea78d-45c0-4220-95ad-a57959d7c3a9",
+            "processing_status": "completed",
+            "original_text": "Chicken rice is the best food in Singapore.",
+            "extracted_claim": null,
+            "claim_category": "opinion",
+            "checkable": false,
+            "concern_label": "Not Enough Information",
+            "misinformation_risk_score": null,
+            "uncertainty": "High",
+            "uncertainty_reasons": [
+              "No objectively checkable factual claim was found."
+            ],
+            "explanation": "This statement was classified as opinion, so it cannot be assessed as a factual misinformation claim.",
+            "recommended_action": "Treat this as non-factual content rather than a verified fact.",
+            "evidence": [],
+            "warnings": [],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-web-v1",
+            "created_at": "2026-09-08T16:16:58.418143Z"
+          },
+          "duration_seconds": 5.0,
+          "retrieval": []
+        }
+      }
+    },
+    {
+      "id": "great_wall_moon",
+      "input": "The Great Wall of China is visible from the Moon.",
+      "split": "regression",
+      "expected_provisional": "refuted",
+      "claim_analysis": {
+        "extracted_claim": "The Great Wall of China is visible from the Moon.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement makes an objectively checkable assertion about visibility of the Great Wall from the Moon.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "web": {
+          "outcome": "refuted",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "64bfc3e2-c196-40de-a819-2ac9c68690a7",
+            "processing_status": "completed",
+            "original_text": "The Great Wall of China is visible from the Moon.",
+            "extracted_claim": "The Great Wall of China is visible from the Moon.",
+            "claim_category": "factual",
+            "checkable": true,
+            "concern_label": "High Concern",
+            "misinformation_risk_score": 82,
+            "uncertainty": "Medium",
+            "uncertainty_reasons": [
+              "The passages agree, but source independence and assessment accuracy have not been established.",
+              "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+            ],
+            "explanation": "The cited government evidence contradicts the submitted claim. NASA: The passage explicitly states that the Great Wall is not visible from the Moon, directly opposing the claim.",
+            "recommended_action": "Do not forward the claim yet. Review the contradicting cited evidence first.",
+            "evidence": [
+              {
+                "evidence_id": "source-8571fdc677612ee2",
+                "title": "Great Wall - NASA",
+                "url": "https://nasa.gov/image-article/great-wall",
+                "publisher": "NASA",
+                "published_at": null,
+                "passage": "Commercial Spacecraft for NASA’s Swift Boost Continues Tech Demo\n\n![NASA Welcomes Türkiye as Newest Artemis Accords Signatory  ](https://www.nasa.gov/wp-content/uploads/2026/08/nhq202608310009large.jpg?w=1024)\n\n### NASA Welcomes Türkiye as Newest Artemis Accords Signatory\n\n![President Honors NASA’s Artemis II Crew with Highest US Space Award](https://www.nasa.gov/wp-content/uploads/2026/08/congressional-space-medal-of-honor-ceremony-1.jpg?w=1024)\n\n### President Honors NASA’s Artemis II Crew with Highest US Space Award\n\n### Highlights\n\n![La NASA anuncia la cobertura de la misión lunar Artemis II](https://www.nasa.gov/wp-content/uploads/2026/03/a2crew-7ff19d.jpg?w=1024)\n\n### La NASA anuncia la cobertura de la misión lunar Artemis II\n\n![Agenda diaria de la misión a la Luna de Artemis II de la NASA](https://www.nasa.gov/wp-content/uploads/2026/03/suit-patch.jpg?w=1024)\n\n### Agenda diaria de la misión a la Luna de Artemis II de la NASA\n\n![La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general](https://images-assets.nasa.gov/image/iss074e0325229/iss074e0325229~large.jpg?w=1920&h=1280&fit=clip&crop=faces%2Cfocalpoint)\n\n### La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general\n\n1 min read\n\n# Great Wall\n\n![The headshot image of NASA](https://www.nasa.gov/wp-content/uploads/2023/04/cropped-nasa-logo-wallpaper-300x300.jpeg)\n\nNASA\n\n![Great Wall](https://www.nasa.gov/wp-content/uploads/2023/03/324461main_29_full.jpg?w=1041)\n\nThe Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station.  \nDespite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered",
+                "source_type": "government",
+                "stance": "contradicting",
+                "quality_score": 0.9,
+                "assessment_reason": "The passage explicitly states that the Great Wall is not visible from the Moon, directly opposing the claim.",
+                "evidence_quote": "Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered",
+                "provenance": {
+                  "source_policy": "catalogue",
+                  "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                  "origin_group": "nasa.gov",
+                  "discovery_method": "preferred_search",
+                  "relevance": "direct",
+                  "relevance_reason": "The passage explicitly addresses the claim that the Great Wall is visible from the Moon and states it is not.",
+                  "relevance_quote": "Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered",
+                  "applicability": "established",
+                  "applicability_reason": "The statement concerns the Great Wall of China and its visibility from the Moon, matching the subject, location, and scope of the claim.",
+                  "condition_quotes": [
+                    "Despite myths to the contrary, the wall isn’t visible from the moon",
+                    "and is difficult or impossible to see from Earth orbit without the high-powered"
+                  ]
+                }
+              },
+              {
+                "evidence_id": "source-398b47e362ef37a0",
+                "title": "Is it Really Possible to See the Great Wall of China from Space with ...",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3972694",
+                "publisher": "pmc.ncbi.nlm.nih.gov",
+                "published_at": null,
+                "passage": "Such angle is smaller than the one subtended by the Great Wall when observed from Space. Westherimer's results are based on the detection of a black line against a bright background; in this scenario, the black line causes a local dip in the luminance of the image, which makes it possible for the eye to detect it. Such a great local change in luminance also makes the detection of the stars at night possible (if bright enough), as does the reflection of the sun in a small distant mirror (as used in a boat to indicate its position). Therefore, in principle, if the Great Wall reflected the sunlight as a long mirror or it were self-illuminated with high-power lamps it could probably be seen form Space. However, in this hypothetical case, the astronaut would not be seeing the Wall but either the lamps or the sunlight reflection. Moreover, natural sun reflection would be very unlikely due to the type of material it was built with (limestone, clay, granite and brick).\n\n## Figure 1.\n\n![Figure 1](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/4a31/3972694/f2106ad9b31d/gr1.jpg)\n\n![Figure 1](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/4a31/3972694/f2106ad9b31d/gr1.jpg)\n\nPicture of the Great Wall of China (courtesy of Viviana Fernández).\n\nObviously, it would be even less likely to see the Great Wall from the moon, situated at a minimum distance of 350,000 km, because the visual acuity would have to be 17,000 times (!) better than that of the normal human eye (in this case it would amount to seeing the cable from a distance of more than 1000 km). In this sense, if the question was: “Could we see the Great Wall of China at a simple glance from Space?” The answer would also have to be “no”, because an astronaut located on the limit of the atmosphere, about 80 km (50 miles) away, would need a",
+                "source_type": "government",
+                "stance": "contradicting",
+                "quality_score": 0.9,
+                "assessment_reason": "The passage states that seeing the Great Wall from the Moon would be even less likely and would require visual acuity far beyond normal human ability, directly contradicting the claim that it is visible from the Moon.",
+                "evidence_quote": "Obviously, it would be even less likely to see the Great Wall from the moon, situated at a minimum distance of 350,000 km, because the visual acuity would have to be 17,000 times (!) better than that of the normal human eye (in this case it would amount to seeing the cable from a distance of more than 1000 km).",
+                "provenance": {
+                  "source_policy": "government_namespace",
+                  "source_reason": "Hostname is within the registration-restricted .gov namespace. This does not certify page content or topical authority.",
+                  "origin_group": "gov",
+                  "discovery_method": "web_search",
+                  "relevance": "direct",
+                  "relevance_reason": "The passage explicitly addresses visibility of the Great Wall from the Moon and explains why it is not possible.",
+                  "relevance_quote": "Obviously, it would be even less likely to see the Great Wall from the moon, situated at a minimum distance of 350,000 km, because the visual acuity would have to be 17,000 times (!) better than that of the normal human eye (in this case it would amount to seeing the cable from a distance of more than 1000 km).",
+                  "applicability": "established",
+                  "applicability_reason": "The claim and the passage refer to the same object (Great Wall of China), the same observer (human eye), and the same location (the Moon).",
+                  "condition_quotes": [
+                    "the visual acuity would have to be 17,000 times (!) better than that of the normal human eye",
+                    "situated at a minimum distance of 350,000 km"
+                  ]
+                }
+              }
+            ],
+            "warnings": [
+              "Some semantic relevance checks could not be completed; any returned evidence was validated separately."
+            ],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-web-v1",
+            "created_at": "2026-09-08T16:16:25.810819Z"
+          },
+          "duration_seconds": 32.78,
+          "retrieval": [
+            {
+              "retrieval_status": "completed",
+              "evidence": [
+                {
+                  "evidence_id": "source-8571fdc677612ee2",
+                  "title": "Great Wall - NASA",
+                  "url": "https://nasa.gov/image-article/great-wall",
+                  "publisher": "NASA",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "Commercial Spacecraft for NASA’s Swift Boost Continues Tech Demo\n\n![NASA Welcomes Türkiye as Newest Artemis Accords Signatory  ](https://www.nasa.gov/wp-content/uploads/2026/08/nhq202608310009large.jpg?w=1024)\n\n### NASA Welcomes Türkiye as Newest Artemis Accords Signatory\n\n![President Honors NASA’s Artemis II Crew with Highest US Space Award](https://www.nasa.gov/wp-content/uploads/2026/08/congressional-space-medal-of-honor-ceremony-1.jpg?w=1024)\n\n### President Honors NASA’s Artemis II Crew with Highest US Space Award\n\n### Highlights\n\n![La NASA anuncia la cobertura de la misión lunar Artemis II](https://www.nasa.gov/wp-content/uploads/2026/03/a2crew-7ff19d.jpg?w=1024)\n\n### La NASA anuncia la cobertura de la misión lunar Artemis II\n\n![Agenda diaria de la misión a la Luna de Artemis II de la NASA](https://www.nasa.gov/wp-content/uploads/2026/03/suit-patch.jpg?w=1024)\n\n### Agenda diaria de la misión a la Luna de Artemis II de la NASA\n\n![La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general](https://images-assets.nasa.gov/image/iss074e0325229/iss074e0325229~large.jpg?w=1920&h=1280&fit=clip&crop=faces%2Cfocalpoint)\n\n### La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general\n\n1 min read\n\n# Great Wall\n\n![The headshot image of NASA](https://www.nasa.gov/wp-content/uploads/2023/04/cropped-nasa-logo-wallpaper-300x300.jpeg)\n\nNASA\n\n![Great Wall](https://www.nasa.gov/wp-content/uploads/2023/03/324461main_29_full.jpg?w=1041)\n\nThe Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station.  \nDespite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered",
+                  "source_type": "government",
+                  "retrieval_score": 0.9,
+                  "retrieved_at": "2026-09-08T16:16:25.947648Z",
+                  "provenance": {
+                    "source_policy": "catalogue",
+                    "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                    "origin_group": "nasa.gov",
+                    "discovery_method": "preferred_search",
+                    "relevance": "direct",
+                    "relevance_reason": "The passage explicitly addresses the claim that the Great Wall is visible from the Moon and states it is not.",
+                    "relevance_quote": "Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered",
+                    "applicability": "established",
+                    "applicability_reason": "The statement concerns the Great Wall of China and its visibility from the Moon, matching the subject, location, and scope of the claim.",
+                    "condition_quotes": [
+                      "Despite myths to the contrary, the wall isn’t visible from the moon",
+                      "and is difficult or impossible to see from Earth orbit without the high-powered"
+                    ]
+                  }
+                },
+                {
+                  "evidence_id": "source-398b47e362ef37a0",
+                  "title": "Is it Really Possible to See the Great Wall of China from Space with ...",
+                  "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3972694",
+                  "publisher": "pmc.ncbi.nlm.nih.gov",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "Such angle is smaller than the one subtended by the Great Wall when observed from Space. Westherimer's results are based on the detection of a black line against a bright background; in this scenario, the black line causes a local dip in the luminance of the image, which makes it possible for the eye to detect it. Such a great local change in luminance also makes the detection of the stars at night possible (if bright enough), as does the reflection of the sun in a small distant mirror (as used in a boat to indicate its position). Therefore, in principle, if the Great Wall reflected the sunlight as a long mirror or it were self-illuminated with high-power lamps it could probably be seen form Space. However, in this hypothetical case, the astronaut would not be seeing the Wall but either the lamps or the sunlight reflection. Moreover, natural sun reflection would be very unlikely due to the type of material it was built with (limestone, clay, granite and brick).\n\n## Figure 1.\n\n![Figure 1](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/4a31/3972694/f2106ad9b31d/gr1.jpg)\n\n![Figure 1](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/4a31/3972694/f2106ad9b31d/gr1.jpg)\n\nPicture of the Great Wall of China (courtesy of Viviana Fernández).\n\nObviously, it would be even less likely to see the Great Wall from the moon, situated at a minimum distance of 350,000 km, because the visual acuity would have to be 17,000 times (!) better than that of the normal human eye (in this case it would amount to seeing the cable from a distance of more than 1000 km). In this sense, if the question was: “Could we see the Great Wall of China at a simple glance from Space?” The answer would also have to be “no”, because an astronaut located on the limit of the atmosphere, about 80 km (50 miles) away, would need a",
+                  "source_type": "government",
+                  "retrieval_score": 0.9,
+                  "retrieved_at": "2026-09-08T16:16:25.947648Z",
+                  "provenance": {
+                    "source_policy": "government_namespace",
+                    "source_reason": "Hostname is within the registration-restricted .gov namespace. This does not certify page content or topical authority.",
+                    "origin_group": "gov",
+                    "discovery_method": "web_search",
+                    "relevance": "direct",
+                    "relevance_reason": "The passage explicitly addresses visibility of the Great Wall from the Moon and explains why it is not possible.",
+                    "relevance_quote": "Obviously, it would be even less likely to see the Great Wall from the moon, situated at a minimum distance of 350,000 km, because the visual acuity would have to be 17,000 times (!) better than that of the normal human eye (in this case it would amount to seeing the cable from a distance of more than 1000 km).",
+                    "applicability": "established",
+                    "applicability_reason": "The claim and the passage refer to the same object (Great Wall of China), the same observer (human eye), and the same location (the Moon).",
+                    "condition_quotes": [
+                      "the visual acuity would have to be 17,000 times (!) better than that of the normal human eye",
+                      "situated at a minimum distance of 350,000 km"
+                    ]
+                  }
+                }
+              ],
+              "warnings": [
+                "Some semantic relevance checks could not be completed; any returned evidence was validated separately."
+              ],
+              "trace": {
+                "search_requests": 3,
+                "extraction_urls": 4,
+                "relevance_calls": 4,
+                "decisions": [
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://snopes.com/fact-check/great-wall-from-moon"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "http://snopes.com/science/greatwall.asp"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "http://snopes.com/science/greatwal.htm"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://snopes.com/science/greatwall.asp"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://nasa.gov/image-article/great-wall"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "http://nasa.gov/vision/space/workinginspace/great_wall.html"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://science.nasa.gov/photojournal/space-radar-image-of-great-wall-of-china-2"
+                  },
+                  {
+                    "decision": "accepted_direct_established",
+                    "url": "https://nasa.gov/image-article/great-wall"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://scientificamerican.com/article/is-chinas-great-wall-visible-from-space"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://skyatnightmagazine.com/space-science/can-you-see-great-wall-china-from-space"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/sciencesquadgroup/posts/1845187046103497"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://en.wikipedia.org/wiki/Artificial_structures_visible_from_space"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://vaticanobservatory.org/sacred-space-astronomy/on-seeing-the-great-wall-of-china-from-the-moon"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://youtube.com/watch?v=itvHEk-RwCI&vl=en-US"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://britannica.com/question/Can-you-see-the-Great-Wall-of-China-from-space"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://quora.com/My-history-teacher-insists-The-Great-Wall-of-China-is-visible-from-the-Moon-I-told-him-Its-a-hoax-How-can-I-prove-him-wrong"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/1940312543110382/posts/2561519204323043"
+                  },
+                  {
+                    "decision": "discovered_government_namespace",
+                    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3972694"
+                  },
+                  {
+                    "decision": "accepted_direct_established",
+                    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3972694"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "catalogue": {
+          "outcome": "refuted",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "5e864179-ff99-4646-be31-b7956c5a8149",
+            "processing_status": "completed",
+            "original_text": "The Great Wall of China is visible from the Moon.",
+            "extracted_claim": "The Great Wall of China is visible from the Moon.",
+            "claim_category": "factual",
+            "checkable": true,
+            "concern_label": "High Concern",
+            "misinformation_risk_score": 82,
+            "uncertainty": "Medium",
+            "uncertainty_reasons": [
+              "The passages agree, but source independence and assessment accuracy have not been established.",
+              "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+            ],
+            "explanation": "The cited evidence contradicts the submitted claim. Snopes: The passage states that the Great Wall is almost invisible from 180 miles up, contradicting the claim that it is visible from the Moon.",
+            "recommended_action": "Do not forward the claim yet. Review the contradicting cited evidence first.",
+            "evidence": [
+              {
+                "evidence_id": "source-9708d43fc39aa646",
+                "title": "Is the Great Wall of China Visible from the Moon?",
+                "url": "https://snopes.com/fact-check/great-wall-from-moon",
+                "publisher": "Snopes",
+                "published_at": "2001-11-11",
+                "passage": "Claim: The Great Wall of China is the only man-made object visible from the moon. Rating: False False About this rating The claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term. If we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object visible from that distance: NASA's Earth from Space photographic archive (particularly the Human Interactions section) shows that pictures taken from low orbit reveal human-built structures such as highways, airports, bridges, dams, and components of the Kennedy Space Center. Secondly, even though other objects are visible at this distance, according to Shuttle astronaut Jay Apt, the Great Wall is barely discernable, if not invisible: > We look for the Great Wall of China. Although we can see things as small as airport runways, the Great Wall seems to be made largely of materials that have the same color as the surrounding soil. Despite persistent stories that it can be seen from the moon, the Great Wall is almost invisible from only 180 miles up! An object that can barely be seen from a height of 180 miles up is obviously not going t",
+                "source_type": "fact_check",
+                "stance": "contradicting",
+                "quality_score": 0.82,
+                "assessment_reason": "The passage states that the Great Wall is almost invisible from 180 miles up, contradicting the claim that it is visible from the Moon.",
+                "evidence_quote": "Despite persistent stories that it can be seen from the moon, the Great Wall is almost invisible from only 180 miles up!",
+                "provenance": null
+              },
+              {
+                "evidence_id": "source-b8ca07caed78c8f5",
+                "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+                "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925",
+                "publisher": "Snopes",
+                "published_at": null,
+                "passage": "Whatever its source, since the Great Wall claim antedates man's launching of satellites (and thereby the possibility of photography from space) by decades, it was not the outgrowth of a misinterpreted photograph taken by satellite or a manned space mission. The Great Wall of China extends for some 1,500 miles (although it is actually a series of walls rather than one contiguous wall), and the claim that it is visible from the moon was probably an attempt to find a concise way of conveying the grand scale of the wall to people who had never seen it (outside of black-and-white photographs that could only reproduce small portions of the wall) and of asserting the triumph of man's mastery of the vastness of nature (i.e., even if we couldn't travel into space ourselves, we'd already [...] Snopes Logo Snopes Now available in the app store! Open Log in to activate your ad-free access. It looks like you might have a Snopes membership!",
+                "source_type": "fact_check",
+                "stance": "contradicting",
+                "quality_score": 0.92,
+                "assessment_reason": "The passage suggests the claim is a figurative attempt rather than a factual observation, indicating the wall is not actually visible from the Moon.",
+                "evidence_quote": "the claim that it is visible from the moon was probably an attempt to find a concise way of conveying the grand scale of the wall",
+                "provenance": null
+              },
+              {
+                "evidence_id": "source-8571fdc677612ee2",
+                "title": "Great Wall - NASA",
+                "url": "https://nasa.gov/image-article/great-wall",
+                "publisher": "NASA",
+                "published_at": null,
+                "passage": "# Great Wall The headshot image of NASA NASA Great Wall The Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station. Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo. Image Credit: NASA NASA Logo ### National Aeronautics and Space Administration NASA explores the unknown in air and space, innovates for the benefit of humanity, and inspires the world through discovery.",
+                "source_type": "government",
+                "stance": "contradicting",
+                "quality_score": 0.75,
+                "assessment_reason": "The passage explicitly states that the Great Wall of China is not visible from the Moon, directly opposing the claim.",
+                "evidence_quote": "Despite myths to the contrary, the wall isn’t visible from the moon",
+                "provenance": null
+              },
+              {
+                "evidence_id": "source-d12b583b2eda77a4",
+                "title": "Space Radar Image of Great Wall of China - NASA Science",
+                "url": "https://science.nasa.gov/photojournal/space-radar-image-of-great-wall-of-china-2",
+                "publisher": "NASA",
+                "published_at": null,
+                "passage": "### NASA Armstrong Advances Flight Research and Innovation in 2025. # Space Radar Image of Great Wall of China. * SIR-C/X-SAR (Shuttle Imaging Radar-C / X-Band Synthetic Aperture Radar). ## Space Radar Image of Great Wall of China.",
+                "source_type": "government",
+                "stance": "neutral",
+                "quality_score": 0.45,
+                "assessment_reason": "The passage only mentions a space radar image of the Great Wall and does not provide any information about its visibility from the Moon, so it neither supports nor contradicts the claim.",
+                "evidence_quote": null,
+                "provenance": null
+              }
+            ],
+            "warnings": [],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-v2",
+            "created_at": "2026-09-08T16:16:49.652768Z"
+          },
+          "duration_seconds": 18.8,
+          "retrieval": [
+            {
+              "retrieval_status": "completed",
+              "evidence": [
+                {
+                  "evidence_id": "source-9708d43fc39aa646",
+                  "title": "Is the Great Wall of China Visible from the Moon?",
+                  "url": "https://snopes.com/fact-check/great-wall-from-moon",
+                  "publisher": "Snopes",
+                  "author": null,
+                  "published_at": "2001-11-11",
+                  "passage": "Claim: The Great Wall of China is the only man-made object visible from the moon. Rating: False False About this rating The claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term. If we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object visible from that distance: NASA's Earth from Space photographic archive (particularly the Human Interactions section) shows that pictures taken from low orbit reveal human-built structures such as highways, airports, bridges, dams, and components of the Kennedy Space Center. Secondly, even though other objects are visible at this distance, according to Shuttle astronaut Jay Apt, the Great Wall is barely discernable, if not invisible: > We look for the Great Wall of China. Although we can see things as small as airport runways, the Great Wall seems to be made largely of materials that have the same color as the surrounding soil. Despite persistent stories that it can be seen from the moon, the Great Wall is almost invisible from only 180 miles up! An object that can barely be seen from a height of 180 miles up is obviously not going t",
+                  "source_type": "fact_check",
+                  "retrieval_score": 1.0,
+                  "retrieved_at": "2026-09-08T16:16:51.119791Z",
+                  "provenance": null
+                },
+                {
+                  "evidence_id": "source-b8ca07caed78c8f5",
+                  "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+                  "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925",
+                  "publisher": "Snopes",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "Whatever its source, since the Great Wall claim antedates man's launching of satellites (and thereby the possibility of photography from space) by decades, it was not the outgrowth of a misinterpreted photograph taken by satellite or a manned space mission. The Great Wall of China extends for some 1,500 miles (although it is actually a series of walls rather than one contiguous wall), and the claim that it is visible from the moon was probably an attempt to find a concise way of conveying the grand scale of the wall to people who had never seen it (outside of black-and-white photographs that could only reproduce small portions of the wall) and of asserting the triumph of man's mastery of the vastness of nature (i.e., even if we couldn't travel into space ourselves, we'd already [...] Snopes Logo Snopes Now available in the app store! Open Log in to activate your ad-free access. It looks like you might have a Snopes membership!",
+                  "source_type": "fact_check",
+                  "retrieval_score": 0.9202,
+                  "retrieved_at": "2026-09-08T16:16:51.386527Z",
+                  "provenance": null
+                },
+                {
+                  "evidence_id": "source-8571fdc677612ee2",
+                  "title": "Great Wall - NASA",
+                  "url": "https://nasa.gov/image-article/great-wall",
+                  "publisher": "NASA",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "# Great Wall The headshot image of NASA NASA Great Wall The Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station. Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo. Image Credit: NASA NASA Logo ### National Aeronautics and Space Administration NASA explores the unknown in air and space, innovates for the benefit of humanity, and inspires the world through discovery.",
+                  "source_type": "government",
+                  "retrieval_score": 0.7467,
+                  "retrieved_at": "2026-09-08T16:16:51.387596Z",
+                  "provenance": null
+                },
+                {
+                  "evidence_id": "source-d12b583b2eda77a4",
+                  "title": "Space Radar Image of Great Wall of China - NASA Science",
+                  "url": "https://science.nasa.gov/photojournal/space-radar-image-of-great-wall-of-china-2",
+                  "publisher": "NASA",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "### NASA Armstrong Advances Flight Research and Innovation in 2025. # Space Radar Image of Great Wall of China. * SIR-C/X-SAR (Shuttle Imaging Radar-C / X-Band Synthetic Aperture Radar). ## Space Radar Image of Great Wall of China.",
+                  "source_type": "government",
+                  "retrieval_score": 0.6,
+                  "retrieved_at": "2026-09-08T16:16:51.388265Z",
+                  "provenance": null
+                }
+              ],
+              "warnings": [],
+              "trace": null
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "summary": {
+    "catalogue": {
+      "cases": 3,
+      "provisional_label_matches": 3,
+      "wrong_decisive": 0,
+      "errors": 0,
+      "with_evidence": 1,
+      "insufficient": 2,
+      "quote_integrity_failures": 0,
+      "mean_seconds": 14.5,
+      "max_seconds": 19.71
+    },
+    "web": {
+      "cases": 3,
+      "provisional_label_matches": 2,
+      "wrong_decisive": 0,
+      "errors": 1,
+      "with_evidence": 1,
+      "insufficient": 1,
+      "quote_integrity_failures": 0,
+      "mean_seconds": 21.04,
+      "max_seconds": 32.78
+    }
+  }
+}

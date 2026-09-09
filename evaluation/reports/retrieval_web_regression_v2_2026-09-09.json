@@ -1,0 +1,190 @@
+{
+  "run_at_utc": "2026-09-08T16:22:58.312835+00:00",
+  "dataset": "retrieval_seed_v1",
+  "dataset_sha256": "37acf9288cc9d712bf0e7e11782e03ae00f26d177f319bf30dbffab2a018d108",
+  "code_sha256": {
+    "backend\\app\\pipeline\\__init__.py": "b6f7c7e0a043afd0d775d6c974584679f0b7015ec59650f657dcc6fd9ac96f93",
+    "backend\\app\\pipeline\\claim_analysis\\__init__.py": "96531a61393a1c8dc2802c5b96792d3b24c0b93b657ecbd2b890daea4e9769c8",
+    "backend\\app\\pipeline\\claim_analysis\\categories.py": "d1fc2b9b9ce3169eff6f19b3e37505fc181969663fc2300c9b9bff7e23956f5c",
+    "backend\\app\\pipeline\\claim_analysis\\service.py": "a23971622235adcee9cdec8e418fe29eaffb382c816dce5217e4481843d2ca92",
+    "backend\\app\\pipeline\\evidence_assessment\\__init__.py": "141156c7d6941baee00e5bfd3743922be9f7811b8135e4da79cf5ab97b9526e6",
+    "backend\\app\\pipeline\\evidence_assessment\\semantic.py": "a70540d28c747308f600697141f6873e7056c541d719ff2ede4d9e0823ade9df",
+    "backend\\app\\pipeline\\evidence_assessment\\service.py": "01296d711a5bc3fba219c39e4bf0929d4b5ef10db42591c85743e40867ee534d",
+    "backend\\app\\pipeline\\evidence_retrieval\\__init__.py": "784ff159613a1a34ff3d9882214cab1f2ba0648feee3cd1c9d9ecf0ff58af850",
+    "backend\\app\\pipeline\\evidence_retrieval\\enhanced.py": "e922392eee6a003456e8eadea4247ad69ed8f1fef5b4fb8f869415b2efe2b272",
+    "backend\\app\\pipeline\\evidence_retrieval\\providers.py": "2dabcd877e6f9b2b73ffc55431eb34d84afae048ca9a0f9c8ec4a48a15765d04",
+    "backend\\app\\pipeline\\evidence_retrieval\\query_planning.py": "15d786cb187205a70023936ec80ea0213a4d58d90d4452b7bd62e0c6df46878f",
+    "backend\\app\\pipeline\\evidence_retrieval\\relevance.py": "0c27ce44bbbc9c9ea4dcf9b7c59cf5d406938e50d0742685d833124f1bdd8902",
+    "backend\\app\\pipeline\\evidence_retrieval\\service.py": "39203108b602c5ce0d65b82df2893baf574519b2c29b3a3b2cbbf7a72c1f2b5e",
+    "backend\\app\\pipeline\\evidence_retrieval\\source_policy.py": "6878c6ded692c5a7b5d3d2e1a12cc32587f277cd501bca594f82a73a32238014",
+    "backend\\app\\pipeline\\evidence_retrieval\\sources.py": "91e09ec57a937750ad4bff9800c5ffc698d5de684021187a9a42ddaeb67ea90c",
+    "backend\\app\\pipeline\\input_preparation\\__init__.py": "a1d7643639657ec28d3d99dfb34e7c2ffc04cc9a97dd66367d47b5151b3de49c",
+    "backend\\app\\pipeline\\input_preparation\\language_validation.py": "95cb06c2759beaabc991f51849f4e2c625222561ce7e69cb5cb0a448b0e6b7eb",
+    "backend\\app\\pipeline\\input_preparation\\service.py": "b8370b2c1e05c3a9d7bb7b858f4bee3f62bf3ab1c8301489d7f5f7a598a31685",
+    "backend\\app\\pipeline\\orchestration\\__init__.py": "cb29825160b07e47d6d1d3645a60b5c424810924eb8031ef881af7377e696bfd",
+    "backend\\app\\pipeline\\orchestration\\dependencies.py": "35d0654c0e8fa109e31c97f6aabe141e575dfa89b7dccaacbd1600a53435de2f",
+    "backend\\app\\pipeline\\orchestration\\repository.py": "10fbb884fdb04157258a5de0a0a928876659c15708c828b1dac2cd49d9094441",
+    "backend\\app\\pipeline\\orchestration\\service.py": "dcceb71389d661909200e6696c7316fdc785ffa9e988bfaa7ce8e3106b0e1825",
+    "backend\\app\\pipeline\\shared\\__init__.py": "b18ebce3428991c3cbed1ac1679b5e37de33545d5b6f74811ec9e4912eb209ed",
+    "backend\\app\\pipeline\\shared\\errors.py": "c1371c8c8e022c63492b451237b5c9545fe7eecd1c58fcc6b11db8d92113e25e",
+    "backend\\app\\pipeline\\shared\\models.py": "ae3c58d4d0c085633f0e7f36dcef6d125b308100d493ba3595f51ff0f63fe0a5"
+  },
+  "scope": "Live input/claim/retrieval/assessment with in-memory result assembly. Pending human label/citation review. No Firestore writes or Android test. Shared claim analysis between modes, alternating mode order. Domain diversity is limited; not an independent benchmark.",
+  "planned_cases": 3,
+  "cases": [
+    {
+      "id": "phuket_personal",
+      "input": "I need to have 20000 baht in cash to enter phuket",
+      "split": "regression",
+      "expected_provisional": "insufficient",
+      "claim_analysis": {
+        "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement asserts a specific cash amount required to enter Phuket, which is a publicly checkable factual claim.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "web": {
+          "error_code": "RETRIEVAL_UNAVAILABLE",
+          "stage": "evidence_retrieval",
+          "duration_seconds": 38.39,
+          "retrieval": [
+            {
+              "retrieval_status": "failed",
+              "evidence": [],
+              "warnings": [
+                "Some semantic relevance checks could not be completed; any returned evidence was validated separately.",
+                "Some websites were used only as leads because their publisher identity was not established by the prototype source policy."
+              ],
+              "trace": {
+                "search_requests": 2,
+                "extraction_urls": 4,
+                "relevance_calls": 2,
+                "decisions": [
+                  {
+                    "decision": "preferred_search",
+                    "url": "",
+                    "query": "I need to have 20,000 baht in cash to enter phuket"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/1185879642803804/posts/1474121027312996"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/ThailandTourism/comments/1pkkf8g/20k_baht_rule"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/khaolakthailand2019/posts/2289524434889199"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/travel-to-thailand/thailand-entry-requirements-2025-what-to-know-before-your-travel"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/destinationthailandvisa/posts/2452235181966090"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://instagram.com/p/DXPcDNsDF4e"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/ThailandTourism/comments/1td6tmz/is_it_true_there_is_an_enforced_policy_of_needing"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/thailand-visa/visa-on-arrival"
+                  },
+                  {
+                    "decision": "web_search",
+                    "url": "",
+                    "query": "Thailand entry financial requirements 20,000 baht"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thethaiger.com/guides/visa-information/how-much-money-enter-thailand-proof-of-funds"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://dtvthaivisa.com/blog/thailand-proof-of-funds-20000-baht-2026"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/travel-to-thailand/thailand-entry-requirements"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/thailand-visa/thailand-tourist-visa"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://visasnews.com/en/thailand-reminds-travelers-to-be-ready-to-show-proof-of-funds-on-arrival"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://thethaiger.com/guides/visa-information/how-much-money-enter-thailand-proof-of-funds"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://mfa.go.th/en"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://washingtondc.thaiembassy.org/en/index"
+                  },
+                  {
+                    "decision": "relevance_failed_ValidationError",
+                    "url": "https://mfa.go.th/en"
+                  },
+                  {
+                    "decision": "relevance_failed_ValidationError",
+                    "url": "https://washingtondc.thaiembassy.org/en/index"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://dtvthaivisa.com/blog/thailand-proof-of-funds-20000-baht-2026"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "great_wall_moon",
+      "expected_provisional": "refuted",
+      "runs": {
+        "web": {
+          "error_code": "CLAIM_ANALYSIS_UNAVAILABLE"
+        }
+      }
+    },
+    {
+      "id": "food_opinion",
+      "expected_provisional": "insufficient",
+      "runs": {
+        "web": {
+          "error_code": "CLAIM_ANALYSIS_UNAVAILABLE"
+        }
+      }
+    }
+  ],
+  "summary": {
+    "web": {
+      "cases": 3,
+      "provisional_label_matches": 0,
+      "wrong_decisive": 0,
+      "errors": 3,
+      "with_evidence": 0,
+      "insufficient": 0,
+      "quote_integrity_failures": 0,
+      "mean_seconds": 38.39,
+      "max_seconds": 38.39
+    }
+  }
+}

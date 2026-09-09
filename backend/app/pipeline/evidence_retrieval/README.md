@@ -1,5 +1,7 @@
 # Evidence retrieval - Chu
 
+The optional **web** mode adds broader search, original-page extraction, semantic relevance and applicability checks. See [the implementation and rollout guide](WEB_RETRIEVAL.md). The flow below documents the retained **catalogue** mode.
+
 The live Sprint 1 implementation connects Google Fact Check Tools and Tavily.
 It preserves Chu's filtering, deduplication, status handling and fake-search hook,
 and adds the provider calls and typed pipeline handoff.
@@ -88,3 +90,14 @@ Provider references:
 - [Google claims.search](https://developers.google.com/fact-check/tools/api/reference/rest/v1alpha1/claims/search)
 - [Tavily Search](https://docs.tavily.com/documentation/api-reference/endpoint/search)
 - [Tavily Extract](https://docs.tavily.com/documentation/api-reference/endpoint/extract)
+# Retrieval follow-up: natural wording and entry requirements
+
+- Official Thai MFA and embassy domains were added after reviewing their provenance; commercial lookalike domains remain excluded.
+- Currency amounts such as `20000 baht` use `20,000 baht` in search queries. Both formats match the same passage tokens. The user's claim is preserved unchanged.
+- First-person helper words are excluded from lexical relevance matching.
+- If ordinary retrieval succeeds but finds no accepted evidence, the existing Ollama key can generate up to two alternative discovery queries. Invalid alternatives are discarded; all accepted queries preserve the claim's numerical values.
+- Query expansion is a discovery aid, never evidence and never a replacement for the original claim. Results still pass the reviewed-domain filter and are ranked against the original claim.
+- Query planning has a 15-second deadline. All retrieval work, including alternative searches, stays inside the existing 65-second stage deadline.
+- Search-provider results have been observed outside the requested domains, so local source validation remains necessary.
+- Personal entry obligations require applicability context. The assessor abstains when the statement omits passport/nationality or visa/entry category, and now explains that missing context in the result.
+- The application pipeline appends `retrieval-v2` to its version to identify this revision. Earlier evaluation reports describe their recorded versions, not a fresh accuracy benchmark for this change.

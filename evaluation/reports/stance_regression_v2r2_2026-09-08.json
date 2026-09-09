@@ -1,0 +1,189 @@
+{
+  "run_at_utc": "2026-09-08T07:35:03.203041+00:00",
+  "scope": "Provisional passage-stance evaluation, not end-to-end truth accuracy. Synthetic cases are fictional; labels require independent team review.",
+  "mode": "compare",
+  "model": "gpt-oss:120b",
+  "prompt_version": "semantic-v2r2",
+  "prompt_sha256": "ba2aaad44e12b2a3af371e624da9dcedd8b1338dfdb18790b82df1c41361cc0d",
+  "semantic_code_sha256": "35b4ec87ccfd3a5f537d91d3187144e98987d4c40bd00f22194d046dc7d01a6f",
+  "dataset_sha256": "4a012dc442121d0eaa6d019c445505b8470dd16e26939953ba74f7582416eaad",
+  "dataset_version": "stance-seed-v1",
+  "labels": "Provisional, authored by Codex; independent human review pending.",
+  "split_policy": "Scenario groups kept together; holdout must not be used for prompt tuning.",
+  "summary": {
+    "regression": {
+      "baseline": {
+        "count": 5,
+        "correct": 4,
+        "accuracy_including_errors": 0.8,
+        "macro_f1": 0.5333,
+        "per_label": {
+          "supporting": {
+            "precision": 0.6667,
+            "recall": 1.0,
+            "f1": 0.8
+          },
+          "contradicting": {
+            "precision": 1.0,
+            "recall": 0.6667,
+            "f1": 0.8
+          },
+          "neutral": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          }
+        },
+        "confusion_matrix": {
+          "supporting": {
+            "supporting": 2,
+            "contradicting": 0,
+            "neutral": 0,
+            "error": 0
+          },
+          "contradicting": {
+            "supporting": 1,
+            "contradicting": 2,
+            "neutral": 0,
+            "error": 0
+          },
+          "neutral": {
+            "supporting": 0,
+            "contradicting": 0,
+            "neutral": 0,
+            "error": 0
+          }
+        },
+        "technical_errors": 0,
+        "false_support_count": 1,
+        "false_support_rate_among_non_supporting": 0.3333,
+        "decision_coverage": 1.0,
+        "accuracy_when_decisive": 0.8
+      },
+      "semantic": {
+        "count": 5,
+        "correct": 5,
+        "accuracy_including_errors": 1.0,
+        "macro_f1": 0.6667,
+        "per_label": {
+          "supporting": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "contradicting": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "neutral": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          }
+        },
+        "confusion_matrix": {
+          "supporting": {
+            "supporting": 2,
+            "contradicting": 0,
+            "neutral": 0,
+            "error": 0
+          },
+          "contradicting": {
+            "supporting": 0,
+            "contradicting": 3,
+            "neutral": 0,
+            "error": 0
+          },
+          "neutral": {
+            "supporting": 0,
+            "contradicting": 0,
+            "neutral": 0,
+            "error": 0
+          }
+        },
+        "technical_errors": 0,
+        "false_support_count": 0,
+        "false_support_rate_among_non_supporting": 0.0,
+        "decision_coverage": 1.0,
+        "accuracy_when_decisive": 1.0
+      }
+    }
+  },
+  "latency_seconds": {
+    "mean": 3.139,
+    "p95": 6.256
+  },
+  "cases": [
+    {
+      "id": "recorded-source-0b15a9d9129f7853",
+      "group": "published_fact_check",
+      "split": "regression",
+      "kind": "recorded_source_passage",
+      "review_status": "pending_team_review",
+      "expected_stance": "contradicting",
+      "baseline_stance": "supporting",
+      "semantic_stance": "contradicting",
+      "evidence_quote": "the ancient Great Wall itself the subject of an older-than-the-space-age myth that it would be visible to the eye when standing on the lunar surface . But even from low Earth orbit , the large scale artifact of human civilization is very difficult to identify.",
+      "semantic_reason": "The passage describes the idea of the wall being visible from the Moon as a myth and states that even from low Earth orbit it is very difficult to identify, contradicting the claim that it is visible from the Moon.",
+      "error_code": null,
+      "duration_seconds": 2.134
+    },
+    {
+      "id": "recorded-source-42783f452ee5105b",
+      "group": "government_history",
+      "split": "regression",
+      "kind": "recorded_source_passage",
+      "review_status": "pending_team_review",
+      "expected_stance": "supporting",
+      "baseline_stance": "supporting",
+      "semantic_stance": "supporting",
+      "evidence_quote": "The proclamation declaring Singapore’s independence was announced on Radio Singapore at 10:00 am on 9 August 1965.",
+      "semantic_reason": "The passage explicitly states that Singapore's independence was proclaimed on 9 August 1965, directly confirming the claim.",
+      "error_code": null,
+      "duration_seconds": 3.042
+    },
+    {
+      "id": "recorded-source-5f27029b7d66697a",
+      "group": "government_history",
+      "split": "regression",
+      "kind": "recorded_source_passage",
+      "review_status": "pending_team_review",
+      "expected_stance": "supporting",
+      "baseline_stance": "supporting",
+      "semantic_stance": "supporting",
+      "evidence_quote": "Singapore ceased to be a State in the Federation on 9 August 1965 (‘Singapore Day’) and became ‘an independent and sovereign state separate from and independent of Malaysia’",
+      "semantic_reason": "The passage explicitly states that Singapore became an independent sovereign state on 9 August 1965, which directly matches the claim.",
+      "error_code": null,
+      "duration_seconds": 3.39
+    },
+    {
+      "id": "recorded-source-9708d43fc39aa646",
+      "group": "published_fact_check",
+      "split": "regression",
+      "kind": "recorded_source_passage",
+      "review_status": "pending_team_review",
+      "expected_stance": "contradicting",
+      "baseline_stance": "contradicting",
+      "semantic_stance": "contradicting",
+      "evidence_quote": "Rating: False False About this rating The claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false.",
+      "semantic_reason": "The passage rates the claim as false and states that the Great Wall is almost invisible from 180 miles up, contradicting the claim that it is visible from the Moon.",
+      "error_code": null,
+      "duration_seconds": 6.256
+    },
+    {
+      "id": "recorded-source-f7002138f341d645",
+      "group": "published_fact_check",
+      "split": "regression",
+      "kind": "recorded_source_passage",
+      "review_status": "pending_team_review",
+      "expected_stance": "contradicting",
+      "baseline_stance": "contradicting",
+      "semantic_stance": "contradicting",
+      "evidence_quote": "It certainly isn't visible from the Moon.",
+      "semantic_reason": "The passage explicitly states that the Great Wall of China is not visible from the Moon, directly opposing the claim.",
+      "error_code": null,
+      "duration_seconds": 0.871
+    }
+  ]
+}

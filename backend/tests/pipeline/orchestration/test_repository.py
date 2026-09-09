@@ -11,7 +11,7 @@ from app.pipeline.orchestration.repository import (
     FirestoreResultRepository,
 )
 from app.pipeline.shared.errors import PipelinePersistenceError
-from app.pipeline.shared.models import TextAnalysisResult
+from app.pipeline.shared.models import EvidenceProvenance, TextAnalysisResult
 
 
 FIXTURE = (
@@ -99,3 +99,17 @@ def test_firestore_failure_becomes_controlled_error() -> None:
     assert raised.value.error_code == "RESULT_STORAGE_FAILED"
     assert raised.value.http_status == 503
 
+
+def test_new_source_provenance_survives_firestore_serialisation() -> None:
+    client = FakeFirestoreClient()
+    result = _result()
+    item = result.evidence[0]
+    item.provenance = EvidenceProvenance(source_policy="catalogue", source_reason="Reviewed publisher.",
+        origin_group="gov.sg", discovery_method="web_search", relevance="direct",
+        relevance_reason="The source addresses the claim.", relevance_quote=item.passage,
+        applicability="established", applicability_reason="Same subject and conditions.")
+    FirestoreResultRepository(client=client).save_result(result)
+    payload = dict(client.collection_value.documents[result.result_id].payload)
+    payload.pop("saved_at")
+    restored = TextAnalysisResult.model_validate(payload)
+    assert restored.evidence[0].provenance == item.provenance

@@ -202,7 +202,7 @@ def test_noncheckable_does_not_load_credentials(monkeypatch):
 
 def test_total_timeout(monkeypatch):
     monkeypatch.setattr(service, "TOTAL_TIMEOUT_SECONDS", 0.01)
-    async def delayed(*args):
+    async def delayed(*args, **kwargs):
         await asyncio.sleep(1)
     monkeypatch.setattr(service, "_retrieve_with_client", delayed)
     result = asyncio.run(service._live(TEXT, "dummy", "dummy"))

@@ -14,8 +14,8 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.pipeline.claim_analysis.service import analyse_claim
-from app.pipeline.evidence_assessment.service import assess_evidence
-from app.pipeline.evidence_retrieval.service import retrieve_evidence
+from app.pipeline.evidence_assessment.semantic import configured_assessor
+from app.pipeline.evidence_retrieval.service import configured_retriever
 from app.pipeline.input_preparation.service import prepare_text
 from app.pipeline.orchestration.dependencies import get_pipeline_orchestrator
 from app.pipeline.orchestration.repository import InMemoryResultRepository
@@ -37,15 +37,17 @@ def main():
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
     repository = InMemoryResultRepository()
+    assessor, version = configured_assessor()
+    retriever, retrieval_version = configured_retriever()
     retrievals = []
     def capture_retrieval(claim):
-        result = retrieve_evidence(claim)
+        result = retriever(claim)
         retrievals.append(result.model_dump(mode="json"))
         return result
     pipeline = PipelineOrchestrator(
         prepare_input=prepare_text, analyze_claim=analyse_claim,
-        retrieve_evidence=capture_retrieval, assess_evidence=assess_evidence,
-        repository=repository)
+        retrieve_evidence=capture_retrieval, assess_evidence=assessor,
+        repository=repository, pipeline_version=version + ":" + retrieval_version)
     report = {
         "run_at_utc": datetime.now(timezone.utc).isoformat(),
         "scope": "Live text stages through FastAPI TestClient; in-memory persistence. Operational checks only, not an accuracy benchmark or Android test.",

@@ -1,8 +1,6 @@
-"""Corrected Sprint 1 evidence assessment reference for UIABO.
+"""Sprint 1 lexical evidence-assessment baseline and shared aggregation.
 
-This file is intentionally outside the team repository. It demonstrates how
-Poon's rule-based baseline can connect to Donovan's shared Pydantic contracts
-without changing the agreed JSON field names.
+The baseline is retained for reproducible comparisons with semantic assessment.
 
 The public pipeline boundary is::
 
@@ -538,7 +536,35 @@ def _assess(
     assessed = [
         assess_evidence_item(claim_text, item) for item in retrieval.evidence
     ]
-    risk = _risk_score(assessed)
+    return summarise_assessments(claim_text, retrieval, assessed)
+
+
+def summarise_assessments(
+    claim_text: str,
+    retrieval: RetrievalResult,
+    assessed: list[AssessedEvidence],
+) -> AssessmentResult:
+    """Aggregate validated stances using the existing, uncalibrated score rules."""
+    by_id = _evidence_by_id(retrieval.evidence)
+    # New retrieval scope decisions constrain both semantic and lexical assessors.
+    # Legacy saved evidence has no provenance and retains its existing behaviour.
+    assessed = [item.model_copy(deep=True) for item in assessed]
+    for item in assessed:
+        provenance = by_id[item.evidence_id].provenance
+        if provenance and (provenance.relevance != "direct" or provenance.applicability != "established"):
+            item.stance = "neutral"
+            item.quality_score = min(item.quality_score, 0.45)
+            item.assessment_reason = provenance.applicability_reason if provenance.applicability != "established" else provenance.relevance_reason
+    # One contribution per origin and stance preserves disagreement within an
+    # authority while preventing many pages from that authority multiplying votes.
+    groups = {}
+    for item in assessed:
+        provenance = by_id[item.evidence_id].provenance
+        key = (provenance.origin_group if provenance else item.evidence_id, item.stance)
+        if key not in groups or groups[key].quality_score < item.quality_score:
+            groups[key] = item
+    voting = list(groups.values())
+    risk = _risk_score(voting)
     label = _concern_label(risk)
 
     if risk is None:
@@ -554,7 +580,7 @@ def _assess(
         return _not_enough_information(claim_text, reasons, assessed)
 
     uncertainty, uncertainty_reasons = _uncertainty(
-        assessed,
+        voting,
         retrieval.evidence,
     )
     return AssessmentResult(

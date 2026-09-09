@@ -1,0 +1,524 @@
+{
+  "dataset_id": "retrieval_seed_v1",
+  "created_at": "2026-09-09",
+  "label_author": "Codex",
+  "status": "provisional_not_independent_benchmark",
+  "notes": "40 real-topic paired claims plus 3 known regressions. Sources/related pairs stay within a split. Reference URLs are reviewer guidance, NEVER supplied to retrieval or assessment. Model prompts and examples share an author. All labels need human review.",
+  "cases": [
+    {
+      "id": "moon_rotation_supported",
+      "group": "moon_rotation",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "The Moon rotates on its axis about once every 27 Earth days.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://science.nasa.gov/moon/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "moon_rotation_refuted",
+      "group": "moon_rotation",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "The Moon rotates on its axis once every 24 hours.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://science.nasa.gov/moon/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "moon_rings_supported",
+      "group": "moon_rings",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "Earth's Moon has no rings.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://science.nasa.gov/moon/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "moon_rings_refuted",
+      "group": "moon_rings",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "Earth's Moon has a ring system like Saturn's.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://science.nasa.gov/moon/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "mars_moons_supported",
+      "group": "mars_moons",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "Mars has two moons named Phobos and Deimos.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://science.nasa.gov/mars/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "mars_moons_refuted",
+      "group": "mars_moons",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "Mars has three moons named Phobos, Deimos and Titan.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://science.nasa.gov/mars/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "mars_order_supported",
+      "group": "mars_order",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "Mars is the fourth planet from the Sun.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://science.nasa.gov/mars/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "mars_order_refuted",
+      "group": "mars_order",
+      "topic": "astronomy",
+      "split": "development",
+      "claim": "Mars is the second planet from the Sun.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://science.nasa.gov/mars/facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "venus_heat_supported",
+      "group": "venus_heat",
+      "topic": "astronomy",
+      "split": "holdout",
+      "claim": "Venus is the hottest planet in our solar system.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://science.nasa.gov/venus/venus-facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "venus_heat_refuted",
+      "group": "venus_heat",
+      "topic": "astronomy",
+      "split": "holdout",
+      "claim": "Mercury is the hottest planet in our solar system.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://science.nasa.gov/venus/venus-facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "venus_rotation_supported",
+      "group": "venus_rotation",
+      "topic": "astronomy",
+      "split": "holdout",
+      "claim": "Venus takes longer to rotate once on its axis than to orbit the Sun once.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://science.nasa.gov/venus/venus-facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "venus_rotation_refuted",
+      "group": "venus_rotation",
+      "topic": "astronomy",
+      "split": "holdout",
+      "claim": "Venus takes less time to rotate once on its axis than to orbit the Sun once.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://science.nasa.gov/venus/venus-facts/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "ocean_water_supported",
+      "group": "ocean_water",
+      "topic": "environment",
+      "split": "development",
+      "claim": "About 97 percent of Earth's water is in the ocean.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://oceanservice.noaa.gov/facts/oceanwater.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "ocean_water_refuted",
+      "group": "ocean_water",
+      "topic": "environment",
+      "split": "development",
+      "claim": "About 7 percent of Earth's water is in the ocean.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://oceanservice.noaa.gov/facts/oceanwater.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "ocean_surface_supported",
+      "group": "ocean_surface",
+      "topic": "environment",
+      "split": "development",
+      "claim": "The ocean covers more than 70 percent of Earth's surface.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://oceanservice.noaa.gov/facts/oceanwater.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "ocean_surface_refuted",
+      "group": "ocean_surface",
+      "topic": "environment",
+      "split": "development",
+      "claim": "The ocean covers less than 30 percent of Earth's surface.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://oceanservice.noaa.gov/facts/oceanwater.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "ice_density_supported",
+      "group": "ice_density",
+      "topic": "physics",
+      "split": "holdout",
+      "claim": "Ordinary ice floats in liquid water because it is less dense than the water.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.usgs.gov/water-science-school/science/water-density"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "ice_density_refuted",
+      "group": "ice_density",
+      "topic": "physics",
+      "split": "holdout",
+      "claim": "Ordinary ice floats in liquid water because it is denser than the water.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.usgs.gov/water-science-school/science/water-density"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "declaration_supported",
+      "group": "declaration",
+      "topic": "history",
+      "split": "holdout",
+      "claim": "The United States Declaration of Independence is dated July 4, 1776.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.archives.gov/founding-docs/declaration-transcript"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "declaration_refuted",
+      "group": "declaration",
+      "topic": "history",
+      "split": "holdout",
+      "claim": "The United States Declaration of Independence is dated July 4, 1876.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.archives.gov/founding-docs/declaration-transcript"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "si_count_supported",
+      "group": "si_count",
+      "topic": "measurement",
+      "split": "holdout",
+      "claim": "The International System of Units has seven base units.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nist.gov/pml/owm/metric-si/si-units"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "si_count_refuted",
+      "group": "si_count",
+      "topic": "measurement",
+      "split": "holdout",
+      "claim": "The International System of Units has twelve base units.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nist.gov/pml/owm/metric-si/si-units"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "si_mass_supported",
+      "group": "si_mass",
+      "topic": "measurement",
+      "split": "holdout",
+      "claim": "The kilogram is the SI base unit of mass.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nist.gov/pml/owm/metric-si/si-units"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "si_mass_refuted",
+      "group": "si_mass",
+      "topic": "measurement",
+      "split": "holdout",
+      "claim": "The pound is the SI base unit of mass.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nist.gov/pml/owm/metric-si/si-units"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "antibiotic_virus_supported",
+      "group": "antibiotic_virus",
+      "topic": "health",
+      "split": "development",
+      "claim": "Antibiotics do not work against viruses.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.cdc.gov/antibiotic-use/about/index.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "antibiotic_virus_refuted",
+      "group": "antibiotic_virus",
+      "topic": "health",
+      "split": "development",
+      "claim": "Antibiotics work against viruses.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.cdc.gov/antibiotic-use/about/index.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "antibiotic_cold_supported",
+      "group": "antibiotic_cold",
+      "topic": "health",
+      "split": "development",
+      "claim": "Antibiotics do not treat the viruses that cause the common cold.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.cdc.gov/antibiotic-use/about/index.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "antibiotic_cold_refuted",
+      "group": "antibiotic_cold",
+      "topic": "health",
+      "split": "development",
+      "claim": "Antibiotics cure the viruses that cause the common cold.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.cdc.gov/antibiotic-use/about/index.html"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "flower_year_supported",
+      "group": "flower_year",
+      "topic": "singapore",
+      "split": "development",
+      "claim": "Vanda Miss Joaquim was chosen as Singapore's national flower in 1981.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nparks.gov.sg/florafaunaweb/flora/2/5/2539"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "flower_year_refuted",
+      "group": "flower_year",
+      "topic": "singapore",
+      "split": "development",
+      "claim": "Vanda Miss Joaquim was chosen as Singapore's national flower in 1991.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nparks.gov.sg/florafaunaweb/flora/2/5/2539"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "flower_identity_supported",
+      "group": "flower_identity",
+      "topic": "singapore",
+      "split": "development",
+      "claim": "Singapore's national flower is Vanda Miss Joaquim.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nparks.gov.sg/florafaunaweb/flora/2/5/2539"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "flower_identity_refuted",
+      "group": "flower_identity",
+      "topic": "singapore",
+      "split": "development",
+      "claim": "Singapore's national flower is the sunflower.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nparks.gov.sg/florafaunaweb/flora/2/5/2539"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "dengue_vector_supported",
+      "group": "dengue_vector",
+      "topic": "health",
+      "split": "holdout",
+      "claim": "Dengue can spread through the bite of an infected Aedes mosquito.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nea.gov.sg/dengue-zika/dengue"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "dengue_vector_refuted",
+      "group": "dengue_vector",
+      "topic": "health",
+      "split": "holdout",
+      "claim": "Dengue cannot spread through mosquito bites.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nea.gov.sg/dengue-zika/dengue"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "canberra_name_supported",
+      "group": "canberra_name",
+      "topic": "geography",
+      "split": "development",
+      "claim": "Canberra was officially named in 1913.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nca.gov.au/education/canberras-history/siting-and-naming-canberra"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "canberra_name_refuted",
+      "group": "canberra_name",
+      "topic": "geography",
+      "split": "development",
+      "claim": "Canberra was officially named in 2013.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nca.gov.au/education/canberras-history/siting-and-naming-canberra"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "canberra_capital_supported",
+      "group": "canberra_capital",
+      "topic": "geography",
+      "split": "development",
+      "claim": "Canberra is Australia's capital city.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://www.nca.gov.au/sites/default/files/8CanberraSeatofGovernment_0.pdf"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "canberra_capital_refuted",
+      "group": "canberra_capital",
+      "topic": "geography",
+      "split": "development",
+      "claim": "Sydney is Australia's capital city.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nca.gov.au/sites/default/files/8CanberraSeatofGovernment_0.pdf"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "web_invention_supported",
+      "group": "web_invention",
+      "topic": "technology",
+      "split": "holdout",
+      "claim": "Tim Berners-Lee invented the World Wide Web at CERN in 1989.",
+      "expected": "supported",
+      "reference_urls": [
+        "https://home.cern/science/computing/the-birth-of-the-web/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "web_invention_refuted",
+      "group": "web_invention",
+      "topic": "technology",
+      "split": "holdout",
+      "claim": "Tim Berners-Lee invented the World Wide Web at CERN in 1969.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://home.cern/science/computing/the-birth-of-the-web/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "phuket_personal",
+      "group": "phuket",
+      "topic": "travel",
+      "split": "regression",
+      "claim": "I need to have 20000 baht in cash to enter phuket",
+      "expected": "insufficient",
+      "reference_urls": [
+        "https://doha.thaiembassy.org/en/publicservice/tourist-visa-exemption-visa-on-arrival?page=5d7e6a3c15e39c032c006dba"
+      ],
+      "note": "Personal eligibility and entry scheme are missing; this is not a label saying the monetary rule is false.",
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "great_wall_moon",
+      "group": "great_wall",
+      "topic": "astronomy",
+      "split": "regression",
+      "claim": "The Great Wall of China is visible from the Moon.",
+      "expected": "refuted",
+      "reference_urls": [
+        "https://www.nasa.gov/image-article/great-wall/"
+      ],
+      "review_status": "pending_two_human_reviewers"
+    },
+    {
+      "id": "food_opinion",
+      "group": "food_opinion",
+      "topic": "opinion",
+      "split": "regression",
+      "claim": "Chicken rice is the best food in Singapore.",
+      "expected": "insufficient",
+      "reference_urls": [],
+      "review_status": "pending_two_human_reviewers"
+    }
+  ]
+}

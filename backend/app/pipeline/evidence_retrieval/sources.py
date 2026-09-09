@@ -9,6 +9,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 SOURCES = {
     "gov.sg": ("Singapore Government", "government"),
+    "mfa.go.th": ("Thailand Ministry of Foreign Affairs", "government"),
+    "thaiembassy.org": ("Royal Thai Embassy", "government"),
     "nasa.gov": ("NASA", "government"),
     "snopes.com": ("Snopes", "fact_check"),
     "fullfact.org": ("Full Fact", "fact_check"),

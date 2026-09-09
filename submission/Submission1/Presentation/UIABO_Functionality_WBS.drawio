@@ -1,0 +1,437 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device" compressed="false">
+  <diagram id="uiabo-functionality-wbs" name="Functionality WBS — slide overview">
+    <mxGraphModel dx="1920" dy="1080" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="heading" value="UIABO overall product hierarchy" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=34;fontColor=#183B50;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="45" y="26" width="1400" height="48" />
+        </mxCell>
+        <mxCell id="subtitle" value="Functionality work breakdown structure" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=20;fontColor=#5B7380;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="45" y="78" width="1400" height="30" />
+        </mxCell>
+        <mxCell id="date" value="Prototype status · 8 September 2026" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=17;fontColor=#5B7380;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1445" y="35" width="430" height="30" />
+        </mxCell>
+        <mxCell id="product" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:29px&quot;&gt;uiabo&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;AI misinformation detection for short-form content&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#123D55;strokeColor=#123D55;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=29;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="750" y="135" width="420" height="82" />
+        </mxCell>
+        <mxCell id="module-1" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:21px&quot;&gt;1. Account access&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;Individual users&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F526A;strokeColor=#1F526A;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=21;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="45" y="285" width="280" height="83" />
+        </mxCell>
+        <mxCell id="root-edge-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="product" target="module-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="960" y="250" />
+              <mxPoint x="185" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-1-1" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;1.1  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Free registration&lt;br&gt;&amp;amp; email verification&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="67" y="405" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-1-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-1" target="function-1-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="185" y="386" />
+              <mxPoint x="52" y="386" />
+              <mxPoint x="52" y="451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-1-2" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;1.2  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Sign in / out&lt;br&gt;&amp;amp; password reset&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="67" y="511" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-1-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-1" target="function-1-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="185" y="386" />
+              <mxPoint x="52" y="386" />
+              <mxPoint x="52" y="557" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-1-3" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;1.3  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;View profile&lt;br&gt;&amp;amp; edit name&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="67" y="617" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-1-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-1" target="function-1-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="185" y="386" />
+              <mxPoint x="52" y="386" />
+              <mxPoint x="52" y="663" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-1-4" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;1.4  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;In-app Help&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="67" y="723" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-1-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-1" target="function-1-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="185" y="386" />
+              <mxPoint x="52" y="386" />
+              <mxPoint x="52" y="769" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-1-5" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;1.5  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Delete account&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="67" y="829" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-1-5" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-1" target="function-1-5">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="185" y="386" />
+              <mxPoint x="52" y="386" />
+              <mxPoint x="52" y="875" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="module-2" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:21px&quot;&gt;2. Content checking&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;Free / Premium&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F526A;strokeColor=#1F526A;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=21;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="355" y="285" width="280" height="83" />
+        </mxCell>
+        <mxCell id="root-edge-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="product" target="module-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="960" y="250" />
+              <mxPoint x="495" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-2-1" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;2.1  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Submit &amp;amp; validate&lt;br&gt;English text&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="377" y="405" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-2-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-2" target="function-2-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="495" y="386" />
+              <mxPoint x="362" y="386" />
+              <mxPoint x="362" y="451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-2-2" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;2.2  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Extract claim; retrieve&lt;br&gt;&amp;amp; assess evidence&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="377" y="511" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-2-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-2" target="function-2-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="495" y="386" />
+              <mxPoint x="362" y="386" />
+              <mxPoint x="362" y="557" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-2-3" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;2.3  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Webpage analysis&lt;br&gt;&amp;amp; malicious-link check&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="377" y="617" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-2-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-2" target="function-2-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="495" y="386" />
+              <mxPoint x="362" y="386" />
+              <mxPoint x="362" y="663" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-2-4" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;2.4  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Premium images:&lt;br&gt;caption &amp;amp; OCR correction&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="377" y="723" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-2-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-2" target="function-2-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="495" y="386" />
+              <mxPoint x="362" y="386" />
+              <mxPoint x="362" y="769" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-2-5" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;2.5  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Premium: image context&lt;br&gt;&amp;amp; deepfake (required)&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="377" y="829" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-2-5" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-2" target="function-2-5">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="495" y="386" />
+              <mxPoint x="362" y="386" />
+              <mxPoint x="362" y="875" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="module-3" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:21px&quot;&gt;3. Results &amp;amp; evidence&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;Individual users&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F526A;strokeColor=#1F526A;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=21;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="665" y="285" width="280" height="83" />
+        </mxCell>
+        <mxCell id="root-edge-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="product" target="module-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="960" y="250" />
+              <mxPoint x="805" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-3-1" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;3.1  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Concern, risk indicator&lt;br&gt;&amp;amp; uncertainty&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="687" y="405" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-3-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-3" target="function-3-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="805" y="386" />
+              <mxPoint x="672" y="386" />
+              <mxPoint x="672" y="451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-3-2" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;3.2  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Explanation, passages&lt;br&gt;&amp;amp; source links&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="687" y="511" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-3-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-3" target="function-3-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="805" y="386" />
+              <mxPoint x="672" y="386" />
+              <mxPoint x="672" y="557" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-3-3" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;3.3  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;View &amp;amp; reopen&lt;br&gt;private result history&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="687" y="617" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-3-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-3" target="function-3-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="805" y="386" />
+              <mxPoint x="672" y="386" />
+              <mxPoint x="672" y="663" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-3-4" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;3.4  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Share summary text&lt;br&gt;&amp;amp; citation URLs&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="687" y="723" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-3-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-3" target="function-3-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="805" y="386" />
+              <mxPoint x="672" y="386" />
+              <mxPoint x="672" y="769" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-3-5" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;3.5  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Delete history &amp;amp;&lt;br&gt;public result links&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="687" y="829" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-3-5" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-3" target="function-3-5">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="805" y="386" />
+              <mxPoint x="672" y="386" />
+              <mxPoint x="672" y="875" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="module-4" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:21px&quot;&gt;4. Allowances &amp;amp; plans&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;Free / Premium&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F526A;strokeColor=#1F526A;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=21;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="975" y="285" width="280" height="83" />
+        </mxCell>
+        <mxCell id="root-edge-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="product" target="module-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="960" y="250" />
+              <mxPoint x="1115" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-4-1" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;4.1  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Free allowance:&lt;br&gt;1 successful check/day&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="997" y="405" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-4-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-4" target="function-4-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1115" y="386" />
+              <mxPoint x="982" y="386" />
+              <mxPoint x="982" y="451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-4-2" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;4.2  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Premium allowance:&lt;br&gt;60 checks/month&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="997" y="511" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-4-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-4" target="function-4-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1115" y="386" />
+              <mxPoint x="982" y="386" />
+              <mxPoint x="982" y="557" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-4-3" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#176C50;margin-bottom:7px&quot;&gt;4.3  WORKING&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Display / refresh&lt;br&gt;remaining allowance&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#E9F6F1;strokeColor=#55A98B;strokeWidth=1.5;fontColor=#176C50;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="997" y="617" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-4-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-4" target="function-4-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1115" y="386" />
+              <mxPoint x="982" y="386" />
+              <mxPoint x="982" y="663" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-4-4" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;4.4  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Paid upgrade, renewal&lt;br&gt;&amp;amp; cancellation&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="997" y="723" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-4-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-4" target="function-4-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1115" y="386" />
+              <mxPoint x="982" y="386" />
+              <mxPoint x="982" y="769" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="module-5" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:21px&quot;&gt;5. Feedback &amp;amp; admin&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;Users / System administrator&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F526A;strokeColor=#1F526A;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=21;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1285" y="285" width="280" height="83" />
+        </mxCell>
+        <mxCell id="root-edge-5" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="product" target="module-5">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="960" y="250" />
+              <mxPoint x="1425" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-5-1" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;5.1  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Report incorrect&lt;br&gt;analysis results&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1307" y="405" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-5-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-5" target="function-5-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1425" y="386" />
+              <mxPoint x="1292" y="386" />
+              <mxPoint x="1292" y="451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-5-2" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;5.2  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Submit a service review&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1307" y="511" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-5-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-5" target="function-5-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1425" y="386" />
+              <mxPoint x="1292" y="386" />
+              <mxPoint x="1292" y="557" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-5-3" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;5.3  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Admin access;&lt;br&gt;query &amp;amp; view accounts&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1307" y="617" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-5-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-5" target="function-5-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1425" y="386" />
+              <mxPoint x="1292" y="386" />
+              <mxPoint x="1292" y="663" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-5-4" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;5.4  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Create operational users;&lt;br&gt;suspend / restore access&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1307" y="723" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-5-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-5" target="function-5-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1425" y="386" />
+              <mxPoint x="1292" y="386" />
+              <mxPoint x="1292" y="769" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-5-5" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;5.5  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Review user feedback&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1307" y="829" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-5-5" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-5" target="function-5-5">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1425" y="386" />
+              <mxPoint x="1292" y="386" />
+              <mxPoint x="1292" y="875" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="module-6" value="&lt;div style=&quot;font-family:Arial;text-align:center;line-height:1.2;font-weight:bold;font-size:21px&quot;&gt;6. Data engineering&lt;/div&gt;&lt;div style=&quot;font-family:Arial;font-size:14px;text-align:center;margin-top:9px&quot;&gt;Data Engineer portal&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F526A;strokeColor=#1F526A;strokeWidth=1.5;fontColor=#FFFFFF;fontFamily=Arial;fontSize=21;align=center;verticalAlign=middle;spacing=14;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1595" y="285" width="280" height="83" />
+        </mxCell>
+        <mxCell id="root-edge-6" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="product" target="module-6">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="960" y="250" />
+              <mxPoint x="1735" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-6-1" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;6.1  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Portal access&lt;br&gt;&amp;amp; profile management&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1617" y="405" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-6-1" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-6" target="function-6-1">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1735" y="386" />
+              <mxPoint x="1602" y="386" />
+              <mxPoint x="1602" y="451" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-6-2" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;6.2  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Incorrect-results&lt;br&gt;dashboard&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1617" y="511" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-6-2" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-6" target="function-6-2">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1735" y="386" />
+              <mxPoint x="1602" y="386" />
+              <mxPoint x="1602" y="557" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-6-3" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;6.3  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Investigate reported&lt;br&gt;incorrect results&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1617" y="617" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-6-3" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-6" target="function-6-3">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1735" y="386" />
+              <mxPoint x="1602" y="386" />
+              <mxPoint x="1602" y="663" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="function-6-4" value="&lt;div style=&quot;font-family:Arial;text-align:left;line-height:1.2&quot;&gt;&lt;div style=&quot;font-size:14px;font-weight:bold;color:#8A5C15;margin-bottom:7px&quot;&gt;6.4  PLANNED&lt;/div&gt;&lt;div style=&quot;font-size:20px;color:#203B4A&quot;&gt;Monitor data-ingestion&lt;br&gt;pipelines&lt;/div&gt;&lt;/div&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFF5E7;strokeColor=#D1A45D;strokeWidth=1.5;fontColor=#8A5C15;fontFamily=Arial;fontSize=21;align=left;verticalAlign=middle;spacing=14;dashed=1;dashPattern=5 3;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1617" y="723" width="258" height="92" />
+        </mxCell>
+        <mxCell id="child-edge-6-4" value="" style="edgeStyle=none;rounded=0;html=1;strokeColor=#9BAEB7;strokeWidth=1.5;endArrow=none;startArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="module-6" target="function-6-4">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1735" y="386" />
+              <mxPoint x="1602" y="386" />
+              <mxPoint x="1602" y="769" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-working" value="WORKING  — implemented in the text prototype" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=19;fontColor=#176C50;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="45" y="959" width="780" height="28" />
+        </mxCell>
+        <mxCell id="legend-planned" value="PLANNED  — product scope; not yet implemented" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=19;fontColor=#8A5C15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="920" y="959" width="910" height="28" />
+        </mxCell>
+        <mxCell id="scope-note" value="Deepfake applies to static images and remains required. Audio and video are excluded. Premium allowance is active; paid billing is not." style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=17;fontColor=#516B78;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="45" y="1000" width="1830" height="25" />
+        </mxCell>
+        <mxCell id="evidence-note" value="Working indicates available functionality, not validated detection accuracy. Source: UIABO PTD §§7.1–7.5 and URS §2.2." style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Arial;fontSize=17;fontColor=#516B78;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="45" y="1030" width="1830" height="25" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

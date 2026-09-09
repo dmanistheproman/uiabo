@@ -358,6 +358,9 @@ def _combine_evidence(
             source_type=candidate.source_type,
             stance=assessed[candidate.evidence_id].stance,
             quality_score=assessed[candidate.evidence_id].quality_score,
+            assessment_reason=assessed[candidate.evidence_id].assessment_reason,
+            evidence_quote=assessed[candidate.evidence_id].evidence_quote,
+            provenance=candidate.provenance,
         )
         for candidate in retrieval.evidence
     ]

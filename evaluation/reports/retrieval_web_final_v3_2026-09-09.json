@@ -1,0 +1,694 @@
+{
+  "run_at_utc": "2026-09-08T16:33:43.170366+00:00",
+  "dataset": "retrieval_seed_v1",
+  "dataset_sha256": "37acf9288cc9d712bf0e7e11782e03ae00f26d177f319bf30dbffab2a018d108",
+  "code_sha256": {
+    "backend\\app\\pipeline\\__init__.py": "b6f7c7e0a043afd0d775d6c974584679f0b7015ec59650f657dcc6fd9ac96f93",
+    "backend\\app\\pipeline\\claim_analysis\\__init__.py": "96531a61393a1c8dc2802c5b96792d3b24c0b93b657ecbd2b890daea4e9769c8",
+    "backend\\app\\pipeline\\claim_analysis\\categories.py": "d1fc2b9b9ce3169eff6f19b3e37505fc181969663fc2300c9b9bff7e23956f5c",
+    "backend\\app\\pipeline\\claim_analysis\\service.py": "a23971622235adcee9cdec8e418fe29eaffb382c816dce5217e4481843d2ca92",
+    "backend\\app\\pipeline\\evidence_assessment\\__init__.py": "141156c7d6941baee00e5bfd3743922be9f7811b8135e4da79cf5ab97b9526e6",
+    "backend\\app\\pipeline\\evidence_assessment\\semantic.py": "a70540d28c747308f600697141f6873e7056c541d719ff2ede4d9e0823ade9df",
+    "backend\\app\\pipeline\\evidence_assessment\\service.py": "01296d711a5bc3fba219c39e4bf0929d4b5ef10db42591c85743e40867ee534d",
+    "backend\\app\\pipeline\\evidence_retrieval\\__init__.py": "784ff159613a1a34ff3d9882214cab1f2ba0648feee3cd1c9d9ecf0ff58af850",
+    "backend\\app\\pipeline\\evidence_retrieval\\enhanced.py": "861f0a1dec1d79beee7cce5f4e76fe21f9abd5e613f200fabb759b4115b162b9",
+    "backend\\app\\pipeline\\evidence_retrieval\\providers.py": "2dabcd877e6f9b2b73ffc55431eb34d84afae048ca9a0f9c8ec4a48a15765d04",
+    "backend\\app\\pipeline\\evidence_retrieval\\query_planning.py": "15d786cb187205a70023936ec80ea0213a4d58d90d4452b7bd62e0c6df46878f",
+    "backend\\app\\pipeline\\evidence_retrieval\\relevance.py": "b57ef4d7ddb3a1a25789f0799ae7b20edd9fca37242e1325429f43a501fbd554",
+    "backend\\app\\pipeline\\evidence_retrieval\\service.py": "39203108b602c5ce0d65b82df2893baf574519b2c29b3a3b2cbbf7a72c1f2b5e",
+    "backend\\app\\pipeline\\evidence_retrieval\\source_policy.py": "6878c6ded692c5a7b5d3d2e1a12cc32587f277cd501bca594f82a73a32238014",
+    "backend\\app\\pipeline\\evidence_retrieval\\sources.py": "91e09ec57a937750ad4bff9800c5ffc698d5de684021187a9a42ddaeb67ea90c",
+    "backend\\app\\pipeline\\input_preparation\\__init__.py": "a1d7643639657ec28d3d99dfb34e7c2ffc04cc9a97dd66367d47b5151b3de49c",
+    "backend\\app\\pipeline\\input_preparation\\language_validation.py": "95cb06c2759beaabc991f51849f4e2c625222561ce7e69cb5cb0a448b0e6b7eb",
+    "backend\\app\\pipeline\\input_preparation\\service.py": "b8370b2c1e05c3a9d7bb7b858f4bee3f62bf3ab1c8301489d7f5f7a598a31685",
+    "backend\\app\\pipeline\\orchestration\\__init__.py": "cb29825160b07e47d6d1d3645a60b5c424810924eb8031ef881af7377e696bfd",
+    "backend\\app\\pipeline\\orchestration\\dependencies.py": "35d0654c0e8fa109e31c97f6aabe141e575dfa89b7dccaacbd1600a53435de2f",
+    "backend\\app\\pipeline\\orchestration\\repository.py": "10fbb884fdb04157258a5de0a0a928876659c15708c828b1dac2cd49d9094441",
+    "backend\\app\\pipeline\\orchestration\\service.py": "dcceb71389d661909200e6696c7316fdc785ffa9e988bfaa7ce8e3106b0e1825",
+    "backend\\app\\pipeline\\shared\\__init__.py": "b18ebce3428991c3cbed1ac1679b5e37de33545d5b6f74811ec9e4912eb209ed",
+    "backend\\app\\pipeline\\shared\\errors.py": "c1371c8c8e022c63492b451237b5c9545fe7eecd1c58fcc6b11db8d92113e25e",
+    "backend\\app\\pipeline\\shared\\models.py": "ae3c58d4d0c085633f0e7f36dcef6d125b308100d493ba3595f51ff0f63fe0a5"
+  },
+  "scope": "Live input/claim/retrieval/assessment with in-memory result assembly. Pending human label/citation review. No Firestore writes or Android test. Shared claim analysis between modes, alternating mode order. Domain diversity is limited; not an independent benchmark.",
+  "planned_cases": 4,
+  "workers": 1,
+  "pause_seconds": 10.0,
+  "cases": [
+    {
+      "id": "moon_rings_refuted",
+      "input": "Earth's Moon has a ring system like Saturn's.",
+      "split": "development",
+      "expected_provisional": "refuted",
+      "claim_analysis": {
+        "extracted_claim": "Earth's Moon has a ring system like Saturn's.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement asserts a specific, objectively verifiable fact about the Moon having a ring system.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "web": {
+          "outcome": "insufficient",
+          "matches_provisional_label": false,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "c5b5a058-deac-482f-8bb3-1bc07c03c19b",
+            "processing_status": "completed",
+            "original_text": "Earth's Moon has a ring system like Saturn's.",
+            "extracted_claim": "Earth's Moon has a ring system like Saturn's.",
+            "claim_category": "factual",
+            "checkable": true,
+            "concern_label": "Not Enough Information",
+            "misinformation_risk_score": null,
+            "uncertainty": "High",
+            "uncertainty_reasons": [
+              "Some websites were used only as leads because their publisher identity was not established by the prototype source policy.",
+              "No sufficiently relevant evidence was found."
+            ],
+            "explanation": "There is not enough reliable evidence to assess this claim.",
+            "recommended_action": "Check an authoritative source before believing or forwarding this claim.",
+            "evidence": [],
+            "warnings": [
+              "Some websites were used only as leads because their publisher identity was not established by the prototype source policy.",
+              "No sufficiently relevant evidence was found."
+            ],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-web-v3",
+            "created_at": "2026-09-08T16:34:08.778039Z"
+          },
+          "duration_seconds": 12.58,
+          "retrieval": [
+            {
+              "retrieval_status": "no_evidence",
+              "evidence": [],
+              "warnings": [
+                "Some websites were used only as leads because their publisher identity was not established by the prototype source policy.",
+                "No sufficiently relevant evidence was found."
+              ],
+              "trace": {
+                "search_requests": 3,
+                "extraction_urls": 4,
+                "relevance_calls": 2,
+                "decisions": [
+                  {
+                    "decision": "preferred_search",
+                    "url": "",
+                    "query": "Earth's Moon has a ring system like Saturn's."
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://livescience.com/space/the-moon/earths-moon-couldve-had-saturn-like-rings-new-study-hints"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://en.wikipedia.org/wiki/Ring_system"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/askscience/comments/1ml2mf/could_a_moon_have_rings"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/astrophysics/comments/g13scy/can_a_moon_have_visible_rings_like_saturn_if_so"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://science.nasa.gov/resource/saturns-rings-2"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://courses.lumenlearning.com/towson-astronomy/chapter/ring-and-moon-systems-introduced"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://nasa.gov/solar-system/new-simulations-shed-light-on-origins-of-saturns-rings-and-icy-moons"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://planetary.org/articles/rings-of-the-solar-system"
+                  },
+                  {
+                    "decision": "rejected_semantically_irrelevant",
+                    "url": "https://nasa.gov/solar-system/new-simulations-shed-light-on-origins-of-saturns-rings-and-icy-moons"
+                  },
+                  {
+                    "decision": "rejected_semantically_irrelevant",
+                    "url": "https://science.nasa.gov/resource/saturns-rings-2"
+                  },
+                  {
+                    "decision": "web_search",
+                    "url": "",
+                    "query": "does the Moon have a ring system"
+                  },
+                  {
+                    "decision": "web_search",
+                    "url": "",
+                    "query": "Moon ring system evidence"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/NeildeGrasseTyson/posts/1898623463610121"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://en.wikipedia.org/wiki/Moon"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://en.wikipedia.org/wiki/Rings_of_Rhea"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://quora.com/Can-a-moon-have-rings-Are-there-any-of-them-in-the-systems-weve-observed"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://youtube.com/watch?v=fd-OlUcgcSc"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://courses.lumenlearning.com/suny-astronomy/chapter/ring-and-moon-systems-introduced"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "http://astro.umd.edu/~dphamil/research/preprints/BurSimSho03.pdf"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://space.com/astronomy/saturn/are-saturns-rings-made-of-a-lost-shattered-moon-new-evidence-arises-for-the-case"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://ebsco.com/research-starters/history/astronomers-discover-unusual-ring-system-planet-neptune"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://phys.org/news/2023-02-solar.html"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://keckobservatory.org/uranus-two-outer-rings"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://aanda.org/articles/aa/full_html/2024/11/aa49453-24/aa49453-24.html"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://livescience.com/space/the-moon/earths-moon-couldve-had-saturn-like-rings-new-study-hints"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://en.wikipedia.org/wiki/Moon"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "phuket_personal",
+      "input": "I need to have 20000 baht in cash to enter phuket",
+      "split": "regression",
+      "expected_provisional": "insufficient",
+      "claim_analysis": {
+        "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement asserts a specific requirement (needing 20,000 baht cash to enter Phuket) that can be objectively verified.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "web": {
+          "outcome": "insufficient",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "a74db8d5-bb7e-4f8a-99b0-11d3151bb2bd",
+            "processing_status": "completed",
+            "original_text": "I need to have 20000 baht in cash to enter phuket",
+            "extracted_claim": "I need to have 20000 baht in cash to enter phuket",
+            "claim_category": "factual",
+            "checkable": true,
+            "concern_label": "Not Enough Information",
+            "misinformation_risk_score": null,
+            "uncertainty": "High",
+            "uncertainty_reasons": [
+              "The retrieved evidence does not directly answer the claim.",
+              "The risk indicator uses prototype rules; it is not a probability that the claim is false.",
+              "Missing context: passport or nationality and visa or entry category."
+            ],
+            "explanation": "Related evidence was found, but it does not establish this claim. Entry requirements depend on the traveller's circumstances. Your statement does not specify your passport or nationality and visa or entry category, so this evidence cannot establish your personal entry requirement.",
+            "recommended_action": "Check an authoritative source before believing or forwarding the claim.",
+            "evidence": [
+              {
+                "evidence_id": "source-22a8a37343f79072",
+                "title": "Tourist Visa - Royal Thai Embassy, London",
+                "url": "https://london.thaiembassy.org/en/publicservice/84256-tourist-visa?menu=5f4b6eb3f6ae4b236972c562&page=5d6636cd15e39c3bd00072dd",
+                "publisher": "Royal Thai Embassy",
+                "published_at": null,
+                "passage": "Exemption\n\nPassport holders of the countries listed for visa exemption **are *not* required to obtain a visa** when entering Thailand for tourism purposes and will be permitted to stay in Thailand for a period not exceeding 30 days on each visit. \n\nFrom 1 October 2022 to 31 March 2023, the period of stay for tourist visa exemption scheme is extended from 30 to 45 days. In addition, the period of stay for bilateral agreements on visa exemption are extended from 14 and 30 days to 45 days.[List of Countries applicable for visas exemption](https://image.mfa.go.th/mfa/0/zE6021nSnu/%E0%B9%80%E0%B8%AD%E0%B8%81%E0%B8%AA%E0%B8%B2%E0%B8%A3/VOA.pdf)\n\nForeigners who enter Thailand under this Tourist Visa Exemption category may only do so for 30 days at one time with a maximum of 3 times in a 6 month period by flight and 2 times a year for overland crossing.\n\n \n\n**Foreigners entering Thailand under the Tourist Visa Exemption category *must* show the documents below at the port of entry:**\n\n* Proof of adequate finances for the duration of stay in Thailand i.e. traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family.\n* Proof of onward travel (confirmed air, train, bus or boat tickets) to leave Thailand within 30 days of the arrival date (\\*\\*otherwise a tourist visa must be obtained).\n\n**Tourist Visa Exemption *only* applies to foreigners holding passports issued by [listed countries.](https://image.mfa.go.th/mfa/0/zE6021nSnu/%E0%B9%80%E0%B8%AD%E0%B8%81%E0%B8%AA%E0%B8%B2%E0%B8%A3/VOA.pdf)****Travel documents for aliens issued by these countries are *not* acceptable.**\n\n**Remarks:**\n\n\\* Passport holders of Brazil, Korea (ROK) and Peru are entitled for tourist visa exemption scheme. Meanwhile, Thailand also holds bilateral agreements on visa exemption",
+                "source_type": "government",
+                "stance": "neutral",
+                "quality_score": 0.45,
+                "assessment_reason": "Entry requirements depend on the traveller's circumstances. Your statement does not specify your passport or nationality and visa or entry category, so this evidence cannot establish your personal entry requirement.",
+                "evidence_quote": "Proof of adequate finances for the duration of stay in Thailand i.e. traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family.",
+                "provenance": {
+                  "source_policy": "catalogue",
+                  "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                  "origin_group": "thailand-government",
+                  "discovery_method": "web_search",
+                  "relevance": "direct",
+                  "relevance_reason": "Specifies the cash requirement of 20,000 Baht per person (and 40,000 Baht per family) as proof of adequate finances for entry under the Tourist Visa Exemption scheme.",
+                  "relevance_quote": "traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family.",
+                  "applicability": "established",
+                  "applicability_reason": "Applies to foreign nationals entering Thailand under the Tourist Visa Exemption category, which is the context of the claim.",
+                  "condition_quotes": []
+                }
+              }
+            ],
+            "warnings": [
+              "Some websites were used only as leads because their publisher identity was not established by the prototype source policy."
+            ],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-web-v3",
+            "created_at": "2026-09-08T16:34:43.417828Z"
+          },
+          "duration_seconds": 15.32,
+          "retrieval": [
+            {
+              "retrieval_status": "completed",
+              "evidence": [
+                {
+                  "evidence_id": "source-22a8a37343f79072",
+                  "title": "Tourist Visa - Royal Thai Embassy, London",
+                  "url": "https://london.thaiembassy.org/en/publicservice/84256-tourist-visa?menu=5f4b6eb3f6ae4b236972c562&page=5d6636cd15e39c3bd00072dd",
+                  "publisher": "Royal Thai Embassy",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "Exemption\n\nPassport holders of the countries listed for visa exemption **are *not* required to obtain a visa** when entering Thailand for tourism purposes and will be permitted to stay in Thailand for a period not exceeding 30 days on each visit. \n\nFrom 1 October 2022 to 31 March 2023, the period of stay for tourist visa exemption scheme is extended from 30 to 45 days. In addition, the period of stay for bilateral agreements on visa exemption are extended from 14 and 30 days to 45 days.[List of Countries applicable for visas exemption](https://image.mfa.go.th/mfa/0/zE6021nSnu/%E0%B9%80%E0%B8%AD%E0%B8%81%E0%B8%AA%E0%B8%B2%E0%B8%A3/VOA.pdf)\n\nForeigners who enter Thailand under this Tourist Visa Exemption category may only do so for 30 days at one time with a maximum of 3 times in a 6 month period by flight and 2 times a year for overland crossing.\n\n \n\n**Foreigners entering Thailand under the Tourist Visa Exemption category *must* show the documents below at the port of entry:**\n\n* Proof of adequate finances for the duration of stay in Thailand i.e. traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family.\n* Proof of onward travel (confirmed air, train, bus or boat tickets) to leave Thailand within 30 days of the arrival date (\\*\\*otherwise a tourist visa must be obtained).\n\n**Tourist Visa Exemption *only* applies to foreigners holding passports issued by [listed countries.](https://image.mfa.go.th/mfa/0/zE6021nSnu/%E0%B9%80%E0%B8%AD%E0%B8%81%E0%B8%AA%E0%B8%B2%E0%B8%A3/VOA.pdf)****Travel documents for aliens issued by these countries are *not* acceptable.**\n\n**Remarks:**\n\n\\* Passport holders of Brazil, Korea (ROK) and Peru are entitled for tourist visa exemption scheme. Meanwhile, Thailand also holds bilateral agreements on visa exemption",
+                  "source_type": "government",
+                  "retrieval_score": 0.9,
+                  "retrieved_at": "2026-09-08T16:34:43.559126Z",
+                  "provenance": {
+                    "source_policy": "catalogue",
+                    "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                    "origin_group": "thailand-government",
+                    "discovery_method": "web_search",
+                    "relevance": "direct",
+                    "relevance_reason": "Specifies the cash requirement of 20,000 Baht per person (and 40,000 Baht per family) as proof of adequate finances for entry under the Tourist Visa Exemption scheme.",
+                    "relevance_quote": "traveller’s cheque or cash equivalent to 20,000 Baht per person and 40,000 Baht per family.",
+                    "applicability": "established",
+                    "applicability_reason": "Applies to foreign nationals entering Thailand under the Tourist Visa Exemption category, which is the context of the claim.",
+                    "condition_quotes": []
+                  }
+                }
+              ],
+              "warnings": [
+                "Some websites were used only as leads because their publisher identity was not established by the prototype source policy."
+              ],
+              "trace": {
+                "search_requests": 3,
+                "extraction_urls": 4,
+                "relevance_calls": 1,
+                "decisions": [
+                  {
+                    "decision": "preferred_search",
+                    "url": "",
+                    "query": "I need to have 20,000 baht in cash to enter phuket"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/1185879642803804/posts/1474121027312996"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/ThailandTourism/comments/1pkkf8g/20k_baht_rule"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/khaolakthailand2019/posts/2289524434889199"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/travel-to-thailand/thailand-entry-requirements-2025-what-to-know-before-your-travel"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://facebook.com/groups/destinationthailandvisa/posts/2452235181966090"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://instagram.com/p/DXPcDNsDF4e"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://reddit.com/r/ThailandTourism/comments/1td6tmz/is_it_true_there_is_an_enforced_policy_of_needing"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/thailand-visa/visa-on-arrival"
+                  },
+                  {
+                    "decision": "web_search",
+                    "url": "",
+                    "query": "Thailand entry requirements cash 20,000 baht"
+                  },
+                  {
+                    "decision": "web_search",
+                    "url": "",
+                    "query": "Thailand financial requirements for tourists 20,000 baht"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/what-is-the-20000-baht-cash-requirement-for-entry-to-thailand"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/tag/dFJCWBlKU0VHXEFSXFBXREEYUFtHElxZREFI/cash-requirements-for-entry"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/is-20000-baht-cash-required-on-entering-thailand-with-a-multi-entry-non-o-visa-for-family-visits"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/what-are-the-current-requirements-for-carrying-cash-at-immigration-in-thailand"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://instagram.com/p/DXPcDNsDF4e?hl=en"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://backpacklife.com/thailand/do-i-really-need-to-take-20000-baht-to-enter-thailand-2026-entry-rule-explained"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://asq.in.th/question/what-are-the-cash-requirements-for-visa-exempt-entry-into-thailand"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thethaiger.com/guides/visa-information/how-much-money-enter-thailand-proof-of-funds"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://dtvthaivisa.com/blog/thailand-proof-of-funds-20000-baht-2026"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://london.thaiembassy.org/en/publicservice/84256-tourist-visa?menu=5f4b6eb3f6ae4b236972c562&page=5d6636cd15e39c3bd00072dd"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://thaiembassy.com/thailand-visa/thailand-tourist-visa"
+                  },
+                  {
+                    "decision": "discovered_unverified",
+                    "url": "https://visasnews.com/en/thailand-reminds-travelers-to-be-ready-to-show-proof-of-funds-on-arrival"
+                  },
+                  {
+                    "decision": "accepted_direct_established",
+                    "url": "https://london.thaiembassy.org/en/publicservice/84256-tourist-visa?menu=5f4b6eb3f6ae4b236972c562&page=5d6636cd15e39c3bd00072dd"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://asq.in.th/question/what-is-the-20000-baht-cash-requirement-for-entry-to-thailand"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://asq.in.th/tag/dFJCWBlKU0VHXEFSXFBXREEYUFtHElxZREFI/cash-requirements-for-entry"
+                  },
+                  {
+                    "decision": "lead_only_unverified_publisher",
+                    "url": "https://asq.in.th/question/is-20000-baht-cash-required-on-entering-thailand-with-a-multi-entry-non-o-visa-for-family-visits"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "great_wall_moon",
+      "input": "The Great Wall of China is visible from the Moon.",
+      "split": "regression",
+      "expected_provisional": "refuted",
+      "claim_analysis": {
+        "extracted_claim": "The Great Wall of China is visible from the Moon.",
+        "claim_category": "factual",
+        "checkable": true,
+        "classification_reason": "The statement makes an objective, publicly verifiable claim about visibility of the Great Wall from the Moon.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "web": {
+          "outcome": "refuted",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "be795af6-c318-4003-a7be-4a062ed10fd6",
+            "processing_status": "completed",
+            "original_text": "The Great Wall of China is visible from the Moon.",
+            "extracted_claim": "The Great Wall of China is visible from the Moon.",
+            "claim_category": "factual",
+            "checkable": true,
+            "concern_label": "High Concern",
+            "misinformation_risk_score": 82,
+            "uncertainty": "Medium",
+            "uncertainty_reasons": [
+              "The passages agree, but source independence and assessment accuracy have not been established.",
+              "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+            ],
+            "explanation": "The cited evidence contradicts the submitted claim. NASA: The passage explicitly states that the Great Wall of China is not visible from the Moon, directly opposing the claim.",
+            "recommended_action": "Do not forward the claim yet. Review the contradicting cited evidence first.",
+            "evidence": [
+              {
+                "evidence_id": "source-8571fdc677612ee2",
+                "title": "Great Wall - NASA",
+                "url": "https://nasa.gov/image-article/great-wall",
+                "publisher": "NASA",
+                "published_at": null,
+                "passage": "NASA Welcomes Türkiye as Newest Artemis Accords Signatory\n\n![President Honors NASA’s Artemis II Crew with Highest US Space Award](https://www.nasa.gov/wp-content/uploads/2026/08/congressional-space-medal-of-honor-ceremony-1.jpg?w=1024)\n\n### President Honors NASA’s Artemis II Crew with Highest US Space Award\n\n### Highlights\n\n![La NASA anuncia la cobertura de la misión lunar Artemis II](https://www.nasa.gov/wp-content/uploads/2026/03/a2crew-7ff19d.jpg?w=1024)\n\n### La NASA anuncia la cobertura de la misión lunar Artemis II\n\n![Agenda diaria de la misión a la Luna de Artemis II de la NASA](https://www.nasa.gov/wp-content/uploads/2026/03/suit-patch.jpg?w=1024)\n\n### Agenda diaria de la misión a la Luna de Artemis II de la NASA\n\n![La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general](https://images-assets.nasa.gov/image/iss074e0325229/iss074e0325229~large.jpg?w=1920&h=1280&fit=clip&crop=faces%2Cfocalpoint)\n\n### La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general\n\n1 min read\n\n# Great Wall\n\n![The headshot image of NASA](https://www.nasa.gov/wp-content/uploads/2023/04/cropped-nasa-logo-wallpaper-300x300.jpeg)\n\nNASA\n\n![Great Wall](https://www.nasa.gov/wp-content/uploads/2023/03/324461main_29_full.jpg?w=1041)\n\nThe Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station.  \nDespite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo.\n\n*Image Credit: NASA*\n\n![NASA Logo](https://www.nasa.gov/wp-content/themes/nasa/assets/images/nasa-logo@2x.png)\n\n### National Aeronautics and Space Administration\n\nNASA explores the",
+                "source_type": "government",
+                "stance": "contradicting",
+                "quality_score": 0.9,
+                "assessment_reason": "The passage explicitly states that the Great Wall of China is not visible from the Moon, directly opposing the claim.",
+                "evidence_quote": "Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo.",
+                "provenance": {
+                  "source_policy": "catalogue",
+                  "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                  "origin_group": "gov",
+                  "discovery_method": "preferred_search",
+                  "relevance": "direct",
+                  "relevance_reason": "The sentence explicitly addresses the claim by stating that the Great Wall is not visible from the Moon, directly refuting the claim.",
+                  "relevance_quote": "Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo.",
+                  "applicability": "established",
+                  "applicability_reason": "The statement concerns the Great Wall of China and its visibility from the Moon, matching the claim's subject, location, and timeframe.",
+                  "condition_quotes": []
+                }
+              },
+              {
+                "evidence_id": "source-b8ca07caed78c8f5",
+                "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+                "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925",
+                "publisher": "Snopes",
+                "published_at": null,
+                "passage": "![Snopes Logo](/design/images/snopes_default_square.png)\n\nSnopes Now available in the app store!\n\n[Open](#)\n\nLog in to activate your ad-free access. It looks like you might have a Snopes membership! Log in to enjoy your ad-free experience. [Log In](/login/)\n\n![Snopes](/design/images/snopes_default_square.png) From Snopes  You're browsing with fewer ads for the next 24 hours, thanks to our sponsor .\n\nFact Check\n\n# Is the Great Wall of China Visible from the Moon?\n\n## Long-held common belief holds that the Great Wall of China is the only man-made object visible from the moon.\n\n### [David Mikkelson](/author/snopes/)\n\n### Published Nov. 11, 2001\n\n![](https://mediaproxy.snopes.com/width/1200/https://media.snopes.com/2018/07/great_wall_of_china.jpg)\n\n **Image courtesy of aphotostory / Shutterstock**\n\nClaim:\n\nThe Great Wall of China is the only man-made object visible from the moon.\n\nRating: [![False]()\n\nFalse\n\nAbout this rating](/fact-check/rating/false)\n\nThe claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term.\n\nIf we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object",
+                "source_type": "fact_check",
+                "stance": "contradicting",
+                "quality_score": 0.9,
+                "assessment_reason": "The passage states that the claim the Great Wall is visible from the Moon has been proved false, directly contradicting the claim.",
+                "evidence_quote": "Rating: [![False]()\n\nFalse\n\nAbout this rating](/fact-check/rating/false)\n\nThe claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false.",
+                "provenance": {
+                  "source_policy": "catalogue",
+                  "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                  "origin_group": "snopes.com",
+                  "discovery_method": "preferred_search",
+                  "relevance": "direct",
+                  "relevance_reason": "The passage explicitly states that the claim the Great Wall is visible from the Moon is false and provides astronaut testimony that it is barely discernible at 180 miles, thus not visible from the Moon.",
+                  "relevance_quote": "Rating: [![False]()\n\nFalse\n\nAbout this rating](/fact-check/rating/false)\n\nThe claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term.\n\nIf we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object",
+                  "applicability": "established",
+                  "applicability_reason": "The evidence addresses the same object (Great Wall of China), the same observation point (the Moon), and is not time‑restricted.",
+                  "condition_quotes": []
+                }
+              }
+            ],
+            "warnings": [],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-web-v3",
+            "created_at": "2026-09-08T16:35:15.671976Z"
+          },
+          "duration_seconds": 12.38,
+          "retrieval": [
+            {
+              "retrieval_status": "completed",
+              "evidence": [
+                {
+                  "evidence_id": "source-8571fdc677612ee2",
+                  "title": "Great Wall - NASA",
+                  "url": "https://nasa.gov/image-article/great-wall",
+                  "publisher": "NASA",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "NASA Welcomes Türkiye as Newest Artemis Accords Signatory\n\n![President Honors NASA’s Artemis II Crew with Highest US Space Award](https://www.nasa.gov/wp-content/uploads/2026/08/congressional-space-medal-of-honor-ceremony-1.jpg?w=1024)\n\n### President Honors NASA’s Artemis II Crew with Highest US Space Award\n\n### Highlights\n\n![La NASA anuncia la cobertura de la misión lunar Artemis II](https://www.nasa.gov/wp-content/uploads/2026/03/a2crew-7ff19d.jpg?w=1024)\n\n### La NASA anuncia la cobertura de la misión lunar Artemis II\n\n![Agenda diaria de la misión a la Luna de Artemis II de la NASA](https://www.nasa.gov/wp-content/uploads/2026/03/suit-patch.jpg?w=1024)\n\n### Agenda diaria de la misión a la Luna de Artemis II de la NASA\n\n![La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general](https://images-assets.nasa.gov/image/iss074e0325229/iss074e0325229~large.jpg?w=1920&h=1280&fit=clip&crop=faces%2Cfocalpoint)\n\n### La NASA refuerza Artemis: añade una misión y perfecciona su arquitectura general\n\n1 min read\n\n# Great Wall\n\n![The headshot image of NASA](https://www.nasa.gov/wp-content/uploads/2023/04/cropped-nasa-logo-wallpaper-300x300.jpeg)\n\nNASA\n\n![Great Wall](https://www.nasa.gov/wp-content/uploads/2023/03/324461main_29_full.jpg?w=1041)\n\nThe Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station.  \nDespite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo.\n\n*Image Credit: NASA*\n\n![NASA Logo](https://www.nasa.gov/wp-content/themes/nasa/assets/images/nasa-logo@2x.png)\n\n### National Aeronautics and Space Administration\n\nNASA explores the",
+                  "source_type": "government",
+                  "retrieval_score": 0.9,
+                  "retrieved_at": "2026-09-08T16:35:15.810550Z",
+                  "provenance": {
+                    "source_policy": "catalogue",
+                    "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                    "origin_group": "gov",
+                    "discovery_method": "preferred_search",
+                    "relevance": "direct",
+                    "relevance_reason": "The sentence explicitly addresses the claim by stating that the Great Wall is not visible from the Moon, directly refuting the claim.",
+                    "relevance_quote": "Despite myths to the contrary, the wall isn’t visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo.",
+                    "applicability": "established",
+                    "applicability_reason": "The statement concerns the Great Wall of China and its visibility from the Moon, matching the claim's subject, location, and timeframe.",
+                    "condition_quotes": []
+                  }
+                },
+                {
+                  "evidence_id": "source-b8ca07caed78c8f5",
+                  "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+                  "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925",
+                  "publisher": "Snopes",
+                  "author": null,
+                  "published_at": null,
+                  "passage": "![Snopes Logo](/design/images/snopes_default_square.png)\n\nSnopes Now available in the app store!\n\n[Open](#)\n\nLog in to activate your ad-free access. It looks like you might have a Snopes membership! Log in to enjoy your ad-free experience. [Log In](/login/)\n\n![Snopes](/design/images/snopes_default_square.png) From Snopes  You're browsing with fewer ads for the next 24 hours, thanks to our sponsor .\n\nFact Check\n\n# Is the Great Wall of China Visible from the Moon?\n\n## Long-held common belief holds that the Great Wall of China is the only man-made object visible from the moon.\n\n### [David Mikkelson](/author/snopes/)\n\n### Published Nov. 11, 2001\n\n![](https://mediaproxy.snopes.com/width/1200/https://media.snopes.com/2018/07/great_wall_of_china.jpg)\n\n **Image courtesy of aphotostory / Shutterstock**\n\nClaim:\n\nThe Great Wall of China is the only man-made object visible from the moon.\n\nRating: [![False]()\n\nFalse\n\nAbout this rating](/fact-check/rating/false)\n\nThe claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term.\n\nIf we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object",
+                  "source_type": "fact_check",
+                  "retrieval_score": 0.9,
+                  "retrieved_at": "2026-09-08T16:35:15.810550Z",
+                  "provenance": {
+                    "source_policy": "catalogue",
+                    "source_reason": "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.",
+                    "origin_group": "snopes.com",
+                    "discovery_method": "preferred_search",
+                    "relevance": "direct",
+                    "relevance_reason": "The passage explicitly states that the claim the Great Wall is visible from the Moon is false and provides astronaut testimony that it is barely discernible at 180 miles, thus not visible from the Moon.",
+                    "relevance_quote": "Rating: [![False]()\n\nFalse\n\nAbout this rating](/fact-check/rating/false)\n\nThe claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term.\n\nIf we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object",
+                    "applicability": "established",
+                    "applicability_reason": "The evidence addresses the same object (Great Wall of China), the same observation point (the Moon), and is not time‑restricted.",
+                    "condition_quotes": []
+                  }
+                }
+              ],
+              "warnings": [],
+              "trace": {
+                "search_requests": 1,
+                "extraction_urls": 2,
+                "relevance_calls": 2,
+                "decisions": [
+                  {
+                    "decision": "preferred_search",
+                    "url": "",
+                    "query": "The Great Wall of China is visible from the Moon."
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://snopes.com/fact-check/great-wall-from-moon"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "http://snopes.com/science/greatwall.asp"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "http://snopes.com/science/greatwal.htm"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://snopes.com/science/greatwall.asp"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://nasa.gov/image-article/great-wall"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "http://nasa.gov/vision/space/workinginspace/great_wall.html"
+                  },
+                  {
+                    "decision": "discovered_catalogue",
+                    "url": "https://science.nasa.gov/photojournal/space-radar-image-of-great-wall-of-china-2"
+                  },
+                  {
+                    "decision": "accepted_direct_established",
+                    "url": "https://nasa.gov/image-article/great-wall"
+                  },
+                  {
+                    "decision": "accepted_direct_established",
+                    "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "food_opinion",
+      "input": "Chicken rice is the best food in Singapore.",
+      "split": "regression",
+      "expected_provisional": "insufficient",
+      "claim_analysis": {
+        "extracted_claim": null,
+        "claim_category": "opinion",
+        "checkable": false,
+        "classification_reason": "The statement expresses a personal preference about food, not a verifiable factual claim.",
+        "claim_confidence": 1.0
+      },
+      "runs": {
+        "web": {
+          "outcome": "insufficient",
+          "matches_provisional_label": true,
+          "wrong_decisive": false,
+          "quote_integrity": true,
+          "result": {
+            "result_id": "fd6bc017-11e5-4489-9e01-33d8b6f450e5",
+            "processing_status": "completed",
+            "original_text": "Chicken rice is the best food in Singapore.",
+            "extracted_claim": null,
+            "claim_category": "opinion",
+            "checkable": false,
+            "concern_label": "Not Enough Information",
+            "misinformation_risk_score": null,
+            "uncertainty": "High",
+            "uncertainty_reasons": [
+              "No objectively checkable factual claim was found."
+            ],
+            "explanation": "This statement was classified as opinion, so it cannot be assessed as a factual misinformation claim.",
+            "recommended_action": "Treat this as non-factual content rather than a verified fact.",
+            "evidence": [],
+            "warnings": [],
+            "pipeline_version": "sprint-1-semantic-v3:gpt-oss:120b:retrieval-web-v3",
+            "created_at": "2026-09-08T16:35:46.045680Z"
+          },
+          "duration_seconds": 2.58,
+          "retrieval": []
+        }
+      }
+    }
+  ],
+  "summary": {
+    "web": {
+      "cases": 4,
+      "provisional_label_matches": 3,
+      "wrong_decisive": 0,
+      "errors": 0,
+      "with_evidence": 2,
+      "insufficient": 3,
+      "quote_integrity_failures": 0,
+      "mean_seconds": 10.71,
+      "max_seconds": 15.32
+    }
+  }
+}

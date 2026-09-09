@@ -54,7 +54,8 @@ export function getProfile(user) {
 
 export function checkText(user, text, requestKey) {
   return accountRequest('/analysis/text', user, {
-    method: 'POST', body: JSON.stringify({ text }), timeout: 180000,
+    // Claim (90s), retrieval (65s), assessment (65s), plus transport/storage.
+    method: 'POST', body: JSON.stringify({ text }), timeout: 240000,
     headers: { 'Idempotency-Key': requestKey },
   });
 }

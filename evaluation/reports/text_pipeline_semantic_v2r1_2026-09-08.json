@@ -1,0 +1,311 @@
+{
+  "run_at_utc": "2026-09-08T07:28:52.872117+00:00",
+  "scope": "Live text stages through FastAPI TestClient; in-memory persistence. Operational checks only, not an accuracy benchmark or Android test.",
+  "cases": [
+    {
+      "scenario_id": "published_fact_check",
+      "input": "The Great Wall of China is visible from the Moon.",
+      "http_status": 200,
+      "operational_check_passed": true,
+      "duration_seconds": 18.21,
+      "response": {
+        "result_id": "2b1f5936c1889f6223cc9204a4df56c4",
+        "processing_status": "completed",
+        "original_text": "The Great Wall of China is visible from the Moon.",
+        "extracted_claim": "The Great Wall of China is visible from the Moon.",
+        "claim_category": "factual",
+        "checkable": true,
+        "concern_label": "High Concern",
+        "misinformation_risk_score": 82,
+        "uncertainty": "Medium",
+        "uncertainty_reasons": [
+          "The passages agree, but source independence and assessment accuracy have not been established.",
+          "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+        ],
+        "explanation": "The cited evidence contradicts the submitted claim. Snopes: The passage explicitly states that the Great Wall is almost invisible from 180 miles, contradicting the claim that it is visible from the Moon.",
+        "recommended_action": "Do not forward the claim yet. Review the contradicting cited evidence first.",
+        "evidence": [
+          {
+            "evidence_id": "source-9708d43fc39aa646",
+            "title": "Is the Great Wall of China Visible from the Moon?",
+            "url": "https://snopes.com/fact-check/great-wall-from-moon",
+            "publisher": "Snopes",
+            "published_at": "2001-11-11",
+            "passage": "Claim: The Great Wall of China is the only man-made object visible from the moon. Rating: False False About this rating The claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term. If we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object visible from that distance: NASA's Earth from Space photographic archive (particularly the Human Interactions section) shows that pictures taken from low orbit reveal human-built structures such as highways, airports, bridges, dams, and components of the Kennedy Space Center. Secondly, even though other objects are visible at this distance, according to Shuttle astronaut Jay Apt, the Great Wall is barely discernable, if not invisible: > We look for the Great Wall of China. Although we can see things as small as airport runways, the Great Wall seems to be made largely of materials that have the same color as the surrounding soil. Despite persistent stories that it can be seen from the moon, the Great Wall is almost invisible from only 180 miles up! An object that can barely be seen from a height of 180 miles up is obviously not going t",
+            "source_type": "fact_check",
+            "stance": "contradicting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states that the Great Wall is almost invisible from 180 miles, contradicting the claim that it is visible from the Moon.",
+            "evidence_quote": "Despite persistent stories that it can be seen from the moon, the Great Wall is almost invisible from only 180 miles up!"
+          },
+          {
+            "evidence_id": "source-ab101f93d01972a9",
+            "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+            "url": "https://snopes.com/science/greatwall.asp",
+            "publisher": "Snopes",
+            "published_at": null,
+            "passage": "Title: Is the Great Wall of China Visible from the Moon? | Snopes.com # Is the Great Wall of China Visible from the Moon? ## Long-held common belief holds that the Great Wall of China is the only man-made object visible from the moon.",
+            "source_type": "fact_check",
+            "stance": "neutral",
+            "quality_score": 0.45,
+            "assessment_reason": "The passage only mentions a common belief that the Great Wall is visible from the Moon, without confirming or denying the claim, so it does not provide decisive support or contradiction.",
+            "evidence_quote": null
+          },
+          {
+            "evidence_id": "source-b8ca07caed78c8f5",
+            "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+            "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925",
+            "publisher": "Snopes",
+            "published_at": null,
+            "passage": "Whatever its source, since the Great Wall claim antedates man's launching of satellites (and thereby the possibility of photography from space) by decades, it was not the outgrowth of a misinterpreted photograph taken by satellite or a manned space mission. The Great Wall of China extends for some 1,500 miles (although it is actually a series of walls rather than one contiguous wall), and the claim that it is visible from the moon was probably an attempt to find a concise way of conveying the grand scale of the wall to people who had never seen it (outside of black-and-white photographs that could only reproduce small portions of the wall) and of asserting the triumph of man's mastery of the vastness of nature (i.e., even if we couldn't travel into space ourselves, we'd already [...] Snopes Logo Snopes Now available in the app store! Open Log in to activate your ad-free access. It looks like you might have a Snopes membership!",
+            "source_type": "fact_check",
+            "stance": "contradicting",
+            "quality_score": 0.92,
+            "assessment_reason": "The passage characterizes the claim as an attempt to convey scale, implying it is not a factual observation, thus contradicting the claim that the Great Wall is visible from the Moon.",
+            "evidence_quote": "the claim that it is visible from the moon was probably an attempt to find a concise way of conveying the grand scale of the wall"
+          },
+          {
+            "evidence_id": "source-e53f0c960b8679df",
+            "title": "Great Wall - NASA",
+            "url": "http://nasa.gov/vision/space/workinginspace/great_wall.html",
+            "publisher": "NASA",
+            "published_at": null,
+            "passage": "# Great Wall. The Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station. Despite myths to the contrary, the wall isn't visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo. The Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station.",
+            "source_type": "government",
+            "stance": "contradicting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states that the Great Wall of China is not visible from the Moon, directly opposing the claim.",
+            "evidence_quote": "Despite myths to the contrary, the wall isn't visible from the moon"
+          },
+          {
+            "evidence_id": "source-a4b6c0f56dc57ce5",
+            "title": "FAQ",
+            "url": "https://eol.jsc.nasa.gov/faq",
+            "publisher": "NASA",
+            "published_at": null,
+            "passage": "The Great Wall is not visible to the naked eye from orbit, as recently demonstrated by China's first astronaut (Yang Liwei) who admitted that he was unable to see it. It is not visible from the Moon. The greatest detail we have observed from astronaut photos using long lens on cameras is 6 m pixels meaning that each dot on the image is equal to 6 m on the ground.",
+            "source_type": "government",
+            "stance": "contradicting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states that the Great Wall is not visible from the Moon, directly opposing the claim.",
+            "evidence_quote": "It is not visible from the Moon."
+          },
+          {
+            "evidence_id": "source-0b15a9d9129f7853",
+            "title": "APOD: 2015 March 13 - The Great Wall by Moonlight - NASA Science",
+            "url": "https://science.nasa.gov/image-article/apod-2015-march-13-the-great-wall-by-moonlight",
+            "publisher": "NASA",
+            "published_at": null,
+            "passage": "Also near apogee , the farthest point in its elliptical orbit around planet Earth, it was this year's smallest and faintest Full Moon. The Jiankou section of the Great Wall of China meanders through the scene, the ancient Great Wall itself the subject of an older-than-the-space-age myth that it would be visible to the eye when standing on the lunar surface . But even from low Earth orbit , the large scale artifact of human civilization is very difficult to identify. At its farthest from our fair planet, the Moon shines brightly in the twilight sky though, posing in the faint, pinkish band known as the antitwilight arch or the belt of Venus .",
+            "source_type": "government",
+            "stance": "contradicting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage describes the claim as a myth and states that even from low Earth orbit the wall is very difficult to see, contradicting the claim that it is visible from the Moon.",
+            "evidence_quote": "the ancient Great Wall itself the subject of an older-than-the-space-age myth that it would be visible to the eye when standing on the lunar surface . But even from low Earth orbit , the large scale artifact of human civilization is very difficult to identify."
+          }
+        ],
+        "warnings": [],
+        "pipeline_version": "sprint-1-semantic-v2r1:gpt-oss:120b",
+        "created_at": "2026-09-08T07:29:11.088460Z"
+      },
+      "retrieval": [
+        {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "source-9708d43fc39aa646",
+              "title": "Is the Great Wall of China Visible from the Moon?",
+              "url": "https://snopes.com/fact-check/great-wall-from-moon",
+              "publisher": "Snopes",
+              "author": null,
+              "published_at": "2001-11-11",
+              "passage": "Claim: The Great Wall of China is the only man-made object visible from the moon. Rating: False False About this rating The claim that China's Great Wall is the only man-made object that can be seen from the moon with the naked eye is one of our more tenaciously incorrect \"facts,\" a bit of erroneous speculation which was spawned decades before we had the means to demonstrate it true, and which continues to have currency despite having long since been proved false. Some less specific versions of the Great Wall claim maintain it is the only man-made object that can be seen from \"space,\" but although the term \"space\" is rather non-specific, it is not difficult to show the Great Wall claim to be false for any reasonable definition of the term. If we take \"space\" to mean a low Earth orbit such as the one traveled by the Space Shuttle (roughly 160 to 350 miles above Earth), the Great Wall claim fails twice. First of all, it's not the only object visible from that distance: NASA's Earth from Space photographic archive (particularly the Human Interactions section) shows that pictures taken from low orbit reveal human-built structures such as highways, airports, bridges, dams, and components of the Kennedy Space Center. Secondly, even though other objects are visible at this distance, according to Shuttle astronaut Jay Apt, the Great Wall is barely discernable, if not invisible: > We look for the Great Wall of China. Although we can see things as small as airport runways, the Great Wall seems to be made largely of materials that have the same color as the surrounding soil. Despite persistent stories that it can be seen from the moon, the Great Wall is almost invisible from only 180 miles up! An object that can barely be seen from a height of 180 miles up is obviously not going t",
+              "source_type": "fact_check",
+              "retrieval_score": 1.0,
+              "retrieved_at": "2026-09-08T07:29:00.824962Z"
+            },
+            {
+              "evidence_id": "source-ab101f93d01972a9",
+              "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+              "url": "https://snopes.com/science/greatwall.asp",
+              "publisher": "Snopes",
+              "author": null,
+              "published_at": null,
+              "passage": "Title: Is the Great Wall of China Visible from the Moon? | Snopes.com # Is the Great Wall of China Visible from the Moon? ## Long-held common belief holds that the Great Wall of China is the only man-made object visible from the moon.",
+              "source_type": "fact_check",
+              "retrieval_score": 0.9582,
+              "retrieved_at": "2026-09-08T07:29:04.941565Z"
+            },
+            {
+              "evidence_id": "source-b8ca07caed78c8f5",
+              "title": "Is the Great Wall of China Visible from the Moon? | Snopes.com",
+              "url": "https://snopes.com/fact-check/great-wall-from-moon?collection=472925",
+              "publisher": "Snopes",
+              "author": null,
+              "published_at": null,
+              "passage": "Whatever its source, since the Great Wall claim antedates man's launching of satellites (and thereby the possibility of photography from space) by decades, it was not the outgrowth of a misinterpreted photograph taken by satellite or a manned space mission. The Great Wall of China extends for some 1,500 miles (although it is actually a series of walls rather than one contiguous wall), and the claim that it is visible from the moon was probably an attempt to find a concise way of conveying the grand scale of the wall to people who had never seen it (outside of black-and-white photographs that could only reproduce small portions of the wall) and of asserting the triumph of man's mastery of the vastness of nature (i.e., even if we couldn't travel into space ourselves, we'd already [...] Snopes Logo Snopes Now available in the app store! Open Log in to activate your ad-free access. It looks like you might have a Snopes membership!",
+              "source_type": "fact_check",
+              "retrieval_score": 0.9201,
+              "retrieved_at": "2026-09-08T07:29:04.941986Z"
+            },
+            {
+              "evidence_id": "source-e53f0c960b8679df",
+              "title": "Great Wall - NASA",
+              "url": "http://nasa.gov/vision/space/workinginspace/great_wall.html",
+              "publisher": "NASA",
+              "author": null,
+              "published_at": null,
+              "passage": "# Great Wall. The Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station. Despite myths to the contrary, the wall isn't visible from the moon, and is difficult or impossible to see from Earth orbit without the high-powered lenses used for this photo. The Great Wall of China and Inner Mongolia are featured in this image photographed by Expedition 10 Commander Leroy Chiao on the International Space Station.",
+              "source_type": "government",
+              "retrieval_score": 0.8276,
+              "retrieved_at": "2026-09-08T07:29:04.942554Z"
+            },
+            {
+              "evidence_id": "source-a4b6c0f56dc57ce5",
+              "title": "FAQ",
+              "url": "https://eol.jsc.nasa.gov/faq",
+              "publisher": "NASA",
+              "author": null,
+              "published_at": null,
+              "passage": "The Great Wall is not visible to the naked eye from orbit, as recently demonstrated by China's first astronaut (Yang Liwei) who admitted that he was unable to see it. It is not visible from the Moon. The greatest detail we have observed from astronaut photos using long lens on cameras is 6 m pixels meaning that each dot on the image is equal to 6 m on the ground.",
+              "source_type": "government",
+              "retrieval_score": 0.8263,
+              "retrieved_at": "2026-09-08T07:29:04.942640Z"
+            },
+            {
+              "evidence_id": "source-0b15a9d9129f7853",
+              "title": "APOD: 2015 March 13 - The Great Wall by Moonlight - NASA Science",
+              "url": "https://science.nasa.gov/image-article/apod-2015-march-13-the-great-wall-by-moonlight",
+              "publisher": "NASA",
+              "author": null,
+              "published_at": null,
+              "passage": "Also near apogee , the farthest point in its elliptical orbit around planet Earth, it was this year's smallest and faintest Full Moon. The Jiankou section of the Great Wall of China meanders through the scene, the ancient Great Wall itself the subject of an older-than-the-space-age myth that it would be visible to the eye when standing on the lunar surface . But even from low Earth orbit , the large scale artifact of human civilization is very difficult to identify. At its farthest from our fair planet, the Moon shines brightly in the twilight sky though, posing in the faint, pinkish band known as the antitwilight arch or the belt of Venus .",
+              "source_type": "government",
+              "retrieval_score": 0.8149,
+              "retrieved_at": "2026-09-08T07:29:04.942798Z"
+            }
+          ],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "scenario_id": "government_history",
+      "input": "Singapore became independent on 9 August 1965.",
+      "http_status": 200,
+      "operational_check_passed": true,
+      "duration_seconds": 10.96,
+      "response": {
+        "result_id": "12d65650f52037d8e3e1b6337f9ffe59",
+        "processing_status": "completed",
+        "original_text": "Singapore became independent on 9 August 1965.",
+        "extracted_claim": "Singapore became independent on 9 August 1965",
+        "claim_category": "factual",
+        "checkable": true,
+        "concern_label": "Low Concern",
+        "misinformation_risk_score": 25,
+        "uncertainty": "Medium",
+        "uncertainty_reasons": [
+          "The passages agree, but source independence and assessment accuracy have not been established.",
+          "The risk indicator uses prototype rules; it is not a probability that the claim is false."
+        ],
+        "explanation": "The cited evidence supports the submitted claim. National University of Singapore: The passage explicitly states that Singapore became an independent sovereign state on 9 August 1965, directly confirming the claim.",
+        "recommended_action": "Review the supporting cited evidence before sharing the claim.",
+        "evidence": [
+          {
+            "evidence_id": "source-5f27029b7d66697a",
+            "title": "[PDF] international law, history & policy: singapore in the early years",
+            "url": "https://cil.nus.edu.sg/wp-content/uploads/2019/09/International%20Law,%20History%20and%20Policy%20Singapore%20in%20the%20Early%20Years.pdf",
+            "publisher": "National University of Singapore",
+            "published_at": null,
+            "passage": "Under Article II of the Act, Singapore ceased to be a State in the Federation on 9 August 1965 (‘Singapore Day’) and became ‘an independent and sovereign state separate from and independent of Malaysia’ . Article IV further provided that the Government of Malaysia would ‘take such steps as may be appropriate and available to them to secure the enactment by the Parliament the Grenadines, and Trinidad and Tobago. It lasted from 1958 to 1962.",
+            "source_type": "academic",
+            "stance": "supporting",
+            "quality_score": 0.88,
+            "assessment_reason": "The passage explicitly states that Singapore became an independent sovereign state on 9 August 1965, directly confirming the claim.",
+            "evidence_quote": "Singapore ceased to be a State in the Federation on 9 August 1965 (‘Singapore Day’) and became ‘an independent and sovereign state separate from and independent of Malaysia’"
+          },
+          {
+            "evidence_id": "source-42783f452ee5105b",
+            "title": "Singapore separates from Malaysia and becomes independent",
+            "url": "https://nlb.gov.sg/main/article-detail?cmsuuid=dc1efe7a-8159-40b2-9244-cdb078755013",
+            "publisher": "nlb.gov.sg",
+            "published_at": null,
+            "passage": "The proclamation declaring Singapore’s independence was announced on Radio Singapore at 10:00 am on 9 August 1965. Simultaneously in Kuala Lumpur, the Tunku announced the separation to the federal parliament. He then moved a resolution to enact the Constitution of Malaysia (Singapore Amendment) Bill, 1965, that would allow Singapore to leave Malaysia and become an independent and sovereign state.",
+            "source_type": "government",
+            "stance": "supporting",
+            "quality_score": 0.82,
+            "assessment_reason": "The passage explicitly states that Singapore's independence was proclaimed on 9 August 1965, directly confirming the claim.",
+            "evidence_quote": "The proclamation declaring Singapore’s independence was announced on Radio Singapore at 10:00 am on 9 August 1965."
+          }
+        ],
+        "warnings": [],
+        "pipeline_version": "sprint-1-semantic-v2r1:gpt-oss:120b",
+        "created_at": "2026-09-08T07:29:22.051361Z"
+      },
+      "retrieval": [
+        {
+          "retrieval_status": "completed",
+          "evidence": [
+            {
+              "evidence_id": "source-5f27029b7d66697a",
+              "title": "[PDF] international law, history & policy: singapore in the early years",
+              "url": "https://cil.nus.edu.sg/wp-content/uploads/2019/09/International%20Law,%20History%20and%20Policy%20Singapore%20in%20the%20Early%20Years.pdf",
+              "publisher": "National University of Singapore",
+              "author": null,
+              "published_at": null,
+              "passage": "Under Article II of the Act, Singapore ceased to be a State in the Federation on 9 August 1965 (‘Singapore Day’) and became ‘an independent and sovereign state separate from and independent of Malaysia’ . Article IV further provided that the Government of Malaysia would ‘take such steps as may be appropriate and available to them to secure the enactment by the Parliament the Grenadines, and Trinidad and Tobago. It lasted from 1958 to 1962.",
+              "source_type": "academic",
+              "retrieval_score": 0.8823,
+              "retrieved_at": "2026-09-08T07:29:20.135496Z"
+            },
+            {
+              "evidence_id": "source-42783f452ee5105b",
+              "title": "Singapore separates from Malaysia and becomes independent",
+              "url": "https://nlb.gov.sg/main/article-detail?cmsuuid=dc1efe7a-8159-40b2-9244-cdb078755013",
+              "publisher": "nlb.gov.sg",
+              "author": null,
+              "published_at": null,
+              "passage": "The proclamation declaring Singapore’s independence was announced on Radio Singapore at 10:00 am on 9 August 1965. Simultaneously in Kuala Lumpur, the Tunku announced the separation to the federal parliament. He then moved a resolution to enact the Constitution of Malaysia (Singapore Amendment) Bill, 1965, that would allow Singapore to leave Malaysia and become an independent and sovereign state.",
+              "source_type": "government",
+              "retrieval_score": 0.8333,
+              "retrieved_at": "2026-09-08T07:29:20.135219Z"
+            }
+          ],
+          "warnings": []
+        }
+      ]
+    },
+    {
+      "scenario_id": "opinion",
+      "input": "Chicken rice is the best food in Singapore.",
+      "http_status": 200,
+      "operational_check_passed": true,
+      "duration_seconds": 2.24,
+      "response": {
+        "result_id": "f8c978a2d75c66e433fa2aefb4cda23f",
+        "processing_status": "completed",
+        "original_text": "Chicken rice is the best food in Singapore.",
+        "extracted_claim": null,
+        "claim_category": "opinion",
+        "checkable": false,
+        "concern_label": "Not Enough Information",
+        "misinformation_risk_score": null,
+        "uncertainty": "High",
+        "uncertainty_reasons": [
+          "No objectively checkable factual claim was found."
+        ],
+        "explanation": "This statement was classified as opinion, so it cannot be assessed as a factual misinformation claim.",
+        "recommended_action": "Treat this as non-factual content rather than a verified fact.",
+        "evidence": [],
+        "warnings": [],
+        "pipeline_version": "sprint-1-semantic-v2r1:gpt-oss:120b",
+        "created_at": "2026-09-08T07:29:24.288948Z"
+      },
+      "retrieval": []
+    }
+  ],
+  "saved_completed": 3,
+  "saved_failed": 0,
+  "operational_checks_passed": 3
+}
