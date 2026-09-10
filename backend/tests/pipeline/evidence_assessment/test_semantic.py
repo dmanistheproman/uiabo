@@ -85,8 +85,11 @@ def test_prompt_separates_untrusted_claim_and_passage():
         assert body["model"] == semantic.DEFAULT_MODEL
         assert body["messages"][0]["role"] == "system"
         assert hostile not in body["messages"][0]["content"]
-        assert json.loads(body["messages"][1]["content"]) == {
-            "claim": claim().extracted_claim, "passage": hostile}
+        data = json.loads(body["messages"][1]["content"])
+        assert data["claim"] == claim().extracted_claim
+        assert data["passage"] == hostile
+        assert data["published_at"] is None
+        assert len(data["as_of"]) == 10
         return httpx.Response(200, json=response(judgment(evidence_quote="Admission costs $10.")))
     result = run(handler, [evidence(passage=hostile)])
     assert result.concern_label == "High Concern"

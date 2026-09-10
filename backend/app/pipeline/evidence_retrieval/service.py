@@ -17,6 +17,7 @@ import httpx
 
 from app.pipeline.shared.models import ClaimAnalysis, EvidenceCandidate, RetrievalResult
 from app.pipeline.shared.errors import PipelineComponentError
+from app.pipeline.shared.dates import dated_search_claim
 from . import providers
 from .query_planning import format_search_amounts, plan_queries
 from .sources import SourceNotAllowed, canonical_url, source_details
@@ -290,7 +291,7 @@ def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
         result = RetrievalResult(retrieval_status="no_evidence", warnings=[
             "The claim is not checkable, so evidence retrieval was skipped."])
     elif search_func is not None:
-        result = _injected(claim.extracted_claim, search_func)
+        result = _injected(dated_search_claim(claim.extracted_claim, claim.date_context), search_func)
     else:
         load_dotenv(PROJECT_ENV, override=False)
         selected_mode = retrieval_mode() if mode is None else mode
@@ -305,11 +306,11 @@ def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
             if selected_mode == "web":
                 from .enhanced import live
                 key = os.environ.get("OLLAMA_API_KEY", "").strip()
-                result = (asyncio.run(live(claim.extracted_claim, google_key, tavily_key, key)) if key
+                result = (asyncio.run(live(claim.extracted_claim, google_key, tavily_key, key, date_context=claim.date_context)) if key
                     else RetrievalResult(retrieval_status="failed", warnings=[
                         "Web retrieval requires OLLAMA_API_KEY for semantic relevance checks."]))
             else:
-                result = asyncio.run(_live(claim.extracted_claim, google_key, tavily_key))
+                result = asyncio.run(_live(dated_search_claim(claim.extracted_claim, claim.date_context), google_key, tavily_key))
     return result if typed else result.model_dump(mode="json")
 
 

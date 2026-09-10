@@ -13,6 +13,7 @@ from uuid import uuid4
 from pydantic import BaseModel, ValidationError
 
 from app.pipeline.orchestration.repository import ResultRepository
+from app.pipeline.shared.dates import infer_date_context, assumption_notice
 from app.pipeline.shared.errors import (
     PipelineComponentError,
     PipelineContractError,
@@ -96,6 +97,10 @@ class PipelineOrchestrator:
                 model=ClaimAnalysis,
                 args=(prepared,),
             )
+            # Own this assumption on the server; do not accept an LLM-invented
+            # date or rewrite the quoted claim. Use one clock for the whole run.
+            claim.date_context = (infer_date_context(claim.extracted_claim, created_at)
+                                  if claim.checkable else None)
 
             retrieval: RetrievalResult | None = None
             if not claim.checkable:
@@ -128,6 +133,10 @@ class PipelineOrchestrator:
                         args=(claim, retrieval),
                     )
 
+            if claim.date_context:
+                assessment.uncertainty_reasons.append(assumption_notice(claim.date_context))
+                if assessment.uncertainty == "Low":
+                    assessment.uncertainty = "Medium"
             result = _assemble_result(
                 result_id=result_id,
                 created_at=created_at,
@@ -316,6 +325,13 @@ def _assemble_result(
         uncertainty_reasons=assessment.uncertainty_reasons,
         explanation=assessment.explanation,
         recommended_action=assessment.recommended_action,
+        assessment_outcome=assessment.assessment_outcome or (
+            "not_checkable" if not claim.checkable else {
+                "Low Concern": "supported", "High Concern": "contradicted",
+                "Needs Caution": "conflicting", "Not Enough Information": "insufficient_evidence",
+            }[assessment.concern_label]),
+        claim_comparisons=assessment.claim_comparisons,
+        date_context=claim.date_context,
         evidence=evidence,
         warnings=warnings,
         pipeline_version=pipeline_version,

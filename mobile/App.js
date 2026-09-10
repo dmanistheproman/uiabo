@@ -21,15 +21,18 @@ function AppContent() {
   const [page, setPage] = React.useState('home');
   const [result, setResult] = React.useState(null);
   const [working, setWorking] = React.useState(false);
+  const [textDraft, setTextDraft] = React.useState(null);
 
   React.useEffect(() => {
     setPage('home');
     setResult(null);
     setWorking(false);
+    setTextDraft(null);
   }, [firebaseUser?.uid]);
 
-  function navigate(next) {
+  function navigate(next, options = {}) {
     if (working) return;
+    setTextDraft(next === 'text' ? options.draft || null : null);
     setPage(next);
   }
   React.useEffect(() => {
@@ -56,7 +59,7 @@ function AppContent() {
   function showResult(value) { setResult(value); setPage('result'); }
   let content;
   if (page === 'profile') content = <ProfileScreen onBack={() => navigate('home')} />;
-  else if (page === 'text' || page === 'link') content = <TextCheckScreen key={page} initialMode={page} onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
+  else if (page === 'text' || page === 'link') content = <TextCheckScreen key={page} initialMode={page} initialDraft={textDraft} onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
   else if (page === 'results') content = <ResultsScreen onNavigate={navigate} onResult={showResult} />;
   else if (page === 'result' && result) content = <ResultScreen result={result} onNavigate={navigate} />;
   else if (page === 'help' || page === 'premium') content = <InfoScreen premium={page === 'premium'} onNavigate={navigate} />;

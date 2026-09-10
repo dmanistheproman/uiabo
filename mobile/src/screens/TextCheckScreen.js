@@ -6,9 +6,9 @@ import Button from '../components/Button';
 import { checkText } from '../services/api';
 import { colours } from '../theme';
 
-export default function TextCheckScreen({ onNavigate, onResult, setWorking, initialMode = 'text' }) {
+export default function TextCheckScreen({ onNavigate, onResult, setWorking, initialMode = 'text', initialDraft = null }) {
   const { firebaseUser, profile, refreshProfile } = useAuth();
-  const [text, setText] = React.useState('');
+  const [text, setText] = React.useState(initialDraft?.text || '');
   const [mode, setMode] = React.useState(initialMode);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState('');
@@ -44,6 +44,7 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
         <Button onPress={() => setMode('text')}>Check copied text</Button>
       </View> : <>
         <View><Text style={styles.eyebrow}>TEXT ANALYSIS</Text><Text style={styles.title}>Paste the message to check</Text><Text style={styles.copy}>Use short English text for the clearest result.</Text></View>
+        {!!initialDraft?.correctYear && <View style={styles.info}><Text style={styles.label}>Correct the year</Text><Text style={styles.copy}>Add the intended year next to the date in your message, then check it again. This creates a new saved result and uses your allowance if the check completes.</Text></View>}
         <View><Text style={styles.label}>Message or caption</Text>
           <TextInput accessibilityLabel="Message or caption" multiline textAlignVertical="top" editable={!busy} maxLength={5000}
             placeholder="Paste a message, claim or caption…" placeholderTextColor="#7D909E" style={styles.input} value={text}

@@ -19,8 +19,9 @@ from .query_planning import format_search_amounts, plan_queries
 from .relevance import select_with_client
 from .service import _date, _deduplicate, _finish, relevance, PROVIDER_ERRORS
 from .source_policy import classify_source, extractable_lead, original_links, public_url
+from app.pipeline.shared.dates import dated_search_claim
 
-VERSION = "retrieval-web-v3"
+VERSION = "retrieval-web-v6"
 TOTAL_TIMEOUT_SECONDS = 65.0
 MAX_PAGES = 4
 
@@ -32,13 +33,17 @@ def enough_evidence(items):
 
 
 class RetrievalRun:
-    def __init__(self, claim, client, google_key, tavily_key, ollama_key):
+    def __init__(self, claim, client, google_key, tavily_key, ollama_key, *, date_context=None):
         self.claim, self.client = claim, client
+        self.date_context = date_context
+        self.search_claim = dated_search_claim(claim, date_context)
         self.google_key, self.tavily_key, self.ollama_key = google_key, tavily_key, ollama_key
         self.trace = RetrievalTrace()
         self.evidence, self.warnings = [], []
         self.pool, self.attempted = {}, set()
         self.failed = False
+        self.unavailable_pages = set()
+        self.reviewed_pages = 0
         self.now = datetime.now(timezone.utc)
 
     def event(self, decision, url="", **details):
@@ -66,6 +71,13 @@ class RetrievalRun:
                     "published_at": _date(item.get("published_date")), "method": method,
                     "content": item.get("content", "") if isinstance(item.get("content", ""), str) else ""}
                 self.event("discovered_" + classify_source(url).policy, url)
+            elif score > self.pool[url]["score"]:
+                # A later neutral query can rank the actual policy page above
+                # pages matching the rumour. Keep its improved discovery rank;
+                # the URL still receives only one extraction budget slot.
+                self.pool[url]["score"] = score
+                if isinstance(item.get("content"), str):
+                    self.pool[url]["content"] = item["content"]
         except (ValueError, TypeError):
             self.event("rejected_invalid_candidate")
 
@@ -128,11 +140,21 @@ class RetrievalRun:
                 self.event("optional_lead_extraction_failed")
             return
         seen, jobs = set(), []
+        reported_unavailable = set()
+        for failure in response.get("failed_results", []):
+            try:
+                url = public_url(failure.get("url"))
+                if url not in urls:
+                    raise ValueError("Unrequested failed extraction")
+                reported_unavailable.add(url)
+            except (ValueError, TypeError, AttributeError):
+                self.failure("page extractions")
         for raw in response["results"]:
             try:
                 url = public_url(raw.get("url"))
                 if url not in urls or url in seen:
                     self.event("rejected_unrequested_or_duplicate_extraction", url)
+                    self.failure("page extractions")
                     continue
                 text = raw.get("raw_content")
                 if not isinstance(text, str) or not text.strip():
@@ -149,8 +171,17 @@ class RetrievalRun:
                 jobs.append(self.select(self.pool[url], text, source))
             except (ValueError, TypeError, AttributeError):
                 self.failure("page extractions")
-        if any(classify_source(url).eligible for url in set(urls) - seen):
-            self.failure("page extractions")
+        for url in set(urls) - seen:
+            if not classify_source(url).eligible:
+                continue
+            if url not in reported_unavailable:
+                self.failure("page extractions")
+                continue
+            # A provider can complete extraction while an individual website is
+            # unavailable. Preserve that coverage gap without treating it as a
+            # provider outage if other eligible pages were successfully reviewed.
+            self.unavailable_pages.add(url)
+            self.event("source_page_unavailable", url)
         if jobs:
             await asyncio.gather(*jobs)
 
@@ -158,7 +189,9 @@ class RetrievalRun:
         self.trace.relevance_calls += 1
         try:
             selection, passage = await select_with_client(self.client, self.claim, text,
-                self.ollama_key, as_of=self.now.date(), published_at=item["published_at"])
+                self.ollama_key, as_of=self.date_context.as_of if self.date_context else self.now.date(),
+                published_at=item["published_at"], date_context=self.date_context)
+            self.reviewed_pages += 1
             if selection.relevance == "irrelevant":
                 self.event("rejected_semantically_irrelevant", item["url"])
                 return
@@ -188,7 +221,7 @@ class RetrievalRun:
             self.failure("semantic relevance checks")
 
     async def run(self):
-        query = format_search_amounts(" ".join(self.claim.split()))[:400]
+        query = format_search_amounts(" ".join(self.search_claim.split()))[:400]
         try:
             async with asyncio.timeout(TOTAL_TIMEOUT_SECONDS):
                 await asyncio.gather(self.google(query), self.search(query))
@@ -198,7 +231,7 @@ class RetrievalRun:
                     # failure still permits broad literal search.
                     async def expand():
                         try:
-                            return await plan_queries(self.client, self.claim, self.ollama_key)
+                            return await plan_queries(self.client, self.search_claim, self.ollama_key, allow_policy_lookup=True)
                         except PROVIDER_ERRORS:
                             self.failure("alternative query planning")
                             return []
@@ -222,15 +255,18 @@ class RetrievalRun:
             self.warnings.append("Some websites were used only as leads because their publisher identity was not established by the prototype source policy.")
         # Only exact copies are removed here. Near-identical text can contain
         # decisive negation/quantity changes; do not discard it on word overlap.
-        result = _finish(self.evidence, self.warnings, self.failed)
+        if self.unavailable_pages:
+            self.warnings.append("Some source pages could not be read, so evidence coverage is incomplete.")
+        result = _finish(self.evidence, self.warnings,
+            self.failed or bool(self.unavailable_pages and not self.reviewed_pages))
         result.trace = self.trace
         return result
 
 
-async def retrieve_with_client(claim, client, google_key, tavily_key, ollama_key):
-    return await RetrievalRun(claim, client, google_key, tavily_key, ollama_key).run()
+async def retrieve_with_client(claim, client, google_key, tavily_key, ollama_key, *, date_context=None):
+    return await RetrievalRun(claim, client, google_key, tavily_key, ollama_key, date_context=date_context).run()
 
 
-async def live(claim, google_key, tavily_key, ollama_key):
+async def live(claim, google_key, tavily_key, ollama_key, *, date_context=None):
     async with httpx.AsyncClient(timeout=httpx.Timeout(20, connect=5), follow_redirects=False) as client:
-        return await retrieve_with_client(claim, client, google_key, tavily_key, ollama_key)
+        return await retrieve_with_client(claim, client, google_key, tavily_key, ollama_key, date_context=date_context)

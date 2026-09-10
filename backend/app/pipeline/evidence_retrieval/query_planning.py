@@ -32,6 +32,17 @@ class QueryPlan(BaseModel):
     queries: list[str] = Field(min_length=1, max_length=2)
 
 
+POLICY_LOOKUP_INSTRUCTION = """
+For this broader search, return TWO queries. Keep the first query's original
+numbers. For the SECOND query only, the requirement to keep every number is
+overridden: you may OMIT disputed amounts, ages or dates, but never ADD or CHANGE
+a number. For a policy/fee/benefit claim, look up the named scheme's official
+rules, premium/fee table or effective dates without repeating the alleged amount.
+For another factual claim, look up the underlying topic. These are discovery hints;
+the original claim remains unchanged and all evidence is assessed against it.
+"""
+
+
 def _numbers(text):
     text = re.sub(r"\b\d{1,3}(?:,\d{3})+\b", lambda m: m.group().replace(",", ""), text)
     return set(re.findall(r"\d+(?:\.\d+)?", text))
@@ -45,12 +56,14 @@ def format_search_amounts(text):
     )
 
 
-def validate_queries(raw, claim):
+def validate_queries(raw, claim, *, allow_policy_lookup=False):
     plan = QueryPlan.model_validate(raw)
     queries = []
-    for text in plan.queries:
+    for index,text in enumerate(plan.queries):
         query = format_search_amounts(" ".join(text.split()))
-        if not 5 <= len(query) <= 250 or _numbers(query) != _numbers(claim):
+        numbers_valid=(_numbers(query) <= _numbers(claim) if allow_policy_lookup and index==1
+                       else _numbers(query) == _numbers(claim))
+        if not 5 <= len(query) <= 250 or not numbers_valid:
             continue
         if re.search(r"https?://|\bsite:", query, re.I):
             continue
@@ -61,13 +74,13 @@ def validate_queries(raw, claim):
     return queries
 
 
-async def plan_queries(client: httpx.AsyncClient, claim: str, key: str):
+async def plan_queries(client: httpx.AsyncClient, claim: str, key: str, *, allow_policy_lookup=False):
     async with asyncio.timeout(15):
         response = await client.post("https://ollama.com/api/chat",
             headers={"Authorization": f"Bearer {key}"},
             json={"model": "gemma4:31b", "stream": False, "think": False,
                   "options": {"temperature": 0, "num_predict": 512},
-                  "messages": [{"role": "system", "content": QUERY_PROMPT},
+                  "messages": [{"role": "system", "content": QUERY_PROMPT + (POLICY_LOOKUP_INSTRUCTION if allow_policy_lookup else "")},
                                {"role": "user", "content": json.dumps({"claim": claim})}]})
         response.raise_for_status()
         body = response.json()
@@ -81,4 +94,4 @@ async def plan_queries(client: httpx.AsyncClient, claim: str, key: str):
             if not match:
                 raise ValueError("Invalid query JSON wrapper")
             content = match.group(1)
-        return validate_queries(json.loads(content), claim)
+        return validate_queries(json.loads(content), claim, allow_policy_lookup=allow_policy_lookup)

@@ -183,6 +183,61 @@ def test_provider_failure_is_not_presented_as_valid_uncertainty(failure):
     assert "secret-provider-value" not in result.model_dump_json()
 
 
+@pytest.mark.parametrize("relevance,expected", [("irrelevant", "no_evidence"), ("context", "completed")])
+def test_one_inaccessible_page_does_not_erase_successful_reviews(relevance, expected):
+    accessible, broken = "https://gov.sg/readable", "https://gov.sg/broken"
+    base = Provider(preferred=[result_item(accessible), result_item(broken)],
+        judgment=selection(relevance=relevance, applicability="missing_context"))
+    def handler(request):
+        response = base(request)
+        if request.url.path == "/extract":
+            payload = response.json()
+            payload["results"] = [item for item in payload["results"] if item["url"] != broken]
+            payload["failed_results"] = [{"url": broken, "error": "private-provider-detail"}]
+            return httpx.Response(200, json=payload)
+        return response
+    result = run(handler)
+    assert result.retrieval_status == expected
+    assert any("coverage is incomplete" in warning for warning in result.warnings)
+    assert any(event["decision"] == "source_page_unavailable" for event in result.trace.decisions)
+    assert "private-provider-detail" not in result.model_dump_json()
+    if relevance == "context":
+        assert str(result.evidence[0].url) == accessible
+        assert result.evidence[0].provenance.applicability == "missing_context"
+
+
+def test_no_readable_eligible_pages_remains_a_technical_failure():
+    base = Provider(preferred=[result_item()])
+    def handler(request):
+        if request.url.path == "/extract":
+            urls = json.loads(request.content)["urls"]
+            return httpx.Response(200, json={"results": [], "failed_results": [
+                {"url": url, "error": "Could not fetch"} for url in urls]})
+        return base(request)
+    assert run(handler).retrieval_status == "failed"
+
+
+@pytest.mark.parametrize("failure", ["http", "missing_result", "relevance"])
+def test_valid_irrelevant_review_does_not_hide_provider_or_contract_failure(failure):
+    first, second = "https://gov.sg/first", "https://nasa.gov/second"
+    base = Provider(preferred=[result_item(first)], broad=[result_item(second)],
+        pages={second: "Second source. " + TEXT}, judgment=selection(relevance="irrelevant"))
+    def handler(request):
+        if request.url.path == "/extract" and second in json.loads(request.content)["urls"]:
+            if failure == "http":
+                return httpx.Response(503, json={"error": "private-provider-detail"})
+            if failure == "missing_result":
+                return httpx.Response(200, json={"results": [], "failed_results": []})
+        if request.url.host == "ollama.com" and "Second source." in request.content.decode():
+            if failure == "relevance":
+                return httpx.Response(429, json={"error": "private-provider-detail"})
+        return base(request)
+    result = run(handler)
+    assert result.retrieval_status == "failed"
+    assert not result.evidence
+    assert "private-provider-detail" not in result.model_dump_json()
+
+
 def test_google_failure_does_not_prevent_broad_fallback():
     result = run(Provider(broad=[result_item()], fail="google"))
     assert result.retrieval_status == "completed"
@@ -226,6 +281,28 @@ def test_selected_windows_preserve_source_text_and_size_bounds():
     windows = source_windows(CLAIM, page)
     assert 1 <= len(windows) <= 6
     assert all(len(window) <= 1800 and window in page for window in windows)
+
+
+def test_payment_windows_retain_counterevidence_without_matching_alleged_numbers():
+    claim = 'From October, residents above 60 pay a $300 monthly permit deduction.'
+    boilerplate = ('October information for residents above 60 about the $300 monthly permit deduction. ' * 100)
+    rule = 'The permit premium is payable once a year. Annual premiums are deducted each year.'
+    page = boilerplate + ' Background. ' * 200 + rule + ' Conditions apply. ' * 100
+    windows = source_windows(claim, page)
+    assert any(rule in window for window in windows)
+    assert len(windows) <= 6
+    assert all(window in page and len(window) <= 1800 for window in windows)
+
+
+def test_later_query_can_improve_a_duplicate_pages_discovery_rank():
+    run = enhanced.RetrievalRun(CLAIM, None, 'g', 't', 'o')
+    run.add(result_item(score=.6), 'preferred_search')
+    run.add(result_item(url='https://australia.gov.au/overview',score=.7), 'preferred_search')
+    run.add(result_item(score=.9,content='More useful search metadata'), 'web_search')
+    assert len(run.pool)==2
+    assert run.next_pages(1)[0]['url']=='https://australia.gov.au/capital'
+    run.attempted.add('https://australia.gov.au/capital')
+    assert run.next_pages(1)[0]['url']=='https://australia.gov.au/overview'
 
 
 @pytest.mark.parametrize("changes", [{"quote_start": None}, {"quote_end": 900},

@@ -32,6 +32,10 @@ ConcernLabel = Literal[
     "Not Enough Information",
 ]
 EvidenceStance = Literal["supporting", "contradicting", "neutral"]
+AssessmentOutcome = Literal[
+    "supported", "contradicted", "unsupported", "conflicting",
+    "insufficient_evidence", "not_checkable",
+]
 RetrievalStatus = Literal["completed", "no_evidence", "failed"]
 SourceType = Literal[
     "fact_check",
@@ -61,6 +65,19 @@ class PreparedText(PipelineModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class DateContext(PipelineModel):
+    """A visible interpretation of a yearless date, never a source quotation."""
+
+    claim_text: str = Field(min_length=1, max_length=100)
+    month: int = Field(ge=1, le=12)
+    day: int | None = Field(default=None, ge=1, le=31)
+    year: int = Field(ge=1900, le=2199)
+    basis: Literal["assumed_current_year"] = "assumed_current_year"
+    as_of: date
+    display_date: str = Field(min_length=1, max_length=50)
+    is_future: bool
+
+
 class ClaimAnalysis(PipelineModel):
     """Matthew -> Chu and Donovan handoff."""
 
@@ -69,6 +86,7 @@ class ClaimAnalysis(PipelineModel):
     checkable: bool
     classification_reason: str = Field(min_length=1)
     claim_confidence: Confidence
+    date_context: DateContext | None = None
 
     @model_validator(mode="after")
     def validate_checkability(self) -> "ClaimAnalysis":
@@ -157,6 +175,28 @@ class AssessedEvidence(PipelineModel):
     evidence_quote: str | None = None
 
 
+class ClaimComparison(PipelineModel):
+    """A grounded comparison, not a standalone truth verdict."""
+
+    aspect: Literal["amount", "frequency", "population", "start_date", "requirement", "other"]
+    claim_text: str = Field(min_length=1, max_length=5000)
+    finding: Literal["matches", "differs", "unresolved"]
+    applies_to_claim: bool
+    explanation: str = Field(min_length=1, max_length=1200)
+    evidence_id: str | None = None
+    evidence_quote: str | None = Field(default=None, max_length=1800)
+
+    @model_validator(mode="after")
+    def validate_grounding(self):
+        if self.finding != "unresolved" and (not self.evidence_id or not self.evidence_quote):
+            raise ValueError("A comparison finding requires cited evidence")
+        if self.evidence_quote and not self.evidence_id:
+            raise ValueError("A comparison quote requires an evidence ID")
+        if self.finding == "unresolved" and self.applies_to_claim:
+            raise ValueError("An unresolved comparison cannot establish applicability")
+        return self
+
+
 class AssessmentResult(PipelineModel):
     """Poon -> Donovan handoff."""
 
@@ -167,6 +207,8 @@ class AssessmentResult(PipelineModel):
     explanation: str = Field(min_length=1)
     recommended_action: str = Field(min_length=1)
     assessed_evidence: list[AssessedEvidence] = Field(default_factory=list)
+    assessment_outcome: AssessmentOutcome | None = None
+    claim_comparisons: list[ClaimComparison] = Field(default_factory=list, max_length=37)
 
     @model_validator(mode="after")
     def validate_score_and_label(self) -> "AssessmentResult":
@@ -218,6 +260,9 @@ class TextAnalysisResult(PipelineModel):
     explanation: str = Field(min_length=1)
     recommended_action: str = Field(min_length=1)
     evidence: list[EvidenceItem] = Field(default_factory=list)
+    assessment_outcome: AssessmentOutcome | None = None
+    claim_comparisons: list[ClaimComparison] = Field(default_factory=list, max_length=37)
+    date_context: DateContext | None = None
     warnings: list[str] = Field(default_factory=list)
     pipeline_version: str = Field(min_length=1)
     created_at: datetime
@@ -237,6 +282,17 @@ class TextAnalysisResult(PipelineModel):
             raise ValueError(
                 "A checkable result must include extracted_claim."
             )
+        sources = {item.evidence_id: item for item in self.evidence}
+        if self.date_context and self.date_context.claim_text not in (self.extracted_claim or ""):
+            raise ValueError("Assumed date must refer to the identified claim")
+        for item in self.claim_comparisons:
+            if item.claim_text not in (self.extracted_claim or ""):
+                raise ValueError("Comparison text must come from the identified claim")
+            if item.evidence_id:
+                if item.evidence_id not in sources:
+                    raise ValueError("Comparison must cite a returned source")
+                if item.evidence_quote and item.evidence_quote not in sources[item.evidence_id].passage:
+                    raise ValueError("Comparison quote must come from its cited passage")
         return self
 
 

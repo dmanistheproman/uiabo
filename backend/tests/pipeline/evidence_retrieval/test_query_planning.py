@@ -15,6 +15,14 @@ def test_query_validation_preserves_amounts_and_discards_bad_alternatives():
     assert planning.validate_queries({"queries": [QUERY, "Thailand entry cash requirements 10000 baht"]}, CLAIM) == [QUERY]
 
 
+def test_broader_second_query_can_lookup_policy_without_disputed_values():
+    neutral='Thailand official visa exemption financial requirements'
+    assert planning.validate_queries({'queries':[QUERY,neutral]},CLAIM,allow_policy_lookup=True)==[QUERY,neutral]
+    assert planning.validate_queries({'queries':[QUERY,'Thailand requirements 10000 baht']},CLAIM,allow_policy_lookup=True)==[QUERY]
+    with pytest.raises(ValueError):
+        planning.validate_queries({'queries':[neutral]},CLAIM,allow_policy_lookup=True)
+
+
 @pytest.mark.parametrize("raw", [
     {"queries": ["Thailand entry requirements"]},
     {"queries": ["20000 baht site:evil.example"]},
