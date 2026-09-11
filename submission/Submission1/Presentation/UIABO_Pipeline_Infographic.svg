@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+<title id="title">01 - Pipeline overview</title>
+<desc id="desc">UIABO implemented text-checking prototype: processing stages, API roles and evidence-based result handling. September 2026.</desc>
+<rect width="1920" height="1080" fill="#F3F7FA"/>
+<rect x="0" y="0" width="1920" height="188" rx="0" fill="#15374A" stroke="none"/>
+<text x="64" y="61" font-family="Arial,Helvetica,sans-serif" font-size="36" font-weight="700" fill="white" text-anchor="start">uiabo.</text>
+<text x="1478.0" y="58" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#B4DDE4" text-anchor="middle">IMPLEMENTED TEXT PROTOTYPE / SEPTEMBER 2026</text>
+<text x="64" y="128" font-family="Arial,Helvetica,sans-serif" font-size="46" font-weight="700" fill="white" text-anchor="start">From message to evidence</text>
+<text x="64" y="167" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="400" fill="#C6DBE5" text-anchor="start">How UIABO checks a short text claim and explains what the evidence supports.</text>
+<text x="64" y="1051" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="#536D7C" text-anchor="start">UIABO / FINAL YEAR PROJECT 1 / 02</text>
+<text x="64" y="233" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#007F87" text-anchor="start">ONE CHECK, SIX STEPS</text>
+<text x="1403.0" y="234" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="400" fill="#536D7C" text-anchor="middle">The main route below continues when a factual claim is identified.</text>
+<rect x="64" y="263" width="272" height="405" rx="18" fill="#E2EAF0" stroke="none"/>
+<rect x="64" y="258" width="272" height="405" rx="18" fill="white" stroke="#D9E4EA"/>
+<circle cx="104.0" cy="298.0" r="20.0" fill="#2465A7"/>
+<text x="104.0" y="303" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle">01</text>
+<text x="84" y="364" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">Submit &amp;</text>
+<text x="84" y="397" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">prepare</text>
+<text x="84" y="442" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Paste English text.</text>
+<text x="84" y="469" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Check account and</text>
+<text x="84" y="496" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">allowance.</text>
+<text x="84" y="523" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Validate and normalise</text>
+<text x="84" y="550" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">the input.</text>
+<rect x="80" y="595" width="240" height="38" rx="10" fill="#E8F0FC" stroke="none"/>
+<text x="200.0" y="620" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#2465A7" text-anchor="middle">App + FastAPI</text>
+<text x="84" y="656" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#536D7C" text-anchor="start">VALIDATED TEXT</text>
+<rect x="368" y="263" width="272" height="405" rx="18" fill="#E2EAF0" stroke="none"/>
+<rect x="368" y="258" width="272" height="405" rx="18" fill="white" stroke="#D9E4EA"/>
+<circle cx="408.0" cy="298.0" r="20.0" fill="#6650A2"/>
+<text x="408.0" y="303" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle">02</text>
+<text x="388" y="364" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">Identify</text>
+<text x="388" y="397" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">the claim</text>
+<text x="388" y="442" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">3 models classify the text.</text>
+<text x="388" y="469" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">2 agreeing votes needed.</text>
+<text x="388" y="496" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Extract one factual claim.</text>
+<rect x="384" y="595" width="240" height="38" rx="10" fill="#F1ECFA" stroke="none"/>
+<text x="504.0" y="620" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#6650A2" text-anchor="middle">Ollama Cloud</text>
+<text x="388" y="656" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#536D7C" text-anchor="start">CHECKABLE CLAIM</text>
+<rect x="672" y="263" width="272" height="405" rx="18" fill="#E2EAF0" stroke="none"/>
+<rect x="672" y="258" width="272" height="405" rx="18" fill="white" stroke="#D9E4EA"/>
+<circle cx="712.0" cy="298.0" r="20.0" fill="#007F87"/>
+<text x="712.0" y="303" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle">03</text>
+<text x="692" y="364" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">Find</text>
+<text x="692" y="397" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">sources</text>
+<text x="692" y="442" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Look for published fact</text>
+<text x="692" y="469" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">checks and official</text>
+<text x="692" y="496" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">sources.</text>
+<text x="692" y="523" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Broaden weak searches.</text>
+<rect x="688" y="595" width="240" height="38" rx="10" fill="#E4F4F1" stroke="none"/>
+<text x="808.0" y="620" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#007F87" text-anchor="middle">Google + Tavily</text>
+<text x="692" y="656" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#536D7C" text-anchor="start">SOURCE CANDIDATES</text>
+<rect x="976" y="263" width="272" height="405" rx="18" fill="#E2EAF0" stroke="none"/>
+<rect x="976" y="258" width="272" height="405" rx="18" fill="white" stroke="#D9E4EA"/>
+<circle cx="1016.0" cy="298.0" r="20.0" fill="#007F87"/>
+<text x="1016.0" y="303" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle">04</text>
+<text x="996" y="364" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">Read &amp;</text>
+<text x="996" y="397" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">filter evidence</text>
+<text x="996" y="442" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Read the original pages.</text>
+<text x="996" y="469" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Check source eligibility,</text>
+<text x="996" y="496" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">relevance and policy</text>
+<text x="996" y="523" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">scope.</text>
+<rect x="992" y="595" width="240" height="38" rx="10" fill="#E4F4F1" stroke="none"/>
+<text x="1112.0" y="620" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#007F87" text-anchor="middle">Tavily + Ollama</text>
+<text x="996" y="656" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#536D7C" text-anchor="start">QUOTED PASSAGES</text>
+<rect x="1280" y="263" width="272" height="405" rx="18" fill="#E2EAF0" stroke="none"/>
+<rect x="1280" y="258" width="272" height="405" rx="18" fill="white" stroke="#D9E4EA"/>
+<circle cx="1320.0" cy="298.0" r="20.0" fill="#6650A2"/>
+<text x="1320.0" y="303" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle">05</text>
+<text x="1300" y="364" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">Assess</text>
+<text x="1300" y="397" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">the claim</text>
+<text x="1300" y="442" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Compare facts, amounts,</text>
+<text x="1300" y="469" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">dates and affected</text>
+<text x="1300" y="496" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">people.</text>
+<text x="1300" y="523" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Combine evidence</text>
+<text x="1300" y="550" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">stances.</text>
+<rect x="1296" y="595" width="240" height="38" rx="10" fill="#F1ECFA" stroke="none"/>
+<text x="1416.0" y="620" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#6650A2" text-anchor="middle">Ollama + rules</text>
+<text x="1300" y="656" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#536D7C" text-anchor="start">GROUNDED ASSESSMENT</text>
+<rect x="1584" y="263" width="272" height="405" rx="18" fill="#E2EAF0" stroke="none"/>
+<rect x="1584" y="258" width="272" height="405" rx="18" fill="white" stroke="#D9E4EA"/>
+<circle cx="1624.0" cy="298.0" r="20.0" fill="#2465A7"/>
+<text x="1624.0" y="303" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="white" text-anchor="middle">06</text>
+<text x="1604" y="364" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">Explain</text>
+<text x="1604" y="397" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" fill="#15374A" text-anchor="start">&amp; save</text>
+<text x="1604" y="442" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Show the result, sources</text>
+<text x="1604" y="469" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">and uncertainty.</text>
+<text x="1604" y="496" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Save history and update</text>
+<text x="1604" y="523" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">the allowance atomically.</text>
+<rect x="1600" y="595" width="240" height="38" rx="10" fill="#E8F0FC" stroke="none"/>
+<text x="1720.0" y="620" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#2465A7" text-anchor="middle">App + Firestore</text>
+<text x="1604" y="656" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#536D7C" text-anchor="start">SAVED RESULT</text>
+<path d="M336 463 H362" fill="none" stroke="#719BAE" stroke-width="2"/>
+<path d="M360 458 L368 463 L360 468 Z" fill="#719BAE"/>
+<path d="M640 463 H666" fill="none" stroke="#719BAE" stroke-width="2"/>
+<path d="M664 458 L672 463 L664 468 Z" fill="#719BAE"/>
+<path d="M944 463 H970" fill="none" stroke="#719BAE" stroke-width="2"/>
+<path d="M968 458 L976 463 L968 468 Z" fill="#719BAE"/>
+<path d="M1248 463 H1274" fill="none" stroke="#719BAE" stroke-width="2"/>
+<path d="M1272 458 L1280 463 L1272 468 Z" fill="#719BAE"/>
+<path d="M1552 463 H1578" fill="none" stroke="#719BAE" stroke-width="2"/>
+<path d="M1576 458 L1584 463 L1576 468 Z" fill="#719BAE"/>
+<rect x="64" y="695" width="1792" height="68" rx="14" fill="#E2EEF5" stroke="none"/>
+<text x="84" y="725" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#2465A7" text-anchor="start">DATE CONTEXT</text>
+<text x="287" y="734" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="400" fill="#15374A" text-anchor="start">“From October” → assume the current year, show the assumption, and let the user correct it.</text>
+<text x="64" y="808" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="700" fill="#007F87" text-anchor="start">THE SERVICES BEHIND THE CHECK</text>
+<rect x="64" y="827" width="336" height="89" rx="12" fill="white" stroke="#D9E4EA"/>
+<text x="82" y="862" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#15374A" text-anchor="start">Firebase Auth</text>
+<text x="82" y="895" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#536D7C" text-anchor="start">Sign-in + verified identity</text>
+<rect x="428" y="827" width="336" height="89" rx="12" fill="white" stroke="#D9E4EA"/>
+<text x="446" y="862" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#15374A" text-anchor="start">Ollama Cloud</text>
+<text x="446" y="895" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#536D7C" text-anchor="start">Classification + AI reasoning</text>
+<rect x="792" y="827" width="336" height="89" rx="12" fill="white" stroke="#D9E4EA"/>
+<text x="810" y="862" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#15374A" text-anchor="start">Google Fact Check</text>
+<text x="810" y="895" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#536D7C" text-anchor="start">Published fact-check discovery</text>
+<rect x="1156" y="827" width="336" height="89" rx="12" fill="white" stroke="#D9E4EA"/>
+<text x="1174" y="862" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#15374A" text-anchor="start">Tavily</text>
+<text x="1174" y="895" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#536D7C" text-anchor="start">Web search + page extraction</text>
+<rect x="1520" y="827" width="336" height="89" rx="12" fill="white" stroke="#D9E4EA"/>
+<text x="1538" y="862" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#15374A" text-anchor="start">Cloud Firestore</text>
+<text x="1538" y="895" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#536D7C" text-anchor="start">Private history + allowances</text>
+<rect x="64" y="940" width="1792" height="73" rx="14" fill="#15374A" stroke="none"/>
+<text x="84" y="966" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" fill="#82DDD5" text-anchor="start">NON-FACTUAL TEXT</text>
+<text x="84" y="993" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="start">Return a saved explanation; skip evidence search.</text>
+<text x="680" y="966" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" fill="#82DDD5" text-anchor="start">NO USEFUL EVIDENCE</text>
+<text x="680" y="993" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="start">Explain uncertainty; missing evidence is not proof of falsity.</text>
+<text x="1276" y="966" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" fill="#82DDD5" text-anchor="start">TECHNICAL FAILURE</text>
+<text x="1276" y="993" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="start">Return an error; a failed check uses no allowance.</text>
+</svg>

@@ -1,0 +1,567 @@
+{
+  "pages": 2,
+  "page_size": [
+    1920,
+    1080
+  ],
+  "png_size": [
+    3840,
+    2160
+  ],
+  "editable_text_blocks": 92,
+  "text_bounds_checked": true,
+  "checks": [
+    {
+      "page": "01 - Pipeline overview",
+      "text": "uiabo.",
+      "lines": 1,
+      "height": 49
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "IMPLEMENTED TEXT PROTOTYPE  /  SEPTEMBER 2026",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "From message to evidence",
+      "lines": 1,
+      "height": 62
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "How UIABO checks a short text claim and explains what the evidence supports.",
+      "lines": 1,
+      "height": 30
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "UIABO  /  FINAL YEAR PROJECT                                         1 / 02",
+      "lines": 1,
+      "height": 22
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "ONE CHECK, SIX STEPS",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "The main route below continues when a factual claim is identified.",
+      "lines": 1,
+      "height": 26
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "01",
+      "lines": 1,
+      "height": 28
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Submit &\nprepare",
+      "lines": 2,
+      "height": 66
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Paste English text.\nCheck account and allowance.\nValidate and normalise the input.",
+      "lines": 5,
+      "height": 135
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "App + FastAPI",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "VALIDATED TEXT",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "02",
+      "lines": 1,
+      "height": 28
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Identify\nthe claim",
+      "lines": 2,
+      "height": 66
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "3 models classify the text.\n2 agreeing votes needed.\nExtract one factual claim.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Ollama Cloud",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "CHECKABLE CLAIM",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "03",
+      "lines": 1,
+      "height": 28
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Find\nsources",
+      "lines": 2,
+      "height": 66
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Look for published fact checks and official sources.\nBroaden weak searches.",
+      "lines": 4,
+      "height": 108
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Google + Tavily",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "SOURCE CANDIDATES",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "04",
+      "lines": 1,
+      "height": 28
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Read &\nfilter evidence",
+      "lines": 2,
+      "height": 66
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Read the original pages.\nCheck source eligibility, relevance and policy scope.",
+      "lines": 4,
+      "height": 108
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Tavily + Ollama",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "QUOTED PASSAGES",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "05",
+      "lines": 1,
+      "height": 28
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Assess\nthe claim",
+      "lines": 2,
+      "height": 66
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Compare facts, amounts, dates and affected people.\nCombine evidence stances.",
+      "lines": 5,
+      "height": 135
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Ollama + rules",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "GROUNDED ASSESSMENT",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "06",
+      "lines": 1,
+      "height": 28
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Explain\n& save",
+      "lines": 2,
+      "height": 66
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Show the result, sources and uncertainty.\nSave history and update the allowance atomically.",
+      "lines": 4,
+      "height": 108
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "App + Firestore",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "SAVED RESULT",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "DATE CONTEXT",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "\u201cFrom October\u201d \u2192 assume the current year, show the assumption, and let the user correct it.",
+      "lines": 1,
+      "height": 30
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "THE SERVICES BEHIND THE CHECK",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Firebase Auth",
+      "lines": 1,
+      "height": 31
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Sign-in + verified identity",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Ollama Cloud",
+      "lines": 1,
+      "height": 31
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Classification + AI reasoning",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Google Fact Check",
+      "lines": 1,
+      "height": 31
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Published fact-check discovery",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Tavily",
+      "lines": 1,
+      "height": 31
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Web search + page extraction",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Cloud Firestore",
+      "lines": 1,
+      "height": 31
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Private history + allowances",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "NON-FACTUAL TEXT",
+      "lines": 1,
+      "height": 20
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Return a saved explanation; skip evidence search.",
+      "lines": 1,
+      "height": 22
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "NO USEFUL EVIDENCE",
+      "lines": 1,
+      "height": 20
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Explain uncertainty; missing evidence is not proof of falsity.",
+      "lines": 1,
+      "height": 22
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "TECHNICAL FAILURE",
+      "lines": 1,
+      "height": 20
+    },
+    {
+      "page": "01 - Pipeline overview",
+      "text": "Return an error; a failed check uses no allowance.",
+      "lines": 1,
+      "height": 22
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "uiabo.",
+      "lines": 1,
+      "height": 49
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "IMPLEMENTED TEXT PROTOTYPE  /  SEPTEMBER 2026",
+      "lines": 1,
+      "height": 24
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Which API does what?",
+      "lines": 1,
+      "height": 62
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "POST /analysis/text sends the claim to FastAPI, which coordinates the external services below.",
+      "lines": 1,
+      "height": 30
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "UIABO  /  FINAL YEAR PROJECT                                         2 / 02",
+      "lines": 1,
+      "height": 22
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "SERVICE",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "ROLE IN UIABO",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "INTERFACE USED",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "MODELS / KEY DETAIL",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "ACCESS",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Firebase\nAuthentication",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Sign in and identify the user.\nBackend verifies the ID token\nand email-verification status.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Firebase JS SDK in the app\nFirebase Admin SDK on backend",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Controls account access.\nDoes not decide whether\na claim is true.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "STEPS 02\u201305",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Ollama Cloud",
+      "lines": 1,
+      "height": 29
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "3 models vote on the category.\nGemma extracts + expands queries.\nGPT-OSS selects + assesses evidence.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "POST ollama.com/api/chat\nHTTPS model inference",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "gpt-oss:120b\ngemma4:31b\nnemotron-3-super",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "STEP 03",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Google\nFact Check Tools",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Find existing published fact checks.\nUse review links to discover\noriginal evidence pages.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "GET factchecktools.googleapis.com\n/v1alpha1/claims:search",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Discovery only. An empty\nmatch does not mean the\nclaim is false.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "STEPS 03\u201304",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Tavily",
+      "lines": 1,
+      "height": 29
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Search preferred and wider sources.\nExtract original page text for\npassage selection and assessment.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "POST api.tavily.com/search\nPOST api.tavily.com/extract",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Search snippets are leads.\nExtracted, validated passages\nare used as evidence.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "STEP 06",
+      "lines": 1,
+      "height": 18
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Cloud Firestore",
+      "lines": 1,
+      "height": 29
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Save user-owned results and sources.\nCommit the completed result and\nallowance update together.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Firestore Python client\nBackend transaction + history APIs",
+      "lines": 2,
+      "height": 58
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Private result history.\nReplaying the same request\ndoes not charge twice.",
+      "lines": 3,
+      "height": 81
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "VOTING \u2260 TRUTH VERDICT",
+      "lines": 1,
+      "height": 23
+    },
+    {
+      "page": "02 - APIs and model roles",
+      "text": "Voting chooses the claim category. The final assessment compares evidence and combines its stances.",
+      "lines": 1,
+      "height": 27
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+<title id="title">02 - APIs and model roles</title>
+<desc id="desc">UIABO implemented text-checking prototype: processing stages, API roles and evidence-based result handling. September 2026.</desc>
+<rect width="1920" height="1080" fill="#F3F7FA"/>
+<rect x="0" y="0" width="1920" height="188" rx="0" fill="#15374A" stroke="none"/>
+<text x="64" y="61" font-family="Arial,Helvetica,sans-serif" font-size="36" font-weight="700" fill="white" text-anchor="start">uiabo.</text>
+<text x="1478.0" y="58" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#B4DDE4" text-anchor="middle">IMPLEMENTED TEXT PROTOTYPE / SEPTEMBER 2026</text>
+<text x="64" y="128" font-family="Arial,Helvetica,sans-serif" font-size="46" font-weight="700" fill="white" text-anchor="start">Which API does what?</text>
+<text x="64" y="167" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="400" fill="#C6DBE5" text-anchor="start">POST /analysis/text sends the claim to FastAPI, which coordinates the external services below.</text>
+<text x="64" y="1051" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="#536D7C" text-anchor="start">UIABO / FINAL YEAR PROJECT 2 / 02</text>
+<text x="84" y="230" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#007F87" text-anchor="start">SERVICE</text>
+<text x="422" y="230" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#007F87" text-anchor="start">ROLE IN UIABO</text>
+<text x="934" y="230" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#007F87" text-anchor="start">INTERFACE USED</text>
+<text x="1434" y="230" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#007F87" text-anchor="start">MODELS / KEY DETAIL</text>
+<rect x="64" y="248" width="1792" height="122" rx="14" fill="white" stroke="#D9E4EA"/>
+<rect x="64" y="248" width="320" height="122" rx="14" fill="#E8F0FC" stroke="none"/>
+<text x="84" y="273" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#2465A7" text-anchor="start">ACCESS</text>
+<text x="84" y="310" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Firebase</text>
+<text x="84" y="339" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Authentication</text>
+<text x="422" y="288" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Sign in and identify the user.</text>
+<text x="422" y="315" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Backend verifies the ID token</text>
+<text x="422" y="342" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">and email-verification status.</text>
+<text x="934" y="294" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">Firebase JS SDK in the app</text>
+<text x="934" y="323" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">Firebase Admin SDK on backend</text>
+<text x="1434" y="288" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Controls account access.</text>
+<text x="1434" y="315" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Does not decide whether</text>
+<text x="1434" y="342" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">a claim is true.</text>
+<rect x="64" y="386" width="1792" height="122" rx="14" fill="white" stroke="#D9E4EA"/>
+<rect x="64" y="386" width="320" height="122" rx="14" fill="#F1ECFA" stroke="none"/>
+<text x="84" y="411" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#6650A2" text-anchor="start">STEPS 02–05</text>
+<text x="84" y="448" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Ollama Cloud</text>
+<text x="422" y="426" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">3 models vote on the category.</text>
+<text x="422" y="453" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Gemma extracts + expands queries.</text>
+<text x="422" y="480" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">GPT-OSS selects + assesses evidence.</text>
+<text x="934" y="432" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">POST ollama.com/api/chat</text>
+<text x="934" y="461" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">HTTPS model inference</text>
+<text x="1434" y="426" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">gpt-oss:120b</text>
+<text x="1434" y="453" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">gemma4:31b</text>
+<text x="1434" y="480" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">nemotron-3-super</text>
+<rect x="64" y="524" width="1792" height="122" rx="14" fill="white" stroke="#D9E4EA"/>
+<rect x="64" y="524" width="320" height="122" rx="14" fill="#E4F4F1" stroke="none"/>
+<text x="84" y="549" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#007F87" text-anchor="start">STEP 03</text>
+<text x="84" y="586" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Google</text>
+<text x="84" y="615" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Fact Check Tools</text>
+<text x="422" y="564" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Find existing published fact checks.</text>
+<text x="422" y="591" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Use review links to discover</text>
+<text x="422" y="618" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">original evidence pages.</text>
+<text x="934" y="570" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">GET factchecktools.googleapis.com</text>
+<text x="934" y="599" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">/v1alpha1/claims:search</text>
+<text x="1434" y="564" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Discovery only. An empty</text>
+<text x="1434" y="591" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">match does not mean the</text>
+<text x="1434" y="618" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">claim is false.</text>
+<rect x="64" y="662" width="1792" height="122" rx="14" fill="white" stroke="#D9E4EA"/>
+<rect x="64" y="662" width="320" height="122" rx="14" fill="#E4F4F1" stroke="none"/>
+<text x="84" y="687" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#007F87" text-anchor="start">STEPS 03–04</text>
+<text x="84" y="724" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Tavily</text>
+<text x="422" y="702" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Search preferred and wider sources.</text>
+<text x="422" y="729" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Extract original page text for</text>
+<text x="422" y="756" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">passage selection and assessment.</text>
+<text x="934" y="708" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">POST api.tavily.com/search</text>
+<text x="934" y="737" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">POST api.tavily.com/extract</text>
+<text x="1434" y="702" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Search snippets are leads.</text>
+<text x="1434" y="729" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Extracted, validated passages</text>
+<text x="1434" y="756" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">are used as evidence.</text>
+<rect x="64" y="800" width="1792" height="122" rx="14" fill="white" stroke="#D9E4EA"/>
+<rect x="64" y="800" width="320" height="122" rx="14" fill="#E8F0FC" stroke="none"/>
+<text x="84" y="825" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#2465A7" text-anchor="start">STEP 06</text>
+<text x="84" y="862" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#15374A" text-anchor="start">Cloud Firestore</text>
+<text x="422" y="840" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Save user-owned results and sources.</text>
+<text x="422" y="867" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Commit the completed result and</text>
+<text x="422" y="894" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">allowance update together.</text>
+<text x="934" y="846" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">Firestore Python client</text>
+<text x="934" y="875" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#15374A" text-anchor="start">Backend transaction + history APIs</text>
+<text x="1434" y="840" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Private result history.</text>
+<text x="1434" y="867" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">Replaying the same request</text>
+<text x="1434" y="894" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="#15374A" text-anchor="start">does not charge twice.</text>
+<rect x="64" y="952" width="1792" height="63" rx="14" fill="#15374A" stroke="none"/>
+<text x="84" y="982" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#82DDD5" text-anchor="start">VOTING ≠ TRUTH VERDICT</text>
+<text x="467" y="986" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="400" fill="white" text-anchor="start">Voting chooses the claim category. The final assessment compares evidence and combines its stances.</text>
+</svg>

@@ -1,0 +1,475 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device" compressed="false">
+  <diagram id="uiabo-pipeline" name="01 - Pipeline overview">
+    <mxGraphModel dx="1920" dy="1080" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" background="#F3F7FA" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uiabo-pipeline-1" value="" style="rounded=0;absoluteArcSize=1;arcSize=0;html=1;fillColor=#15374A;strokeColor=none;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1920" height="188" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-2" value="&lt;div style=&quot;font-family:Arial;font-size:36px;line-height:49px;text-align:left;&quot;&gt;uiabo.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=36;fontStyle=1;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="25" width="260" height="49" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-3" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;IMPLEMENTED TEXT PROTOTYPE / SEPTEMBER 2026&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#B4DDE4;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1100" y="40" width="756" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-4" value="&lt;div style=&quot;font-family:Arial;font-size:46px;line-height:62px;text-align:left;&quot;&gt;From message to evidence&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=46;fontStyle=1;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="82" width="1792" height="62" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-5" value="&lt;div style=&quot;font-family:Arial;font-size:22px;line-height:30px;text-align:left;&quot;&gt;How UIABO checks a short text claim and explains what the evidence supports.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=22;fontStyle=0;fontColor=#C6DBE5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="145" width="1792" height="30" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-6" value="&lt;div style=&quot;font-family:Arial;font-size:16px;line-height:22px;text-align:left;&quot;&gt;UIABO / FINAL YEAR PROJECT 1 / 02&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=16;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="1035" width="1792" height="22" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-7" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:left;&quot;&gt;ONE CHECK, SIX STEPS&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#007F87;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="215" width="850" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-8" value="&lt;div style=&quot;font-family:Arial;font-size:19px;line-height:26px;text-align:center;&quot;&gt;The main route below continues when a factual claim is identified.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=19;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="950" y="215" width="906" height="26" />
+        </mxCell>
+        <mxCell id="stage-1" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="258" width="272" height="410" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-10" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=#E2EAF0;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="0" y="5" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-11" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="0" y="0" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-12" value="" style="ellipse;html=1;fillColor=#2465A7;strokeColor=none;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="20" y="20" width="40" height="40" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-13" value="&lt;div style=&quot;font-family:Arial;font-size:21px;line-height:28px;text-align:center;&quot;&gt;01&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=21;fontStyle=1;fontColor=white;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="20" y="24" width="40" height="28" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-14" value="&lt;div style=&quot;font-family:Arial;font-size:28px;line-height:33px;text-align:left;&quot;&gt;Submit &amp;amp;&lt;br&gt;prepare&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=28;fontStyle=1;fontColor=#15374A;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="20" y="78" width="232" height="66" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-15" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Paste English text.&lt;br&gt;Check account and&lt;br&gt;allowance.&lt;br&gt;Validate and normalise&lt;br&gt;the input.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="20" y="164" width="232" height="135" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-16" value="" style="rounded=1;absoluteArcSize=1;arcSize=20;html=1;fillColor=#E8F0FC;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="16" y="337" width="240" height="38" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-17" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;App + FastAPI&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#2465A7;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="20" y="344" width="232" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-18" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;VALIDATED TEXT&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#536D7C;" vertex="1" parent="stage-1">
+          <mxGeometry as="geometry" x="20" y="385" width="232" height="18" />
+        </mxCell>
+        <mxCell id="stage-2" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="368" y="258" width="272" height="410" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-20" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=#E2EAF0;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="0" y="5" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-21" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="0" y="0" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-22" value="" style="ellipse;html=1;fillColor=#6650A2;strokeColor=none;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="20" y="20" width="40" height="40" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-23" value="&lt;div style=&quot;font-family:Arial;font-size:21px;line-height:28px;text-align:center;&quot;&gt;02&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=21;fontStyle=1;fontColor=white;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="20" y="24" width="40" height="28" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-24" value="&lt;div style=&quot;font-family:Arial;font-size:28px;line-height:33px;text-align:left;&quot;&gt;Identify&lt;br&gt;the claim&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=28;fontStyle=1;fontColor=#15374A;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="20" y="78" width="232" height="66" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-25" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;3 models classify the text.&lt;br&gt;2 agreeing votes needed.&lt;br&gt;Extract one factual claim.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="20" y="164" width="232" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-26" value="" style="rounded=1;absoluteArcSize=1;arcSize=20;html=1;fillColor=#F1ECFA;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="16" y="337" width="240" height="38" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-27" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;Ollama Cloud&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#6650A2;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="20" y="344" width="232" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-28" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;CHECKABLE CLAIM&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#536D7C;" vertex="1" parent="stage-2">
+          <mxGeometry as="geometry" x="20" y="385" width="232" height="18" />
+        </mxCell>
+        <mxCell id="stage-3" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="672" y="258" width="272" height="410" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-30" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=#E2EAF0;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="0" y="5" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-31" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="0" y="0" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-32" value="" style="ellipse;html=1;fillColor=#007F87;strokeColor=none;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="20" y="20" width="40" height="40" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-33" value="&lt;div style=&quot;font-family:Arial;font-size:21px;line-height:28px;text-align:center;&quot;&gt;03&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=21;fontStyle=1;fontColor=white;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="20" y="24" width="40" height="28" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-34" value="&lt;div style=&quot;font-family:Arial;font-size:28px;line-height:33px;text-align:left;&quot;&gt;Find&lt;br&gt;sources&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=28;fontStyle=1;fontColor=#15374A;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="20" y="78" width="232" height="66" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-35" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Look for published fact&lt;br&gt;checks and official&lt;br&gt;sources.&lt;br&gt;Broaden weak searches.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="20" y="164" width="232" height="108" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-36" value="" style="rounded=1;absoluteArcSize=1;arcSize=20;html=1;fillColor=#E4F4F1;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="16" y="337" width="240" height="38" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-37" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;Google + Tavily&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#007F87;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="20" y="344" width="232" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-38" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;SOURCE CANDIDATES&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#536D7C;" vertex="1" parent="stage-3">
+          <mxGeometry as="geometry" x="20" y="385" width="232" height="18" />
+        </mxCell>
+        <mxCell id="stage-4" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="976" y="258" width="272" height="410" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-40" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=#E2EAF0;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="0" y="5" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-41" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="0" y="0" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-42" value="" style="ellipse;html=1;fillColor=#007F87;strokeColor=none;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="20" y="20" width="40" height="40" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-43" value="&lt;div style=&quot;font-family:Arial;font-size:21px;line-height:28px;text-align:center;&quot;&gt;04&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=21;fontStyle=1;fontColor=white;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="20" y="24" width="40" height="28" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-44" value="&lt;div style=&quot;font-family:Arial;font-size:28px;line-height:33px;text-align:left;&quot;&gt;Read &amp;amp;&lt;br&gt;filter evidence&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=28;fontStyle=1;fontColor=#15374A;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="20" y="78" width="232" height="66" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-45" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Read the original pages.&lt;br&gt;Check source eligibility,&lt;br&gt;relevance and policy&lt;br&gt;scope.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="20" y="164" width="232" height="108" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-46" value="" style="rounded=1;absoluteArcSize=1;arcSize=20;html=1;fillColor=#E4F4F1;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="16" y="337" width="240" height="38" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-47" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;Tavily + Ollama&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#007F87;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="20" y="344" width="232" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-48" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;QUOTED PASSAGES&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#536D7C;" vertex="1" parent="stage-4">
+          <mxGeometry as="geometry" x="20" y="385" width="232" height="18" />
+        </mxCell>
+        <mxCell id="stage-5" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1280" y="258" width="272" height="410" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-50" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=#E2EAF0;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="0" y="5" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-51" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="0" y="0" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-52" value="" style="ellipse;html=1;fillColor=#6650A2;strokeColor=none;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="20" y="20" width="40" height="40" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-53" value="&lt;div style=&quot;font-family:Arial;font-size:21px;line-height:28px;text-align:center;&quot;&gt;05&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=21;fontStyle=1;fontColor=white;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="20" y="24" width="40" height="28" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-54" value="&lt;div style=&quot;font-family:Arial;font-size:28px;line-height:33px;text-align:left;&quot;&gt;Assess&lt;br&gt;the claim&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=28;fontStyle=1;fontColor=#15374A;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="20" y="78" width="232" height="66" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-55" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Compare facts, amounts,&lt;br&gt;dates and affected&lt;br&gt;people.&lt;br&gt;Combine evidence&lt;br&gt;stances.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="20" y="164" width="232" height="135" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-56" value="" style="rounded=1;absoluteArcSize=1;arcSize=20;html=1;fillColor=#F1ECFA;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="16" y="337" width="240" height="38" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-57" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;Ollama + rules&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#6650A2;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="20" y="344" width="232" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-58" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;GROUNDED ASSESSMENT&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#536D7C;" vertex="1" parent="stage-5">
+          <mxGeometry as="geometry" x="20" y="385" width="232" height="18" />
+        </mxCell>
+        <mxCell id="stage-6" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1584" y="258" width="272" height="410" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-60" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=#E2EAF0;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="0" y="5" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-61" value="" style="rounded=1;absoluteArcSize=1;arcSize=36;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="0" y="0" width="272" height="405" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-62" value="" style="ellipse;html=1;fillColor=#2465A7;strokeColor=none;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="20" y="20" width="40" height="40" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-63" value="&lt;div style=&quot;font-family:Arial;font-size:21px;line-height:28px;text-align:center;&quot;&gt;06&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=21;fontStyle=1;fontColor=white;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="20" y="24" width="40" height="28" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-64" value="&lt;div style=&quot;font-family:Arial;font-size:28px;line-height:33px;text-align:left;&quot;&gt;Explain&lt;br&gt;&amp;amp; save&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=28;fontStyle=1;fontColor=#15374A;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="20" y="78" width="232" height="66" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-65" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Show the result, sources&lt;br&gt;and uncertainty.&lt;br&gt;Save history and update&lt;br&gt;the allowance atomically.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="20" y="164" width="232" height="108" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-66" value="" style="rounded=1;absoluteArcSize=1;arcSize=20;html=1;fillColor=#E8F0FC;strokeColor=none;strokeWidth=1;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="16" y="337" width="240" height="38" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-67" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;App + Firestore&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#2465A7;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="20" y="344" width="232" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-68" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;SAVED RESULT&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#536D7C;" vertex="1" parent="stage-6">
+          <mxGeometry as="geometry" x="20" y="385" width="232" height="18" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-edge-69" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#719BAE;strokeWidth=2;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stage-1" target="stage-2">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-edge-70" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#719BAE;strokeWidth=2;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stage-2" target="stage-3">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-edge-71" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#719BAE;strokeWidth=2;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stage-3" target="stage-4">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-edge-72" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#719BAE;strokeWidth=2;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stage-4" target="stage-5">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-edge-73" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#719BAE;strokeWidth=2;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stage-5" target="stage-6">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-74" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#E2EEF5;strokeColor=none;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="695" width="1792" height="68" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-75" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;DATE CONTEXT&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=1;fontColor=#2465A7;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="84" y="708" width="195" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-76" value="&lt;div style=&quot;font-family:Arial;font-size:22px;line-height:30px;text-align:left;&quot;&gt;“From October” → assume the current year, show the assumption, and let the user correct it.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=22;fontStyle=0;fontColor=#15374A;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="287" y="712" width="1535" height="30" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-77" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:left;&quot;&gt;THE SERVICES BEHIND THE CHECK&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=1;fontColor=#007F87;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="790" width="1792" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-78" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="827" width="336" height="89" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-79" value="&lt;div style=&quot;font-family:Arial;font-size:23px;line-height:31px;text-align:left;&quot;&gt;Firebase Auth&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=23;fontStyle=1;fontColor=#15374A;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="82" y="839" width="300" height="31" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-80" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;Sign-in + verified identity&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="82" y="878" width="300" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-81" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="428" y="827" width="336" height="89" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-82" value="&lt;div style=&quot;font-family:Arial;font-size:23px;line-height:31px;text-align:left;&quot;&gt;Ollama Cloud&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=23;fontStyle=1;fontColor=#15374A;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="446" y="839" width="300" height="31" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-83" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;Classification + AI reasoning&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="446" y="878" width="300" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-84" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="792" y="827" width="336" height="89" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-85" value="&lt;div style=&quot;font-family:Arial;font-size:23px;line-height:31px;text-align:left;&quot;&gt;Google Fact Check&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=23;fontStyle=1;fontColor=#15374A;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="810" y="839" width="300" height="31" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-86" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;Published fact-check discovery&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="810" y="878" width="300" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-87" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1156" y="827" width="336" height="89" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-88" value="&lt;div style=&quot;font-family:Arial;font-size:23px;line-height:31px;text-align:left;&quot;&gt;Tavily&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=23;fontStyle=1;fontColor=#15374A;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1174" y="839" width="300" height="31" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-89" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;Web search + page extraction&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1174" y="878" width="300" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-90" value="" style="rounded=1;absoluteArcSize=1;arcSize=24;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1520" y="827" width="336" height="89" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-91" value="&lt;div style=&quot;font-family:Arial;font-size:23px;line-height:31px;text-align:left;&quot;&gt;Cloud Firestore&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=23;fontStyle=1;fontColor=#15374A;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1538" y="839" width="300" height="31" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-92" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;Private history + allowances&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1538" y="878" width="300" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-93" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#15374A;strokeColor=none;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="940" width="1792" height="73" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-94" value="&lt;div style=&quot;font-family:Arial;font-size:15px;line-height:20px;text-align:left;&quot;&gt;NON-FACTUAL TEXT&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=15;fontStyle=1;fontColor=#82DDD5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="84" y="951" width="554" height="20" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-95" value="&lt;div style=&quot;font-family:Arial;font-size:16px;line-height:22px;text-align:left;&quot;&gt;Return a saved explanation; skip evidence search.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=16;fontStyle=0;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="84" y="977" width="554" height="22" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-96" value="&lt;div style=&quot;font-family:Arial;font-size:15px;line-height:20px;text-align:left;&quot;&gt;NO USEFUL EVIDENCE&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=15;fontStyle=1;fontColor=#82DDD5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="680" y="951" width="554" height="20" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-97" value="&lt;div style=&quot;font-family:Arial;font-size:16px;line-height:22px;text-align:left;&quot;&gt;Explain uncertainty; missing evidence is not proof of falsity.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=16;fontStyle=0;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="680" y="977" width="554" height="22" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-98" value="&lt;div style=&quot;font-family:Arial;font-size:15px;line-height:20px;text-align:left;&quot;&gt;TECHNICAL FAILURE&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=15;fontStyle=1;fontColor=#82DDD5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1276" y="951" width="554" height="20" />
+        </mxCell>
+        <mxCell id="uiabo-pipeline-99" value="&lt;div style=&quot;font-family:Arial;font-size:16px;line-height:22px;text-align:left;&quot;&gt;Return an error; a failed check uses no allowance.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=16;fontStyle=0;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1276" y="977" width="554" height="22" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="uiabo-api-map" name="02 - APIs and model roles">
+    <mxGraphModel dx="1920" dy="1080" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" background="#F3F7FA" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uiabo-api-map-1" value="" style="rounded=0;absoluteArcSize=1;arcSize=0;html=1;fillColor=#15374A;strokeColor=none;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1920" height="188" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-2" value="&lt;div style=&quot;font-family:Arial;font-size:36px;line-height:49px;text-align:left;&quot;&gt;uiabo.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=36;fontStyle=1;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="25" width="260" height="49" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-3" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:24px;text-align:center;&quot;&gt;IMPLEMENTED TEXT PROTOTYPE / SEPTEMBER 2026&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#B4DDE4;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1100" y="40" width="756" height="24" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-4" value="&lt;div style=&quot;font-family:Arial;font-size:46px;line-height:62px;text-align:left;&quot;&gt;Which API does what?&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=46;fontStyle=1;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="82" width="1792" height="62" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-5" value="&lt;div style=&quot;font-family:Arial;font-size:22px;line-height:30px;text-align:left;&quot;&gt;POST /analysis/text sends the claim to FastAPI, which coordinates the external services below.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=22;fontStyle=0;fontColor=#C6DBE5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="145" width="1792" height="30" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-6" value="&lt;div style=&quot;font-family:Arial;font-size:16px;line-height:22px;text-align:left;&quot;&gt;UIABO / FINAL YEAR PROJECT 2 / 02&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=16;fontStyle=0;fontColor=#536D7C;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="1035" width="1792" height="22" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-7" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;SERVICE&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=1;fontColor=#007F87;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="84" y="213" width="288" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-8" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;ROLE IN UIABO&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=1;fontColor=#007F87;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="422" y="213" width="474" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-9" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;INTERFACE USED&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=1;fontColor=#007F87;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="934" y="213" width="426" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-10" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;MODELS / KEY DETAIL&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=1;fontColor=#007F87;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1434" y="213" width="398" height="23" />
+        </mxCell>
+        <mxCell id="provider-1" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="248" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-12" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="0" y="0" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-13" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#E8F0FC;strokeColor=none;strokeWidth=1;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="0" y="0" width="320" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-14" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;ACCESS&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#2465A7;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="20" y="12" width="280" height="18" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-15" value="&lt;div style=&quot;font-family:Arial;font-size:24px;line-height:29px;text-align:left;&quot;&gt;Firebase&lt;br&gt;Authentication&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=24;fontStyle=1;fontColor=#15374A;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="20" y="38" width="280" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-16" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Sign in and identify the user.&lt;br&gt;Backend verifies the ID token&lt;br&gt;and email-verification status.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="358" y="20" width="474" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-17" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:29px;text-align:left;&quot;&gt;Firebase JS SDK in the app&lt;br&gt;Firebase Admin SDK on backend&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="870" y="28" width="426" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-18" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Controls account access.&lt;br&gt;Does not decide whether&lt;br&gt;a claim is true.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-1">
+          <mxGeometry as="geometry" x="1370" y="20" width="398" height="81" />
+        </mxCell>
+        <mxCell id="provider-2" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="386" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-20" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="0" y="0" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-21" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#F1ECFA;strokeColor=none;strokeWidth=1;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="0" y="0" width="320" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-22" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;STEPS 02–05&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#6650A2;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="20" y="12" width="280" height="18" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-23" value="&lt;div style=&quot;font-family:Arial;font-size:24px;line-height:29px;text-align:left;&quot;&gt;Ollama Cloud&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=24;fontStyle=1;fontColor=#15374A;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="20" y="38" width="280" height="29" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-24" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;3 models vote on the category.&lt;br&gt;Gemma extracts + expands queries.&lt;br&gt;GPT-OSS selects + assesses evidence.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="358" y="20" width="474" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-25" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:29px;text-align:left;&quot;&gt;POST ollama.com/api/chat&lt;br&gt;HTTPS model inference&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="870" y="28" width="426" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-26" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;gpt-oss:120b&lt;br&gt;gemma4:31b&lt;br&gt;nemotron-3-super&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-2">
+          <mxGeometry as="geometry" x="1370" y="20" width="398" height="81" />
+        </mxCell>
+        <mxCell id="provider-3" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="524" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-28" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="0" y="0" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-29" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#E4F4F1;strokeColor=none;strokeWidth=1;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="0" y="0" width="320" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-30" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;STEP 03&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#007F87;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="20" y="12" width="280" height="18" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-31" value="&lt;div style=&quot;font-family:Arial;font-size:24px;line-height:29px;text-align:left;&quot;&gt;Google&lt;br&gt;Fact Check Tools&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=24;fontStyle=1;fontColor=#15374A;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="20" y="38" width="280" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-32" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Find existing published fact checks.&lt;br&gt;Use review links to discover&lt;br&gt;original evidence pages.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="358" y="20" width="474" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-33" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:29px;text-align:left;&quot;&gt;GET factchecktools.googleapis.com&lt;br&gt;/v1alpha1/claims:search&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="870" y="28" width="426" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-34" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Discovery only. An empty&lt;br&gt;match does not mean the&lt;br&gt;claim is false.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-3">
+          <mxGeometry as="geometry" x="1370" y="20" width="398" height="81" />
+        </mxCell>
+        <mxCell id="provider-4" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="662" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-36" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="0" y="0" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-37" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#E4F4F1;strokeColor=none;strokeWidth=1;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="0" y="0" width="320" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-38" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;STEPS 03–04&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#007F87;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="20" y="12" width="280" height="18" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-39" value="&lt;div style=&quot;font-family:Arial;font-size:24px;line-height:29px;text-align:left;&quot;&gt;Tavily&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=24;fontStyle=1;fontColor=#15374A;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="20" y="38" width="280" height="29" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-40" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Search preferred and wider sources.&lt;br&gt;Extract original page text for&lt;br&gt;passage selection and assessment.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="358" y="20" width="474" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-41" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:29px;text-align:left;&quot;&gt;POST api.tavily.com/search&lt;br&gt;POST api.tavily.com/extract&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="870" y="28" width="426" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-42" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Search snippets are leads.&lt;br&gt;Extracted, validated passages&lt;br&gt;are used as evidence.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-4">
+          <mxGeometry as="geometry" x="1370" y="20" width="398" height="81" />
+        </mxCell>
+        <mxCell id="provider-5" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="800" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-44" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=white;strokeColor=#D9E4EA;strokeWidth=1;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="0" y="0" width="1792" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-45" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#E8F0FC;strokeColor=none;strokeWidth=1;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="0" y="0" width="320" height="122" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-46" value="&lt;div style=&quot;font-family:Arial;font-size:13px;line-height:18px;text-align:left;&quot;&gt;STEP 06&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=13;fontStyle=1;fontColor=#2465A7;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="20" y="12" width="280" height="18" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-47" value="&lt;div style=&quot;font-family:Arial;font-size:24px;line-height:29px;text-align:left;&quot;&gt;Cloud Firestore&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=24;fontStyle=1;fontColor=#15374A;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="20" y="38" width="280" height="29" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-48" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Save user-owned results and sources.&lt;br&gt;Commit the completed result and&lt;br&gt;allowance update together.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="358" y="20" width="474" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-49" value="&lt;div style=&quot;font-family:Arial;font-size:18px;line-height:29px;text-align:left;&quot;&gt;Firestore Python client&lt;br&gt;Backend transaction + history APIs&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=18;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="870" y="28" width="426" height="58" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-50" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Private result history.&lt;br&gt;Replaying the same request&lt;br&gt;does not charge twice.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=#15374A;" vertex="1" parent="provider-5">
+          <mxGeometry as="geometry" x="1370" y="20" width="398" height="81" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-51" value="" style="rounded=1;absoluteArcSize=1;arcSize=28;html=1;fillColor=#15374A;strokeColor=none;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="952" width="1792" height="63" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-52" value="&lt;div style=&quot;font-family:Arial;font-size:17px;line-height:23px;text-align:left;&quot;&gt;VOTING ≠ TRUTH VERDICT&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=17;fontStyle=1;fontColor=#82DDD5;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="84" y="965" width="365" height="23" />
+        </mxCell>
+        <mxCell id="uiabo-api-map-53" value="&lt;div style=&quot;font-family:Arial;font-size:20px;line-height:27px;text-align:left;&quot;&gt;Voting chooses the claim category. The final assessment compares evidence and combines its stances.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=visible;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=20;fontStyle=0;fontColor=white;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="467" y="966" width="1368" height="27" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
