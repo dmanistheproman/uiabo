@@ -8,7 +8,7 @@ import { colours } from '../theme';
 
 const features = [
   { icon: 'Aa', label: 'Check text', colour: '#E5F3FA', ink: '#164D73', page: 'text' },
-  { icon: 'URL', label: 'Check webpage\nlink', colour: '#E2F4F0', ink: '#008980', page: 'link' },
+  { icon: 'URL', label: 'Check link\nsafety', colour: '#E2F4F0', ink: '#008980', page: 'link' },
   { icon: 'IMG', label: 'Image + caption', colour: '#FFF3D7', ink: '#946100', locked: true },
   { icon: 'OCR', label: 'Read image text', colour: '#FFF3D7', ink: '#946100', locked: true },
   { icon: 'CTX', label: 'Check image\ncontext', colour: '#EEE9F9', ink: '#7952AE', locked: true },

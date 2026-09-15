@@ -14,6 +14,7 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 from app.accounts.repository import _new_free_allowance, _new_premium_allowance
 from app.firebase import get_firestore_client
 from app.pipeline.shared.models import FailedAnalysisRecord, TextAnalysisResult
+from app.link_safety.models import FailedLinkSafetyRecord, LinkSafetyResult
 
 
 LEASE_SECONDS = 300
@@ -45,8 +46,12 @@ def current_allowance(uid, profile, allowance, now):
 
 
 def public_record(record):
-    fields = (TextAnalysisResult.model_fields if record.get("processing_status") == "completed"
-              else FailedAnalysisRecord.model_fields)
+    completed = record.get("processing_status") == "completed"
+    if record.get("input_type") == "link_safety":
+        model = LinkSafetyResult if completed else FailedLinkSafetyRecord
+        return model.model_validate({key: record[key] for key in model.model_fields if key in record}).model_dump(mode="json")
+    else:
+        fields = TextAnalysisResult.model_fields if completed else FailedAnalysisRecord.model_fields
     return {key: record[key] for key in fields if key in record}
 
 
@@ -56,7 +61,7 @@ class AnalysisStore:
     def __init__(self, clock=None):
         self.clock = clock or (lambda: datetime.now(timezone.utc))
 
-    def reserve(self, uid, request_key, text):
+    def reserve(self, uid, request_key, text, input_type="text"):
         now = self.clock()
         result_id = sha256(f"{uid}:{request_key}".encode()).hexdigest()[:32]
         fingerprint = sha256(text.encode()).hexdigest()
@@ -67,8 +72,9 @@ class AnalysisStore:
             allowance = tx.get("usage_allowances", uid)
             lock = tx.get("analysis_locks", uid)
             if existing:
-                if existing.get("user_id") != uid or existing.get("request_fingerprint") != fingerprint:
-                    reject(409, "REQUEST_KEY_REUSED", "Start a new check when changing the text.")
+                if (existing.get("user_id") != uid or existing.get("request_fingerprint") != fingerprint
+                        or existing.get("input_type", "text") != input_type):
+                    reject(409, "REQUEST_KEY_REUSED", "Start a new check when changing the content or check type.")
                 return {"result_id": result_id, "existing": public_record(existing)}
             if lock and lock["expires_at"] > now:
                 reject(409, "ANALYSIS_IN_PROGRESS", "A check is already running. Please wait, then open Results.")
@@ -78,13 +84,13 @@ class AnalysisStore:
             tx.set("usage_allowances", uid, allowance)
             tx.set("analysis_locks", uid, {"token": token, "result_id": result_id,
                 "expires_at": now + timedelta(seconds=LEASE_SECONDS)})
-            return {"result_id": result_id, "token": token, "fingerprint": fingerprint}
+            return {"result_id": result_id, "token": token, "fingerprint": fingerprint, "input_type": input_type}
         return self.run(operation)
 
     def finish(self, uid, reservation, record):
         now = self.clock()
         payload = record.model_dump(mode="json")
-        payload.update(result_id=reservation["result_id"], user_id=uid, input_type="text",
+        payload.update(result_id=reservation["result_id"], user_id=uid, input_type=reservation.get("input_type", "text"),
                        request_fingerprint=reservation["fingerprint"], created_at=now,
                        saved_at=now, share_enabled=False)
         def operation(tx):

@@ -1,15 +1,14 @@
 import React from 'react';
-import { ActivityIndicator, Alert, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 import { checkText } from '../services/api';
 import { colours } from '../theme';
 
-export default function TextCheckScreen({ onNavigate, onResult, setWorking, initialMode = 'text', initialDraft = null }) {
+export default function TextCheckScreen({ onNavigate, onResult, setWorking, initialDraft = null }) {
   const { firebaseUser, profile, refreshProfile } = useAuth();
   const [text, setText] = React.useState(initialDraft?.text || '');
-  const [mode, setMode] = React.useState(initialMode);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState('');
   const requestKey = React.useRef(null);
@@ -36,13 +35,8 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
     }
   }
   return <View style={{ flex: 1 }}>
-    <PageHeader title="Check content" onBack={() => !busy && onNavigate('home')} badge={remaining == null ? '— left' : `${remaining} left`} />
+    <PageHeader title="Check text" onBack={() => !busy && onNavigate('home')} badge={remaining == null ? '— left' : `${remaining} left`} />
     <PageBody>
-      <View style={styles.segment}>{[['text', 'Text'], ['link', 'Webpage link']].map(([id, label]) => <Pressable key={id} disabled={busy} onPress={() => setMode(id)} accessibilityRole="tab" accessibilityState={{ selected: mode === id }} style={[styles.segmentButton, mode === id && styles.selected]}><Text style={[styles.segmentText, mode === id && { color: colours.ink }]}>{label}</Text></Pressable>)}</View>
-      {mode === 'link' ? <View style={styles.card}>
-        <Text style={styles.title}>Webpage checks are coming</Text><Text style={styles.copy}>For now, copy the text from the webpage and check it here. Your allowance is only used when a check completes.</Text>
-        <Button onPress={() => setMode('text')}>Check copied text</Button>
-      </View> : <>
         <View><Text style={styles.eyebrow}>TEXT ANALYSIS</Text><Text style={styles.title}>Paste the message to check</Text><Text style={styles.copy}>Use short English text for the clearest result.</Text></View>
         {!!initialDraft?.correctYear && <View style={styles.info}><Text style={styles.label}>Correct the year</Text><Text style={styles.copy}>Add the intended year next to the date in your message, then check it again. This creates a new saved result and uses your allowance if the check completes.</Text></View>}
         <View><Text style={styles.label}>Message or caption</Text>
@@ -60,15 +54,11 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
           <Text style={[styles.hint, { textAlign: 'center' }]}>Only successful checks use your {profile?.role === 'premium' ? 'monthly' : 'daily'} allowance.</Text>
           {!!error && <Button secondary onPress={() => onNavigate('results')}>View saved results</Button>}
         </>}
-      </>}
     </PageBody>
   </View>;
 }
 
 const styles = StyleSheet.create({
-  segment: { backgroundColor: '#E7EEF1', borderRadius: 14, padding: 5, flexDirection: 'row' },
-  segmentButton: { flex: 1, paddingVertical: 18, alignItems: 'center', borderRadius: 10 },
-  selected: { backgroundColor: 'white' }, segmentText: { color: '#667F90', fontWeight: '700', fontSize: 14 },
   eyebrow: { color: '#008B89', fontWeight: '800', fontSize: 12, letterSpacing: 1, marginBottom: 8 },
   title: { color: '#173447', fontSize: 25, fontWeight: '800', marginBottom: 5 },
   copy: { color: '#526F83', lineHeight: 21, fontSize: 14 },
@@ -79,5 +69,4 @@ const styles = StyleSheet.create({
   info: { backgroundColor: '#E5F3FA', borderLeftWidth: 3, borderLeftColor: '#1778A3', padding: 16, borderRadius: 14 },
   error: { color: '#A12020', fontSize: 14, lineHeight: 21 },
   progress: { alignItems: 'center', padding: 12, gap: 12 },
-  card: { backgroundColor: 'white', borderRadius: 16, padding: 20, gap: 18 },
 });

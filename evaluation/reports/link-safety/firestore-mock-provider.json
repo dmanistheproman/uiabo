@@ -1,0 +1,22 @@
+{
+  "firestore": "live",
+  "authentication": "isolated identity override",
+  "web_risk": "mock",
+  "checks": {
+    "malware_test": {
+      "safety_status": "threat_detected",
+      "threat_types": [
+        "MALWARE"
+      ]
+    },
+    "no_match_test": {
+      "safety_status": "no_known_threats",
+      "threat_types": []
+    },
+    "history_and_detail": true,
+    "idempotent_replay": true,
+    "charged_once_per_result": true,
+    "other_identity_rejected": true
+  },
+  "temporary_documents_removed": true
+}

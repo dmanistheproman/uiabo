@@ -42,16 +42,16 @@ export default function ResultsScreen({ onResult, onNavigate }) {
   return <View style={{ flex: 1 }}>
     <PageHeader title="Result history" onBack={() => onNavigate('home')} />
     <PageBody refreshControl={<RefreshControl refreshing={busy} onRefresh={() => load()} />}>
-      <View><Text style={styles.heading}>Your saved checks</Text><Text style={styles.copy}>Open a result to review its explanation and sources.</Text></View>
+      <View><Text style={styles.heading}>Your saved checks</Text><Text style={styles.copy}>Open a result to review its findings and when it was checked.</Text></View>
       {!!error && <><Text accessibilityRole="alert" style={styles.error}>{error}</Text><Button secondary onPress={() => load()}>Retry</Button></>}
       {busy && items.length === 0 && <ActivityIndicator color={colours.blue} size="large" />}
       {!busy && !error && items.length === 0 && <View style={styles.empty}><Feather name="file-text" size={35} color="#637F91" /><Text style={styles.heading}>Your first check starts here</Text><Text style={styles.copy}>Your completed checks will be saved to your account.</Text><Button onPress={() => onNavigate('text')}>Check some text</Button></View>}
       {items.length > 0 && <View style={styles.list}>{items.map((item, index) => <Pressable key={item.result_id} disabled={!!opening} accessibilityRole="button"
-        accessibilityLabel={`Open result: ${item.extracted_claim || item.original_text}`}
+        accessibilityLabel={`Open result: ${item.submitted_url || item.extracted_claim || item.original_text}`}
         onPress={() => open(item)} style={[styles.row, index > 0 && styles.divider]}>
-        <View style={styles.icon}><Text style={styles.letters}>Aa</Text></View>
-        <View style={{ flex: 1, gap: 7 }}><Text numberOfLines={2} style={styles.claim}>{item.extracted_claim || item.original_text}</Text><Text style={styles.date}>Text · {new Date(item.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</Text>
-          <ConcernBadge label={assessmentLabel(item)} concern={item.processing_status === 'failed' ? 'Failed' : item.concern_label} /></View>
+        <View style={styles.icon}><Text style={styles.letters}>{item.input_type === 'link_safety' ? 'URL' : 'Aa'}</Text></View>
+        <View style={{ flex: 1, gap: 7 }}><Text numberOfLines={2} style={styles.claim}>{item.submitted_url || item.extracted_claim || item.original_text}</Text><Text style={styles.date}>Text · {new Date(item.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</Text>
+          <ConcernBadge label={assessmentLabel(item)} concern={item.processing_status === 'failed' ? 'Failed' : item.input_type === 'link_safety' ? (item.safety_status === 'threat_detected' ? 'High Concern' : 'Not Enough Information') : item.concern_label} /></View>
         {opening === item.result_id ? <ActivityIndicator color={colours.blue} /> : <Feather name="chevron-right" color="#78909F" size={18} />}
       </Pressable>)}</View>}
       {!!cursor && <Button loading={busy} secondary onPress={() => load(true)}>Load more results</Button>}

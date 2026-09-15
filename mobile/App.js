@@ -1,5 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
+import LinkCheckScreen from './src/screens/LinkCheckScreen';
+import LinkResultScreen from './src/screens/LinkResultScreen';
 import { ActivityIndicator, Alert, BackHandler, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -59,9 +61,10 @@ function AppContent() {
   function showResult(value) { setResult(value); setPage('result'); }
   let content;
   if (page === 'profile') content = <ProfileScreen onBack={() => navigate('home')} />;
-  else if (page === 'text' || page === 'link') content = <TextCheckScreen key={page} initialMode={page} initialDraft={textDraft} onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
+  else if (page === 'text') content = <TextCheckScreen initialDraft={textDraft} onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
+  else if (page === 'link') content = <LinkCheckScreen onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
   else if (page === 'results') content = <ResultsScreen onNavigate={navigate} onResult={showResult} />;
-  else if (page === 'result' && result) content = <ResultScreen result={result} onNavigate={navigate} />;
+  else if (page === 'result' && result) content = result.input_type === 'link_safety' ? <LinkResultScreen result={result} onNavigate={navigate} /> : <ResultScreen result={result} onNavigate={navigate} />;
   else if (page === 'help' || page === 'premium') content = <InfoScreen premium={page === 'premium'} onNavigate={navigate} />;
   else content = <HomeScreen onNavigate={navigate} />;
   return <View style={{ flex: 1 }}>{content}<BottomTabs active={page === 'result' ? 'results' : ['text', 'link', 'premium'].includes(page) ? 'home' : page} onNavigate={navigate} disabled={working} /></View>;

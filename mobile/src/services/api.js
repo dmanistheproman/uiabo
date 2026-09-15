@@ -64,6 +64,13 @@ export function getResults(user, cursor) {
   return accountRequest(`/analysis/results${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, user);
 }
 
+export function checkLink(user, url, requestKey) {
+  return accountRequest('/analysis/link-safety', user, {
+    method: 'POST', body: JSON.stringify({ url }), timeout: 45000,
+    headers: { 'Idempotency-Key': requestKey },
+  });
+}
+
 export function getResult(user, resultId) {
   return accountRequest(`/analysis/results/${encodeURIComponent(resultId)}`, user);
 }

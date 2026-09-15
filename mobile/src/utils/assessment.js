@@ -8,6 +8,11 @@ const labels = {
 };
 
 export function assessmentLabel(result) {
+  if (result.input_type === 'link_safety') {
+    if (result.processing_status === 'failed') return 'Unable to check';
+    if (result.safety_status === 'threat_detected') return 'Potentially dangerous link';
+    return result.safety_status === 'no_known_threats' ? 'No known threats found' : 'Unable to check';
+  }
   if (result.processing_status === 'failed') return 'Failed';
   return labels[result.assessment_outcome] || result.concern_label;
 }
