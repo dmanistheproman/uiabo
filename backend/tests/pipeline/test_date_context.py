@@ -1,14 +1,14 @@
 """Year inference, evidence scope and persisted assumptions across the app API."""
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import json
 
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from app.pipeline.shared.dates import infer_date_context, dated_search_claim, future_scope_limitation
+from app.pipeline.shared.dates import infer_date_context, dated_search_claim, future_scope_limitation, assumption_notice
 from app.pipeline.shared.models import ClaimAnalysis, EvidenceCandidate, RetrievalResult, TextAnalysisResult
 from app.pipeline.evidence_assessment import semantic
 from app.pipeline.evidence_retrieval import enhanced
@@ -47,9 +47,6 @@ def test_current_year_is_explicit_metadata_without_rewriting_the_claim(phrase, d
 
 
 @pytest.mark.parametrize('text', [
-    'From October 2025, residents pay a fee.',
-    'Effective October 1, 2027, residents pay a fee.',
-    'From 1 October 2027, residents pay a fee.',
     'In 2027, residents pay a fee from October.',
     'From October next year, residents pay a fee.',
     'Residents pay every October.',
@@ -57,7 +54,7 @@ def test_current_year_is_explicit_metadata_without_rewriting_the_claim(phrase, d
     'From February 29, residents pay a fee.',  # Invalid in the assumed year.
     'From October, a fee begins; from December, a rebate starts.',
 ])
-def test_explicit_relative_recurring_invalid_or_ambiguous_dates_are_not_overwritten(text):
+def test_recurring_invalid_or_ambiguous_dates_are_not_invented(text):
     assert infer_date_context(text, NOW) is None
 
 
@@ -72,6 +69,75 @@ def test_year_comes_from_singapore_at_submission_including_new_year_boundary():
 def test_a_four_digit_monetary_amount_is_not_a_stated_year(amount):
     context = infer_date_context(f'From October, the permit fee is {amount}.', NOW)
     assert context.year == 2026
+
+
+@pytest.mark.parametrize('phrase,start,end', [
+    ('today', '2026-09-10', '2026-09-10'),
+    ('tonight', '2026-09-10', '2026-09-10'),
+    ('tomorrow', '2026-09-11', '2026-09-11'),
+    ('yesterday', '2026-09-09', '2026-09-09'),
+    ('this weekend', '2026-09-12', '2026-09-13'),
+    ('next weekend', '2026-09-19', '2026-09-20'),
+    ('this week', '2026-09-07', '2026-09-13'),
+    ('next week', '2026-09-14', '2026-09-20'),
+    ('last week', '2026-08-31', '2026-09-06'),
+])
+def test_relative_dates_use_one_visible_singapore_submission_interval(phrase, start, end):
+    text = f'Singapore may reach 52 C {phrase}.'
+    context = infer_date_context(text, NOW)
+    assert context.claim_text == phrase
+    assert context.basis == 'relative_submission_date'
+    assert context.start_date == date.fromisoformat(start) and context.end_date == date.fromisoformat(end)
+    assert context.timezone == 'Asia/Singapore' and context.as_of == date(2026, 9, 10)
+    assert 'submission date 2026-09-10' in assumption_notice(context)
+    assert phrase not in dated_search_claim(text, context)
+    assert text == f'Singapore may reach 52 C {phrase}.'
+
+
+@pytest.mark.parametrize('day', [12, 13])
+def test_this_weekend_keeps_the_current_weekend_on_saturday_and_sunday(day):
+    context = infer_date_context('Temperatures rise this weekend.', datetime(2026, 9, day, 3, tzinfo=timezone.utc))
+    assert (context.start_date, context.end_date) == (date(2026, 9, 12), date(2026, 9, 13))
+    assert not context.is_future
+
+
+def test_relative_date_rollover_uses_singapore_not_utc_and_can_cross_years():
+    instant = datetime(2026, 12, 31, 16, 1, tzinfo=timezone.utc)
+    context = infer_date_context('Tomorrow will be warmer.', instant)
+    assert context.as_of == date(2027, 1, 1)
+    assert context.start_date == context.end_date == date(2027, 1, 2)
+    week = infer_date_context('The temperature rises this week.', instant)
+    assert (week.start_date, week.end_date) == (date(2026, 12, 28), date(2027, 1, 3))
+
+
+@pytest.mark.parametrize('phrase,start,end', [
+    ('From October 2025', '2025-10-01', '2025-10-31'),
+    ('Effective October 1, 2027', '2027-10-01', '2027-10-01'),
+    ('From 1 October 2027', '2027-10-01', '2027-10-01'),
+    ('on 19 September 2026', '2026-09-19', '2026-09-19'),
+    ('19-20 September 2026', '2026-09-19', '2026-09-20'),
+    ('September 19-20, 2026', '2026-09-19', '2026-09-20'),
+    ('19 September to 20 September 2026', '2026-09-19', '2026-09-20'),
+    ('30 September 2026 to 1 October 2026', '2026-09-30', '2026-10-01'),
+    ('2026-09-19', '2026-09-19', '2026-09-19'),
+    ('2026-09-19 to 2026-09-20', '2026-09-19', '2026-09-20'),
+])
+def test_explicit_dates_are_interpreted_without_an_assumed_year(phrase, start, end):
+    context = infer_date_context(phrase, NOW)
+    assert context.basis == 'explicit_date'
+    assert context.start_date == date.fromisoformat(start) and context.end_date == date.fromisoformat(end)
+    assert dated_search_claim(phrase, context) == phrase
+    assert assumption_notice(context).startswith('Stated date:')
+
+
+@pytest.mark.parametrize('text', [
+    'tomorrow or this weekend', 'today and 19 September 2026',
+    'every weekend', 'this weekend and next week', '2026-02-30',
+    'on 0 September 2026', '31-32 September 2026', '20-19 September 2026',
+    '2026-09-20 to 2026-09-19', '2026-09-19 and 2026-09-20',
+])
+def test_ambiguous_or_impossible_intervals_do_not_silently_pick_a_date(text):
+    assert infer_date_context(text, NOW) is None
 
 
 def assess(passage, text=TEXT):
@@ -96,7 +162,7 @@ def test_assumed_future_change_is_not_disproved_by_an_existing_rule():
     assert result.assessment_outcome == 'unsupported'
     assert result.concern_label == 'Not Enough Information'
     assert not result.claim_comparisons[0].applies_to_claim
-    assert 'October 2026' in result.claim_comparisons[0].explanation
+    assert 'October 2026' in result.claim_comparisons[0].scope_limitation
 
 
 def test_an_explicit_rule_for_the_assumed_future_period_can_resolve_the_claim():
@@ -197,7 +263,9 @@ def test_api_history_keeps_assumption_and_a_corrected_year_creates_a_separate_re
         response = client.post('/analysis/text', json={'text':corrected}, headers={'Idempotency-Key':'year-corrected'})
         assert response.status_code == 200, response.text
         second = response.json()
-        assert second['date_context'] is None and second['extracted_claim'] == corrected
+        assert second['date_context']['basis'] == 'explicit_date'
+        assert second['date_context']['year'] == 2025 and second['extracted_claim'] == corrected
+        assert not any('Assumed date:' in reason for reason in second['uncertainty_reasons'])
         assert second['result_id'] != first['result_id']
         assert client.get('/analysis/results/'+first['result_id']).json()['date_context'] == first['date_context']
         assert client.post('/analysis/text', json={'text':TEXT}, headers={'Idempotency-Key':'year-assumed'}).json() == first

@@ -1,5 +1,7 @@
 # uiabo
 
+**New teammate? Start with the [complete Windows setup guide](TEAMMATE_SETUP.md).** It covers current configuration, Firebase, backend, Expo/emulator, optional OCR and troubleshooting. API links are in [API_SERVICES.md](API_SERVICES.md).
+
 uiabo is a Final Year Project that aims to help users assess text and online content for possible misinformation. The planned system will return a concern label, misinformation risk score, uncertainty level, plain-language explanation, and supporting evidence with citations.
 
 ## Current status

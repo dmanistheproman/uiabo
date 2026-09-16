@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
-from datetime import timezone
 from typing import Any, Literal
 
 from app.pipeline.shared.models import (
@@ -26,10 +25,10 @@ from app.pipeline.shared.models import (
 )
 
 
-Stance = Literal["supporting", "contradicting", "neutral"]
+from .scoring import LABELS, MIN_DECISIVE_QUALITY, group_evidence, score_evidence, unscored_summary, provisional_summary
 
-CONCERN_LOW_MAX = 30
-CONCERN_CAUTION_MAX = 70
+
+Stance = Literal["supporting", "contradicting", "neutral"]
 
 AUTHORITATIVE_SOURCE_TYPES = {"government", "fact_check", "academic"}
 
@@ -196,14 +195,6 @@ def _as_evidence(
     return EvidenceCandidate.model_validate(evidence)
 
 
-def _age_in_days(evidence: EvidenceCandidate) -> int | None:
-    """Calculate age when retrieved so replaying a result is deterministic."""
-    if evidence.published_at is None:
-        return None
-    reference_date = evidence.retrieved_at.astimezone(timezone.utc).date()
-    return max(0, (reference_date - evidence.published_at).days)
-
-
 def calculate_quality_score(
     evidence: EvidenceCandidate | Mapping[str, Any],
     stance: Stance,
@@ -212,26 +203,9 @@ def calculate_quality_score(
     item = _as_evidence(evidence)
     relevance = max(0.0, min(1.0, float(item.retrieval_score)))
 
-    if item.source_type == "government":
-        if relevance >= 0.95:
-            quality = 0.94
-        elif relevance >= 0.90:
-            quality = 0.90
-        elif relevance >= 0.80:
-            quality = 0.82
-        else:
-            quality = min(0.75, relevance)
-    else:
-        quality = min(SOURCE_BASE_LIMITS[item.source_type], relevance)
-
-    age = _age_in_days(item)
-    if age is not None:
-        if age > 730:
-            quality -= 0.10
-        elif age > 365:
-            quality -= 0.07
-        elif age > 180:
-            quality -= 0.04
+    # Relevance varies continuously. Age alone cannot invalidate historical facts;
+    # date/scope applicability is checked before evidence may vote.
+    quality = min(SOURCE_BASE_LIMITS[item.source_type], relevance)
 
     if stance == "neutral":
         quality = min(quality, 0.45)
@@ -305,42 +279,6 @@ def assess_evidence_item(
         quality_score=calculate_quality_score(item, stance),
         assessment_reason=_assessment_reason(claim, item.passage, stance),
     )
-
-
-def _risk_score(assessed: list[AssessedEvidence]) -> int | None:
-    supporting = [item for item in assessed if item.stance == "supporting"]
-    contradicting = [
-        item for item in assessed if item.stance == "contradicting"
-    ]
-
-    if not supporting and not contradicting:
-        return None
-
-    if supporting and contradicting:
-        support_weight = sum(item.quality_score for item in supporting)
-        contradict_weight = sum(item.quality_score for item in contradicting)
-        total = support_weight + contradict_weight
-        if total == 0:
-            return 50
-        score = round(100 * contradict_weight / total)
-        return max(31, min(70, score))
-
-    if supporting:
-        strongest = max(item.quality_score for item in supporting)
-        return 15 if strongest >= 0.90 else 25
-
-    strongest = max(item.quality_score for item in contradicting)
-    return 82 if strongest >= 0.90 else 75
-
-
-def _concern_label(score: int | None) -> str:
-    if score is None:
-        return "Not Enough Information"
-    if score <= CONCERN_LOW_MAX:
-        return "Low Concern"
-    if score <= CONCERN_CAUTION_MAX:
-        return "Needs Caution"
-    return "High Concern"
 
 
 def _evidence_by_id(
@@ -469,12 +407,14 @@ def _not_enough_information(
     )
     return AssessmentResult(
         concern_label="Not Enough Information",
-        misinformation_risk_score=None,
+        misinformation_risk_score=50,
         uncertainty="High",
         uncertainty_reasons=reasons,
         explanation=explanation,
         recommended_action=_recommended_action("Not Enough Information"),
         assessed_evidence=assessed_items,
+        assessment_outcome="insufficient_evidence",
+        scoring=provisional_summary(reasons[0]),
     )
 
 
@@ -504,6 +444,8 @@ def _non_checkable_result(claim: ClaimAnalysis) -> AssessmentResult:
         explanation=explanation,
         recommended_action=action,
         assessed_evidence=[],
+        assessment_outcome="not_checkable",
+        scoring=unscored_summary("No checkable factual claim was identified; no risk score is assigned."),
     )
 
 
@@ -544,10 +486,10 @@ def summarise_assessments(
     retrieval: RetrievalResult,
     assessed: list[AssessedEvidence],
 ) -> AssessmentResult:
-    """Aggregate validated stances using the existing, uncalibrated score rules."""
+    """Determine a verdict from admissible evidence, then calculate its indicator."""
     by_id = _evidence_by_id(retrieval.evidence)
     # New retrieval scope decisions constrain both semantic and lexical assessors.
-    # Legacy saved evidence has no provenance and retains its existing behaviour.
+    # Old saved results are not rescored; these rules apply only to new checks.
     assessed = [item.model_copy(deep=True) for item in assessed]
     for item in assessed:
         provenance = by_id[item.evidence_id].provenance
@@ -555,19 +497,15 @@ def summarise_assessments(
             item.stance = "neutral"
             item.quality_score = min(item.quality_score, 0.45)
             item.assessment_reason = provenance.applicability_reason if provenance.applicability != "established" else provenance.relevance_reason
-    # One contribution per origin and stance preserves disagreement within an
-    # authority while preventing many pages from that authority multiplying votes.
-    groups = {}
     for item in assessed:
-        provenance = by_id[item.evidence_id].provenance
-        key = (provenance.origin_group if provenance else item.evidence_id, item.stance)
-        if key not in groups or groups[key].quality_score < item.quality_score:
-            groups[key] = item
-    voting = list(groups.values())
-    risk = _risk_score(voting)
-    label = _concern_label(risk)
+        if item.stance != "neutral" and item.quality_score < MIN_DECISIVE_QUALITY:
+            item.stance = "neutral"
+            item.assessment_reason = "The passage has insufficient relevance or source quality for a decisive finding."
+    voting = group_evidence(assessed, by_id)
+    outcome, risk, scoring = score_evidence(voting, by_id)
+    label = LABELS[outcome]
 
-    if risk is None:
+    if scoring.status == "provisional":
         claim_days = _days(claim_text)
         passages_have_days = any(
             _days(item.passage) for item in retrieval.evidence
@@ -577,7 +515,9 @@ def summarise_assessments(
             if claim_days and not passages_have_days
             else ["The retrieved evidence does not directly answer the claim."]
         )
-        return _not_enough_information(claim_text, reasons, assessed)
+        result = _not_enough_information(claim_text, reasons, assessed)
+        result.scoring = scoring
+        return result
 
     uncertainty, uncertainty_reasons = _uncertainty(
         voting,
@@ -585,6 +525,8 @@ def summarise_assessments(
     )
     return AssessmentResult(
         concern_label=label,
+        assessment_outcome=outcome,
+        scoring=scoring,
         misinformation_risk_score=risk,
         uncertainty=uncertainty,
         uncertainty_reasons=uncertainty_reasons,

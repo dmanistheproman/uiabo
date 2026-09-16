@@ -68,11 +68,12 @@ def test_typography_changes_restore_original_source_characters():
     assert result.evidence_quote in passage
 
 
-def test_neutral_can_have_no_quote_and_keeps_null_score():
+def test_neutral_can_have_no_quote_and_gets_provisional_score():
     result = run(lambda request: httpx.Response(200, json=response(
         judgment(stance="neutral", evidence_quote="", reason="The relevant date is absent."))))
     assert result.concern_label == "Not Enough Information"
-    assert result.misinformation_risk_score is None
+    assert result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional"
     assert result.assessed_evidence[0].evidence_quote is None
     assert "Related evidence was found" in result.explanation
     assert "The relevant date is absent" in result.explanation
@@ -174,7 +175,8 @@ def test_total_deadline_is_bounded(monkeypatch):
 def test_no_evidence_does_not_load_credentials(monkeypatch):
     monkeypatch.setattr(semantic, "api_key", lambda: pytest.fail("Unnecessary provider call"))
     result = semantic.assess_evidence(claim(), RetrievalResult(retrieval_status="no_evidence"))
-    assert result.misinformation_risk_score is None
+    assert result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional"
 
 
 def test_missing_key_is_a_configuration_error(monkeypatch):
@@ -214,7 +216,8 @@ def test_family_amount_cannot_establish_an_unspecified_personal_entry_requiremen
         "reason": "The family amount matches the number in the claim."}, passage)
     result = semantic.aggregate(personal_claim, retrieval, [model_result])
     assert result.concern_label == "Not Enough Information"
-    assert result.misinformation_risk_score is None
+    assert result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional"
     assert result.assessed_evidence[0].stance == "neutral"
     assert "passport or nationality" in result.explanation
     assert "visa or entry category" in result.explanation
@@ -252,6 +255,7 @@ def test_runtime_mode_is_explicit_and_versioned(monkeypatch, mode):
         assessor, version = semantic.configured_assessor()
         assert (assessor is baseline.assess_evidence) == (mode == "lexical")
         assert (semantic.PROMPT_VERSION in version) == (mode == "semantic")
+        assert version.endswith(":evidence-v3")
 
 
 def test_quote_and_reason_survive_assembly_and_persistence():

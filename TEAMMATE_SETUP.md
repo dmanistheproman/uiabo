@@ -4,7 +4,7 @@ Windows PowerShell · Android emulator or Android phone · Updated 17 September 
 
 This guide covers the current local implementation: text checking, saved results, link safety, forecast comparisons and optional OCR. Use it as the main setup guide; older README status lists may describe earlier versions.
 
-**Before handing over:** recent forecast, scoring and OCR changes are still local at the time of writing. A GitHub clone only contains committed and pushed files. The project owner needs to provide the matching code version as well as this guide. If `backend/app/ocr` is absent, that checkout does not include OCR yet.
+**Before handing over:** use the code version that includes the forecast, scoring and result-screen updates described here. A GitHub clone only contains committed and pushed files. OCR is excluded from this handoff; its optional instructions describe separate local work. Skip that section unless the project owner also supplies the OCR implementation.
 
 ## Choose how you will run it
 

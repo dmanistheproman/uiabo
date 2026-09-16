@@ -40,6 +40,20 @@ a number. For a policy/fee/benefit claim, look up the named scheme's official
 rules, premium/fee table or effective dates without repeating the alleged amount.
 For another factual claim, look up the underlying topic. These are discovery hints;
 the original claim remains unchanged and all evidence is assessed against it.
+When supplied, coverage_gaps and claim_context describe unresolved dimensions.
+Target the missing location, date, population or measurement using the second
+query. Do not silently invent an omitted dimension. Air temperature, heat index
+and surface temperature are different measurements. A forecast and an observed
+record are different evidence; preserve the distinction and possibility words.
+For passport-validity claims, distinguish the destination's immigration entry
+requirements from citizens' advice for travel abroad, passport renewal and the
+validity of a newly issued passport. For an alleged policy change, the first query
+should seek the actual announcement or official clarification, retaining its
+timing and threshold; the second should seek the current entry rule and its
+exceptions without the alleged threshold/date. Do not invent nationality,
+destination or eligibility, and do not assume the current rule settles a future
+change. If the destination is unclear, explore the named authority's entry rules
+as a possibility only.
 """
 
 
@@ -74,14 +88,18 @@ def validate_queries(raw, claim, *, allow_policy_lookup=False):
     return queries
 
 
-async def plan_queries(client: httpx.AsyncClient, claim: str, key: str, *, allow_policy_lookup=False):
+async def plan_queries(client: httpx.AsyncClient, claim: str, key: str, *, allow_policy_lookup=False,
+                       claim_context=None, date_context=None, coverage_gaps=None):
     async with asyncio.timeout(15):
         response = await client.post("https://ollama.com/api/chat",
             headers={"Authorization": f"Bearer {key}"},
             json={"model": "gemma4:31b", "stream": False, "think": False,
                   "options": {"temperature": 0, "num_predict": 512},
                   "messages": [{"role": "system", "content": QUERY_PROMPT + (POLICY_LOOKUP_INSTRUCTION if allow_policy_lookup else "")},
-                               {"role": "user", "content": json.dumps({"claim": claim})}]})
+                               {"role": "user", "content": json.dumps({"claim": claim,
+                                   "claim_context": claim_context.model_dump(mode="json") if claim_context else None,
+                                   "date_context": date_context.model_dump(mode="json") if date_context else None,
+                                   "coverage_gaps": coverage_gaps or []})}]})
         response.raise_for_status()
         body = response.json()
         if not isinstance(body, dict) or body.get("done") is not True or body.get("done_reason") == "length":

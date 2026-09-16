@@ -232,12 +232,18 @@ def test_default_api_wiring_with_real_retrieval_and_assessment(monkeypatch, prov
     from app.pipeline.orchestration.repository import InMemoryResultRepository
     repository = InMemoryResultRepository()
     store, _ = signed_analysis
+    # This test exercises provider/API wiring. An undated source saying "next
+    # week" cannot establish the newly resolved submission-relative period;
+    # temporal-policy behaviour has its own date/scope regression tests.
+    wire_text = "A new $500 community tax exists."
+    wire_claim = CLAIM.model_copy(update={"extracted_claim": wire_text})
+    wire_passage = "No new $500 community tax exists. The circulating message is false."
     def handler(request):
         if provider_failure:
             return httpx.Response(503, text="secret provider details")
         return httpx.Response(200, json={} if request.url.host == "factchecktools.googleapis.com"
-                              else {"results": [search_item()]})
-    monkeypatch.setattr(dependencies, "analyse_claim", lambda prepared: CLAIM)
+                              else {"results": [search_item(content=wire_passage)]})
+    monkeypatch.setattr(dependencies, "analyse_claim", lambda prepared: wire_claim)
     monkeypatch.setattr(dependencies, "FirestoreResultRepository", lambda: repository)
     monkeypatch.setenv("GOOGLE_FACT_CHECK_API_KEY", "dummy-google")
     monkeypatch.setenv("TAVILY_API_KEY", "dummy-tavily")
@@ -246,7 +252,7 @@ def test_default_api_wiring_with_real_retrieval_and_assessment(monkeypatch, prov
     dependencies.get_pipeline_orchestrator.cache_clear()
     try:
         with TestClient(app) as client:
-            response = client.post("/analysis/text", json={"text": TEXT})
+            response = client.post("/analysis/text", json={"text": wire_text})
         if provider_failure:
             assert response.status_code == 503
             assert response.json()["detail"]["error_code"] == "RETRIEVAL_UNAVAILABLE"

@@ -139,6 +139,16 @@ def _grounded_claim(raw: dict, prepared: PreparedText) -> str:
     normalised_claim = normalise(claim)
     if not re.search(r"\w", normalised_claim) or normalised_claim not in normalise(prepared.normalised_text):
         raise ValueError("Extracted claim is not present in the submitted text")
+    submitted = normalise(prepared.normalised_text)
+    start = submitted.index(normalised_claim)
+    before, after = submitted[:start], submitted[start + len(normalised_claim):]
+    if re.search(r"\b(?:could|may|might)\s+(?:(?:possibly|potentially|soon)\s+)?$", before):
+        raise ValueError("Extraction omitted the claim's possibility qualifier")
+    if re.match(r"\s*,?\s*(?:because\b|due\s+to\b|caused\s+by\b|as\s+a\s+result\s+of\b)", after):
+        raise ValueError("Extraction omitted the claim's stated cause")
+    sentence_prefix = re.split(r"[.!?](?:\s+|$)", before)[-1].strip()
+    if re.match(r"(?:because\b|due\s+to\b|as\s+a\s+result\s+of\b)", sentence_prefix):
+        raise ValueError("Extraction omitted the claim's stated cause")
     return claim
 
 

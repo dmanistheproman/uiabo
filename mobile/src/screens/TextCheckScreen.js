@@ -39,6 +39,7 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
     <PageBody>
         <View><Text style={styles.eyebrow}>TEXT ANALYSIS</Text><Text style={styles.title}>Paste the message to check</Text><Text style={styles.copy}>Use short English text for the clearest result.</Text></View>
         {!!initialDraft?.correctYear && <View style={styles.info}><Text style={styles.label}>Correct the year</Text><Text style={styles.copy}>Add the intended year next to the date in your message, then check it again. This creates a new saved result and uses your allowance if the check completes.</Text></View>}
+        {!!initialDraft?.correctDate && !initialDraft?.correctYear && <View style={styles.info}><Text style={styles.label}>Correct the dates</Text><Text style={styles.copy}>Replace words such as "this weekend" with the exact dates and year you mean, then check again. A completed check creates a new saved result and uses your allowance.</Text></View>}
         <View><Text style={styles.label}>Message or caption</Text>
           <TextInput accessibilityLabel="Message or caption" multiline textAlignVertical="top" editable={!busy} maxLength={5000}
             placeholder="Paste a message, claim or caption…" placeholderTextColor="#7D909E" style={styles.input} value={text}

@@ -1,5 +1,8 @@
 # Poon — Sprint 1 evidence-assessment scoring rules
 
+> Historical baseline. New checks use [Evidence scoring v2](evidence_v2.md).
+> Keep this document and the Sprint 1 fixtures for historical comparisons.
+
 ## Purpose
 
 This document records the first rule-based baseline used by Poon Chun Ping's

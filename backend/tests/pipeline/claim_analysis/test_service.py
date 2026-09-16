@@ -104,6 +104,36 @@ def test_invalid_extraction_is_failure_not_noncheckable(bad):
     assert caught.value.error_code == "CLAIM_EXTRACTION_FAILED"
 
 
+@pytest.mark.parametrize('extracted', [
+    'reach 52 C this weekend due to a record-breaking heatwave.',
+    'Singapore could reach 52 C this weekend',
+])
+def test_extraction_cannot_drop_possible_modality_or_stated_cause(extracted):
+    text = 'Singapore could reach 52 C this weekend due to a record-breaking heatwave.'
+    prepared = PreparedText(original_text=text, normalised_text=text, language='en')
+    def handler(request):
+        return response({'extracted_claim': extracted} if is_extraction(request) else classification())
+    with pytest.raises(PipelineComponentError) as caught:
+        analyse(handler, prepared)
+    assert caught.value.error_code == 'CLAIM_EXTRACTION_FAILED'
+
+
+def test_specific_forecast_can_be_checkable_with_modality_and_cause_preserved():
+    text = 'Singapore could reach 52 C this weekend due to a record-breaking heatwave.'
+    prepared = PreparedText(original_text=text, normalised_text=text, language='en')
+    def handler(request):
+        return response({'extracted_claim': text} if is_extraction(request) else classification())
+    result = analyse(handler, prepared)
+    assert result.checkable and result.extracted_claim == text
+
+
+def test_extraction_cannot_remove_a_cause_before_the_main_clause():
+    text = 'Because of a heatwave, Singapore could reach 52 C this weekend.'
+    prepared = PreparedText(original_text=text, normalised_text=text, language='en')
+    with pytest.raises(ValueError, match='stated cause'):
+        service._grounded_claim({'extracted_claim': 'Singapore could reach 52 C this weekend.'}, prepared)
+
+
 @pytest.mark.parametrize("body", ["null", '"a string"', "[]", "not json", "```json\n{}", "{} trailing"])
 def test_malformed_classifier_output_fails(body):
     with pytest.raises(PipelineComponentError) as caught:
@@ -233,7 +263,7 @@ def test_real_claim_stage_hands_off_to_assessment():
     )
     result = pipeline.analyze(TEXT)
     assert result.concern_label == "High Concern"
-    assert result.misinformation_risk_score == 82
+    assert result.misinformation_risk_score == 96
     assert repository.results[result.result_id] == result
 
 

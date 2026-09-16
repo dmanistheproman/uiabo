@@ -3,93 +3,198 @@ import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-
 import Feather from '@expo/vector-icons/Feather';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
-import { ConcernBadge, concernColours } from './ResultsScreen';
-import { assessmentLabel, comparisonAspects, comparisonFindings } from '../utils/assessment';
+import { scoreDescription, isProvisionalScore, comparisonAspects, comparisonFindings, changeVerificationLabel } from '../utils/assessment';
+import { resultPresentation, plainSourceStance, datePresentation } from '../utils/resultPresentation';
+
+function Details({ title, children }) {
+  const [open, setOpen] = useState(false);
+  return <View style={styles.card}>
+    <Pressable accessibilityRole="button" accessibilityLabel={`${open ? 'Hide' : 'Show'} ${title}`}
+      accessibilityState={{ expanded: open }} onPress={() => setOpen(value => !value)}
+      style={({ pressed }) => [styles.toggle, pressed && styles.pressed]}>
+      <Text style={[styles.heading, styles.flexText]}>{title}</Text>
+      <Feather name={open ? 'chevron-up' : 'chevron-down'} size={24} color="#174E72" accessible={false} />
+    </Pressable>
+    {open && <View style={styles.detailBody}>{children}</View>}
+  </View>;
+}
+
+function WebsiteButton({ source, onPress }) {
+  return <Pressable accessibilityRole="link" accessibilityLabel={`Open ${source.publisher} website`}
+    onPress={() => onPress(source.forecast?.reader_url || source.url)} style={({ pressed }) => [styles.websiteButton, pressed && styles.pressed]}>
+    <Text style={[styles.linkText, styles.flexText]}>{source.forecast?.reader_url ? 'Open latest forecast' : 'Open website'}</Text>
+    <Feather name="external-link" size={22} color="#174E72" accessible={false} />
+  </Pressable>;
+}
 
 export default function ResultScreen({ result, onNavigate }) {
-  const [expandedSources, setExpandedSources] = useState({});
+  const summary = resultPresentation(result);
   const failed = result.processing_status === 'failed';
-  const label = failed ? 'Failed' : result.concern_label;
-  const headline = assessmentLabel(result);
   const score = result.misinformation_risk_score;
-  const colour = (concernColours[label] || concernColours['Not Enough Information'])[1];
-  const assumedDate = result.date_context?.display_date;
+  const provisional = isProvisionalScore(result);
+  const timing = datePresentation(result.date_context);
+  const forecast = result.forecast_context;
+  const sources = result.evidence || [];
+  const limitations = (result.uncertainty_reasons || []).filter(reason =>
+    !reason.startsWith('The risk indicator uses prototype rules;') && !reason.startsWith('Assumed date:'));
+
   async function openSource(url) {
     if (!/^https?:\/\//i.test(url)) return;
-    try { await Linking.openURL(url); } catch { Alert.alert('Could not open source', 'Please try again when you are connected.'); }
+    try { await Linking.openURL(url); }
+    catch { Alert.alert('Could not open website', 'Please try again when you are connected.'); }
   }
   async function share() {
-    try { await Share.share({ message: `UIABO result: ${headline}\n${result.extracted_claim || result.original_text}\n${assumedDate ? `\nAssumed date: ${assumedDate} (year not stated in the message).\n` : ''}\n${result.explanation}\n${result.recommended_action}\n\nSources:\n${(result.evidence || []).map(item => item.url).join('\n')}\n\nAn automated assessment, not proof.` }); }
-    catch { Alert.alert('Could not share', 'Please try again.'); }
+    try {
+      const scoreText = score == null ? '' : `\nMisinformation risk score: ${score}/100${provisional ? ' — Unverified (provisional)' : ''}.\n${scoreDescription(result)}\n`;
+      await Share.share({ message: `UIABO result: ${summary.title}\n${result.extracted_claim || result.original_text}\n\n${summary.meaning}\n${scoreText}${timing ? `\n${timing.explanation}\n${timing.caution}\n` : ''}\n${result.explanation}\n\n${summary.action}\n\nSources:\n${sources.map(item => item.url).join('\n')}\n\nAutomated checks can make mistakes.` });
+    } catch { Alert.alert('Could not share', 'Please try again.'); }
   }
+
   return <View style={{ flex: 1 }}>
-    <PageHeader title="Analysis result" onBack={() => onNavigate('results')} badge="Saved" />
+    <PageHeader title="Your result" onBack={() => onNavigate('results')} />
     <PageBody>
-      <View style={styles.note}><Text style={styles.copy}>Review the evidence before sharing. Automated checks can make mistakes.</Text></View>
-      {failed ? <View style={styles.card}><ConcernBadge label="Failed" /><Text style={styles.heading}>This check could not finish</Text><Text style={styles.copy}>{result.message}</Text><Text style={styles.copy}>Your allowance was not used.</Text><Button onPress={() => onNavigate('text')}>Start a new check</Button></View> : <>
-        <View style={styles.card}><Text style={styles.heading}>{headline}</Text><ConcernBadge label={label} /><View style={styles.scoreRow}><View style={[styles.scoreCircle, { borderColor: colour }]}><Text style={[styles.score, { color: colour }]}>{score == null ? '—' : score}</Text></View><View style={{ flex: 1, gap: 8 }}><Text style={styles.heading}>{score == null ? 'No risk score' : 'Risk indicator'}</Text><Text style={styles.copy}>{result.assessment_outcome === 'unsupported' ? 'The policy checked does not establish the claim. This is not proof that an unconfirmed change is false.' : score == null ? 'There is not enough information to assign a score.' : 'Higher means greater concern, not mathematical proof.'}</Text></View></View></View>
-        <View style={styles.card}><View style={styles.between}><Text style={styles.heading}>Uncertainty</Text><Text style={styles.uncertainty}>{result.uncertainty}</Text></View>{result.uncertainty_reasons?.map((reason, i) => <Text key={i} style={styles.copy}>{reason}</Text>)}</View>
-      </>}
-      <View style={styles.card}><Text style={styles.heading}>{result.extracted_claim ? 'Claim identified' : 'Submitted text'}</Text><Text selectable style={styles.copy}>{result.extracted_claim || result.original_text}</Text></View>
-      {!failed && !!assumedDate && <View style={styles.note}>
-        <Text style={styles.heading}>Assumed date: {assumedDate}</Text>
-        <Text style={styles.copy}>The message does not specify a year, so this check used the current year when it was submitted. The original wording is unchanged.</Text>
-        {!!result.date_context.is_future && <Text style={styles.copy}>This date was in the future when checked. An existing rule alone cannot disprove an unconfirmed change.</Text>}
-        <Button secondary onPress={() => onNavigate('text', { draft: { text: result.original_text, correctYear: true } })}>Correct year</Button>
+      <View style={[styles.summary, { backgroundColor: summary.background, borderColor: summary.color }]}>
+        <Feather name={summary.icon} size={32} color={summary.color} accessible={false} />
+        <Text accessibilityRole="header" style={[styles.title, { color: summary.color }]}>{summary.title}</Text>
+        <Text style={styles.copy}>{summary.meaning}</Text>
+        {!failed && <View style={styles.riskScore}>
+          <Text accessibilityRole="header" style={styles.heading}>Misinformation risk score:</Text>
+          {score == null ? <>
+            <Text style={styles.heading}>{summary.outcome === 'not_checkable' ? 'No factual claim to score' : 'Not enough information to give a score'}</Text>
+            <Text style={styles.secondary}>No score does not mean zero risk.</Text>
+            {result.checkable !== false && summary.outcome !== 'not_checkable' && <Text style={styles.secondary}>This saved check has no score. Check the message again to use the updated scoring.</Text>}
+          </> : <>
+            <Text accessibilityLabel={`Risk score: ${score} out of 100${provisional ? ', unverified, provisional score' : ''}`} style={styles.scoreValue}>
+              {score}<Text style={styles.scoreTotal}> / 100</Text>
+            </Text>
+            {provisional ? <>
+              <Text style={styles.label}>Unverified — provisional score</Text>
+              <Text style={styles.secondary}>{scoreDescription(result)}</Text>
+            </> : <Text style={styles.secondary}>Lower means less concern. Higher means more concern. This is not a percentage chance that the claim is false.</Text>}
+            {!result.scoring && <Text style={styles.secondary}>This saved score uses older rules. Check the message again for an updated score.</Text>}
+          </>}
+        </View>}
+        <View style={styles.action}>
+          <Text accessibilityRole="header" style={styles.heading}>What you should do</Text>
+          <Text style={styles.copy}>{summary.action}</Text>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text accessibilityRole="header" style={styles.heading}>{failed ? 'Your message' : 'The claim we checked'}</Text>
+        <Text selectable style={styles.copy}>{result.extracted_claim || result.original_text}</Text>
+      </View>
+
+      {!failed && !!timing && <View style={styles.card}>
+        <Text accessibilityRole="header" style={styles.heading}>{timing.title}</Text>
+        <Text style={styles.copy}>{timing.explanation}</Text>
+        <Text style={styles.copy}>{timing.caution}</Text>
+        <Button secondary onPress={() => onNavigate('text', { draft: { text: result.original_text,
+          correctYear: result.date_context.basis === 'assumed_current_year' || !result.date_context.basis,
+          correctDate: true } })}>{timing.action}</Button>
       </View>}
-      {!failed && <View style={styles.card}><Text style={styles.heading}>What the evidence suggests</Text><Text style={styles.copy}>{result.explanation}</Text><View style={styles.action}><Text style={styles.label}>Recommended action</Text><Text style={styles.copy}>{result.recommended_action}</Text></View></View>}
-      {!failed && !!result.claim_comparisons?.length && <>
-        <Text style={styles.heading}>Claim vs published policy</Text>
-        <Text style={styles.copy}>A difference from a published rule does not by itself disprove a change for another date or group.</Text>
-        {result.claim_comparisons.map((part, index) => {
-          const source = result.evidence?.find(item => item.evidence_id === part.evidence_id);
-          const key = `comparison-${index}`;
-          return <View key={key} style={styles.card}>
-            <Text style={styles.heading}>{comparisonAspects[part.aspect] || 'Policy detail'}</Text>
-            <Text selectable style={styles.copy}>Claim: {part.claim_text}</Text>
-            <Text style={styles.label}>{comparisonFindings[part.finding] || 'Not established'}</Text>
-            <Text style={styles.copy}>{part.explanation}</Text>
-            {part.finding !== 'unresolved' && !part.applies_to_claim && <Text style={styles.copy}>Whether this rule applies to the claimed circumstances is unresolved.</Text>}
-            {!!part.evidence_quote && <>
-              <Pressable accessibilityRole="button" accessibilityState={{ expanded: !!expandedSources[key] }} onPress={() => setExpandedSources(current => ({ ...current, [key]: !current[key] }))} style={styles.sourceButton}><Text style={styles.sourceButtonText}>{expandedSources[key] ? 'Hide quoted policy' : 'Read quoted policy'}</Text></Pressable>
-              {expandedSources[key] && <Text selectable style={styles.copy}>{part.evidence_quote}</Text>}
-            </>}
-            {!!source && <Pressable accessibilityRole="link" onPress={() => openSource(source.url)} style={styles.sourceButton}><Feather name="external-link" size={15} color="#126589" /><Text style={styles.sourceButtonText}>{source.publisher}</Text></Pressable>}
-          </View>;
-        })}
+
+      {!failed && !!forecast && <View style={styles.card}>
+        <Text accessibilityRole="header" style={styles.heading}>What the forecast says</Text>
+        <Text style={styles.copy}>{forecast.explanation}</Text>
+        {!!forecast.issued_at && <Text style={styles.secondary}>Forecast issued {new Date(forecast.issued_at).toLocaleString()}</Text>}
+        {forecast.limitations?.map((reason, index) => <Text key={index} style={styles.secondary}>{reason}</Text>)}
+      </View>}
+
+      {!failed && !!result.claim_context?.assumptions?.length && <Details title="How we read your message">
+        {result.claim_context.assumptions.map((reason, index) => <Text key={index} style={styles.copy}>{reason}</Text>)}
+      </Details>}
+
+      {failed ? <>
+        <Details title="What went wrong?">
+          <Text style={styles.copy}>{result.message}</Text>
+        </Details>
+        <Button onPress={() => onNavigate('text')}>Try another check</Button>
+      </> : <>
+        <Details title="Why this result?">
+          <Text style={styles.copy}>{result.explanation}</Text>
+          {!!result.policy_context && <View style={styles.section}>
+            <Text accessibilityRole="header" style={styles.heading}>{result.policy_context.policy_scope === 'comparable_policy' ? 'What the official information says' : 'Related official information'}</Text>
+            <Text selectable style={styles.copy}>{result.policy_context.published_policy_summary}</Text>
+            <Text style={styles.label}>The reported change: {changeVerificationLabel(result.policy_context.change_status)}</Text>
+            <Text style={styles.copy}>{result.policy_context.change_summary}</Text>
+          </View>}
+          {!!limitations.length && <View style={styles.section}>
+            <Text accessibilityRole="header" style={styles.heading}>What this check could not settle</Text>
+            {limitations.map((reason, index) => <Text key={index} style={styles.copy}>{reason}</Text>)}
+          </View>}
+          {result.warnings?.map((warning, index) => <Text key={`warning-${index}`} style={styles.copy}>{warning}</Text>)}
+          {!!result.recommended_action && <Text style={styles.copy}>{result.recommended_action}</Text>}
+        </Details>
+
+        <Text accessibilityRole="header" style={styles.heading}>Read the sources</Text>
+        <Text style={styles.copy}>{sources.length ? 'See where the information came from. You can read it here or open the original website.' : 'No sources were saved with this result. This does not mean the claim is false.'}</Text>
+        {sources.map((source, index) => <View key={source.evidence_id} style={styles.source}>
+          <Text style={styles.label}>{index + 1}. {source.publisher}</Text>
+          <Text accessibilityRole="header" style={styles.heading}>{source.title}</Text>
+          <Text style={styles.secondary}>{plainSourceStance(source.stance)}</Text>
+          <Details title="Read source details">
+            {!!source.assessment_reason && <Text style={styles.copy}>{source.assessment_reason}</Text>}
+            <Text style={styles.label}>{source.forecast ? 'Values from the official forecast' : source.evidence_quote ? 'Words from this source' : 'Source passage'}</Text>
+            <Text selectable style={styles.quote}>{source.evidence_quote || source.passage}</Text>
+            {!!source.evidence_quote && source.evidence_quote !== source.passage && <Details title="Read the surrounding text">
+              <Text selectable style={styles.copy}>{source.passage}</Text>
+            </Details>}
+            <Text style={styles.secondary}>{source.published_at ? `Published ${source.published_at}` : 'Publication date not available'}</Text>
+          </Details>
+          <WebsiteButton source={source} onPress={openSource} />
+        </View>)}
+
+        {!!result.claim_comparisons?.length && <Details title="Compare the details">
+          <Text style={styles.copy}>A different rule does not always prove a message wrong. Check who the rule applies to and when it starts.</Text>
+          {result.claim_comparisons.map((part, index) => {
+            const source = sources.find(item => item.evidence_id === part.evidence_id);
+            return <View key={index} style={styles.section}>
+              <Text accessibilityRole="header" style={styles.heading}>{comparisonAspects[part.aspect] || 'Rule detail'}</Text>
+              <Text selectable style={styles.copy}>The message says: {part.claim_text}</Text>
+              <Text style={styles.label}>{comparisonFindings[part.finding] || 'Not confirmed'}</Text>
+              <Text style={styles.copy}>{part.explanation}</Text>
+              {!!part.scope_limitation && <Text style={styles.copy}>{part.scope_limitation}</Text>}
+              {part.finding !== 'unresolved' && !part.applies_to_claim && <Text style={styles.copy}>We could not confirm that this rule applies to the circumstances in the message.</Text>}
+              {!!part.evidence_quote && <Text selectable style={styles.quote}>{part.evidence_quote}</Text>}
+              {!!source && <><Text style={styles.label}>{source.publisher}</Text><WebsiteButton source={source} onPress={openSource} /></>}
+            </View>;
+          })}
+        </Details>}
+
+        <Details title="About the score">
+          <Text style={styles.copy}>{scoreDescription(result)}</Text>
+          <Text style={styles.copy}>Use the explanation and sources to decide what to do. A number alone cannot tell you whether to trust a message.</Text>
+        </Details>
+        <Text style={styles.secondary}>Automated checks can make mistakes. Read the sources before you share.</Text>
+        <Button secondary onPress={share}>Share this result</Button>
       </>}
-      {!!result.evidence?.length && <Text style={styles.heading}>Evidence sources</Text>}
-      {result.evidence?.map((item, index) => <View key={item.evidence_id} style={styles.card}>
-        <View style={styles.between}><Text style={styles.publisher}>{index + 1}. {item.publisher}</Text><Text style={styles.stance}>{item.stance}</Text></View>
-        <Pressable accessibilityRole="link" onPress={() => openSource(item.url)}><Text style={styles.sourceTitle}>{item.title} ↗</Text></Pressable>
-        {!!item.assessment_reason && <Text style={styles.copy}>{item.assessment_reason}</Text>}
-        {!!item.evidence_quote && <View style={styles.action}><Text style={styles.label}>Quoted evidence</Text><Text selectable style={styles.copy}>{item.evidence_quote}</Text></View>}
-        {(!item.evidence_quote || expandedSources[item.evidence_id]) && <Text selectable style={styles.copy}>{item.passage}</Text>}
-        {!!item.evidence_quote && <Pressable accessibilityRole="button" accessibilityState={{ expanded: !!expandedSources[item.evidence_id] }} onPress={() => setExpandedSources(current => ({ ...current, [item.evidence_id]: !current[item.evidence_id] }))} style={styles.sourceButton}><Text style={styles.sourceButtonText}>{expandedSources[item.evidence_id] ? 'Hide source context' : 'Read source context'}</Text></Pressable>}
-        <Text style={styles.date}>{item.published_at ? `Published ${item.published_at}` : 'Publication date unavailable'}</Text>
-        <Pressable accessibilityRole="link" accessibilityLabel={`Open source ${index + 1}`} onPress={() => openSource(item.url)} style={styles.sourceButton}><Feather name="external-link" size={15} color="#126589" /><Text style={styles.sourceButtonText}>Open source</Text></Pressable>
-      </View>)}
-      {result.warnings?.map((warning, i) => <View key={i} style={styles.note}><Text style={styles.copy}>{warning}</Text></View>)}
-      {!failed && <Button secondary onPress={share}>Share result</Button>}
-      <Text style={styles.date}>Saved {new Date(result.created_at).toLocaleString()}</Text>
+      <Button secondary onPress={() => onNavigate('results')}>Back to saved results</Button>
+      <Text style={styles.secondary}>Saved {new Date(result.created_at).toLocaleString()}</Text>
     </PageBody>
   </View>;
 }
+
 const styles = StyleSheet.create({
-  card: { borderRadius: 20, backgroundColor: 'white', borderWidth: 1, borderColor: '#D7E3EA', padding: 18, gap: 10 },
-  note: { borderRadius: 14, backgroundColor: '#FFF4D2', borderLeftWidth: 3, borderLeftColor: '#D49A00', padding: 15 },
-  heading: { color: '#173447', fontWeight: '800', fontSize: 20 },
-  label: { color: '#173447', fontWeight: '700', fontSize: 14 },
-  copy: { color: '#48677C', fontSize: 14, lineHeight: 21 },
-  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  scoreCircle: { width: 90, height: 90, borderRadius: 45, borderWidth: 8, justifyContent: 'center', alignItems: 'center' },
-  score: { fontSize: 29, fontWeight: '800' }, between: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, alignItems: 'center' },
-  uncertainty: { color: '#80600A', backgroundColor: '#FFF4D2', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14, fontWeight: '700', fontSize: 12 },
-  action: { backgroundColor: '#E5F3FA', padding: 14, borderRadius: 13, borderLeftWidth: 3, borderLeftColor: '#1778A3', gap: 6 },
-  publisher: { color: '#637F91', flex: 1, fontSize: 12, fontWeight: '600' },
-  stance: { color: '#637F91', fontSize: 11, textTransform: 'capitalize' },
-  sourceTitle: { color: '#126589', fontWeight: '700', fontSize: 16, lineHeight: 23 },
-  date: { color: '#718797', fontSize: 11 },
-  sourceButton: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 10 },
-  sourceButtonText: { color: '#126589', fontWeight: '700', fontSize: 13 },
+  summary: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 14 },
+  title: { fontWeight: '800', fontSize: 27, lineHeight: 35 },
+  riskScore: { backgroundColor: 'white', borderRadius: 12, padding: 16, gap: 10 },
+  scoreValue: { color: '#173447', fontWeight: '800', fontSize: 46, lineHeight: 58 },
+  scoreTotal: { fontWeight: '600', fontSize: 24 },
+  card: { borderRadius: 16, backgroundColor: 'white', borderWidth: 1, borderColor: '#CCDCE5', padding: 16, gap: 14 },
+  source: { borderRadius: 16, backgroundColor: 'white', borderWidth: 1, borderColor: '#CCDCE5', padding: 16, gap: 14 },
+  heading: { color: '#173447', fontWeight: '700', fontSize: 21, lineHeight: 29 },
+  label: { color: '#173447', fontWeight: '700', fontSize: 18, lineHeight: 27 },
+  copy: { color: '#243E50', fontSize: 18, lineHeight: 28 },
+  secondary: { color: '#465D6B', fontSize: 16, lineHeight: 25 },
+  bold: { fontWeight: '700' },
+  action: { borderTopWidth: 1, borderTopColor: '#B8C9C6', paddingTop: 16, gap: 10 },
+  toggle: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
+  flexText: { flex: 1, flexShrink: 1 },
+  pressed: { opacity: 0.7 },
+  detailBody: { gap: 16 },
+  section: { borderTopWidth: 1, borderTopColor: '#D5E1E8', paddingTop: 18, gap: 14 },
+  quote: { color: '#243E50', fontSize: 18, lineHeight: 28, borderLeftWidth: 3, borderLeftColor: '#427494', paddingLeft: 14 },
+  websiteButton: { minHeight: 56, borderWidth: 2, borderColor: '#24628D', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', gap: 12, alignItems: 'center' },
+  linkText: { color: '#174E72', fontWeight: '700', fontSize: 18, lineHeight: 27 },
 });

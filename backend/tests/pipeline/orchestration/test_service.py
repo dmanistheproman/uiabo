@@ -96,9 +96,13 @@ def test_real_evidence_assessment_integrates_with_orchestrator() -> None:
     )
 
     assert result.concern_label == "High Concern"
-    assert result.misinformation_risk_score == 82
+    assert result.misinformation_risk_score == 96
     assert result.evidence[0].stance == "contradicting"
-    assert result.evidence[0].quality_score == 0.90
+    assert result.evidence[0].quality_score == 0.93
+    assert result.scoring.version == "evidence-v3"
+    assert result.scoring.status == "evidence_based"
+    assert result.scoring.evidence_strength == "Strong"
+    assert result.assessment_outcome == "contradicted"
     assert repository.results[result.result_id] == result
 
 
@@ -137,6 +141,7 @@ def test_non_checkable_claim_skips_retrieval_and_assessment() -> None:
     )
 
     assert calls == {"retrieval": 0, "assessment": 0}
+    assert result.scoring.status == "not_applicable"
     assert result.concern_label == "Not Enough Information"
     assert result.misinformation_risk_score is None
     assert result.uncertainty == "High"
@@ -144,7 +149,7 @@ def test_non_checkable_claim_skips_retrieval_and_assessment() -> None:
     assert repository.results[result.result_id] == result
 
 
-def test_no_evidence_skips_assessment_and_returns_no_score() -> None:
+def test_no_evidence_skips_assessment_and_returns_provisional_score() -> None:
     repository = InMemoryResultRepository()
 
     def assessment_should_not_run(
@@ -171,7 +176,9 @@ def test_no_evidence_skips_assessment_and_returns_no_score() -> None:
     )
 
     assert result.concern_label == "Not Enough Information"
-    assert result.misinformation_risk_score is None
+    assert result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional"
+    assert result.assessment_outcome == "insufficient_evidence"
     assert result.uncertainty == "High"
     assert result.evidence == []
     assert result.warnings == [

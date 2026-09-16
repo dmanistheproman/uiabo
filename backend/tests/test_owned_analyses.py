@@ -86,6 +86,113 @@ def test_idempotency_key_cannot_be_reused_for_different_text(context):
     assert submit(client, text="Different claim.").status_code == 409
 
 
+@pytest.mark.parametrize("version,status", [("evidence-v2", None), ("evidence-v3", "evidence_based")])
+def test_scoring_summary_survives_storage_history_and_replay(context, version, status):
+    from app.pipeline.shared.models import ScoringSummary
+    client, store, _, pipeline = context
+    original_analyze = pipeline.analyze
+    def analyze(text):
+        result = original_analyze(text)
+        result.misinformation_risk_score = 97
+        result.assessment_outcome = "contradicted"
+        result.scoring = ScoringSummary(version=version, status=status,
+            evidence_strength="Strong", contradicting_strength=.94,
+            contradicting_origins=1, reasons=["A directly applicable source contradicts the claim."])
+        return result
+    pipeline.analyze = analyze
+    first = submit(client)
+    assert first.status_code == 200
+    result = first.json()
+    saved = client.get(f"/analysis/results/{result['result_id']}").json()
+    history = client.get('/analysis/results').json()['results'][0]
+    assert saved['scoring'] == history['scoring'] == result['scoring']
+    assert saved['misinformation_risk_score'] == 97
+    assert submit(client).json() == result
+    assert pipeline.calls == 1
+
+
+@pytest.mark.parametrize("outcome", ["insufficient_evidence", "unsupported"])
+def test_provisional_factual_score_survives_storage_history_and_replay(context, outcome):
+    from app.pipeline.evidence_assessment.scoring import provisional_summary
+    client, store, _, pipeline = context
+    original_analyze = pipeline.analyze
+
+    def analyze(text):
+        value = original_analyze(text).model_dump()
+        value.update(concern_label="Not Enough Information", misinformation_risk_score=50,
+            assessment_outcome=outcome, evidence=[],
+            scoring=provisional_summary("No applicable evidence establishes the claim.").model_dump())
+        return TextAnalysisResult.model_validate(value)
+
+    pipeline.analyze = analyze
+    response = submit(client)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    result_id = result["result_id"]
+    saved = client.get(f"/analysis/results/{result_id}").json()
+    history = client.get("/analysis/results").json()["results"][0]
+    stored = store.documents["analysis_results", result_id]
+    for item in [result, saved, history, stored]:
+        assert item["misinformation_risk_score"] == 50
+        assert item["assessment_outcome"] == outcome
+        assert item["scoring"]["version"] == "evidence-v3"
+        assert item["scoring"]["status"] == "provisional"
+        assert item["scoring"]["supporting_strength"] == item["scoring"]["contradicting_strength"] == 0
+    assert submit(client).json() == result
+    assert pipeline.calls == 1
+    assert store.documents["usage_allowances", "analysis-user"]["successful_submissions"] == 1
+
+
+@pytest.mark.parametrize("with_summary", [False, True])
+def test_legacy_unresolved_saved_results_and_replays_are_not_rescored(context, with_summary):
+    from copy import deepcopy
+    client, store, _, pipeline = context
+    first = submit(client).json()
+    result_id = first["result_id"]
+    record = store.documents["analysis_results", result_id]
+    record.update(concern_label="Not Enough Information", misinformation_risk_score=None,
+                  assessment_outcome="insufficient_evidence")
+    record.pop("scoring", None)
+    if with_summary:
+        record["scoring"] = {"version": "evidence-v2", "evidence_strength": "Insufficient",
+                             "reasons": ["Legacy unresolved check."]}
+    original_record = deepcopy(record)
+    results = [client.get(f"/analysis/results/{result_id}").json(),
+               client.get("/analysis/results").json()["results"][0], submit(client).json()]
+    for result in results:
+        assert result["misinformation_risk_score"] is None
+        if with_summary:
+            assert all(result["scoring"][key] == value for key, value in record["scoring"].items())
+        else:
+            assert result.get("scoring") is None
+        assert not (result.get("scoring") or {}).get("status")
+    assert store.documents["analysis_results", result_id] == original_record
+    assert pipeline.calls == 1
+    assert store.documents["usage_allowances", "analysis-user"]["successful_submissions"] == 1
+
+
+def test_policy_context_survives_storage_history_and_replay(context):
+    from app.pipeline.shared.models import PolicyContext
+    client, _, _, pipeline = context
+    original_analyze = pipeline.analyze
+    def analyze(text):
+        result = original_analyze(text)
+        result.policy_context = PolicyContext(
+            published_policy_summary="The cited official rule differs from the alleged change.",
+            change_status="contradicted", change_summary="The applicable source contradicts this change.",
+            evidence_ids=[result.evidence[0].evidence_id])
+        return result
+    pipeline.analyze = analyze
+    response = submit(client)
+    assert response.status_code == 200
+    result = response.json()
+    saved = client.get(f"/analysis/results/{result['result_id']}").json()
+    history = client.get('/analysis/results').json()['results'][0]
+    assert saved['policy_context'] == history['policy_context'] == result['policy_context']
+    assert submit(client).json() == result
+    assert pipeline.calls == 1
+
+
 def test_other_user_cannot_list_or_open_result(context):
     client, store, identity, _ = context
     result = submit(client).json()

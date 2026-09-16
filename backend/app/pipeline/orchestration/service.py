@@ -12,8 +12,10 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ValidationError
 
+from app.pipeline.evidence_assessment.scoring import unscored_summary, provisional_summary
 from app.pipeline.orchestration.repository import ResultRepository
 from app.pipeline.shared.dates import infer_date_context, assumption_notice
+from app.pipeline.shared.context import build_claim_context
 from app.pipeline.shared.errors import (
     PipelineComponentError,
     PipelineContractError,
@@ -101,6 +103,8 @@ class PipelineOrchestrator:
             # date or rewrite the quoted claim. Use one clock for the whole run.
             claim.date_context = (infer_date_context(claim.extracted_claim, created_at)
                                   if claim.checkable else None)
+            claim.claim_context = (build_claim_context(claim.extracted_claim, created_at)
+                                   if claim.checkable else None)
 
             retrieval: RetrievalResult | None = None
             if not claim.checkable:
@@ -133,7 +137,7 @@ class PipelineOrchestrator:
                         args=(claim, retrieval),
                     )
 
-            if claim.date_context:
+            if claim.date_context and claim.date_context.basis != "explicit_date":
                 assessment.uncertainty_reasons.append(assumption_notice(claim.date_context))
                 if assessment.uncertainty == "Low":
                     assessment.uncertainty = "Medium"
@@ -263,6 +267,8 @@ def _non_checkable_assessment(claim: ClaimAnalysis) -> AssessmentResult:
     return AssessmentResult(
         concern_label="Not Enough Information",
         misinformation_risk_score=None,
+        assessment_outcome="not_checkable",
+        scoring=unscored_summary("No checkable factual claim was identified; a misinformation score does not apply."),
         uncertainty="High",
         uncertainty_reasons=[
             "No objectively checkable factual claim was found."
@@ -286,7 +292,9 @@ def _no_evidence_assessment(
     ]
     return AssessmentResult(
         concern_label="Not Enough Information",
-        misinformation_risk_score=None,
+        misinformation_risk_score=50,
+        assessment_outcome="insufficient_evidence",
+        scoring=provisional_summary("No sufficient evidence for a factual verdict was found."),
         uncertainty="High",
         uncertainty_reasons=reasons,
         explanation=(
@@ -321,6 +329,10 @@ def _assemble_result(
         checkable=claim.checkable,
         concern_label=assessment.concern_label,
         misinformation_risk_score=assessment.misinformation_risk_score,
+        scoring=assessment.scoring,
+        policy_context=assessment.policy_context,
+        forecast_context=assessment.forecast_context,
+        claim_context=claim.claim_context,
         uncertainty=assessment.uncertainty,
         uncertainty_reasons=assessment.uncertainty_reasons,
         explanation=assessment.explanation,
@@ -377,6 +389,7 @@ def _combine_evidence(
             assessment_reason=assessed[candidate.evidence_id].assessment_reason,
             evidence_quote=assessed[candidate.evidence_id].evidence_quote,
             provenance=candidate.provenance,
+            forecast=candidate.forecast,
         )
         for candidate in retrieval.evidence
     ]

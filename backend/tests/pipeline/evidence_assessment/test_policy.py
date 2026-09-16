@@ -42,7 +42,8 @@ def assess(raw=None,text=CLAIM,item=None):
 def test_unspecified_october_does_not_turn_an_old_fee_into_a_false_verdict():
     result=assess(judgment(stance="contradicting",evidence_quote=PASSAGE))
     assert result.assessment_outcome=="unsupported"
-    assert result.concern_label=="Not Enough Information" and result.misinformation_risk_score is None
+    assert result.concern_label=="Not Enough Information" and result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional"
     assert result.claim_comparisons[0].finding=="differs"
     assert not result.claim_comparisons[0].applies_to_claim
     assert result.claim_comparisons[-1].aspect=="start_date"
@@ -155,6 +156,7 @@ def test_app_api_history_replay_and_old_records_preserve_policy_comparisons(sign
         assert client.post('/analysis/text',json={'text':CLAIM},headers={'Idempotency-Key':'policy-test'}).json()==body
         assert store.documents['usage_allowances','analysis-user']['successful_submissions']==1
         old=deepcopy(body);old.pop('assessment_outcome');old.pop('claim_comparisons')
+        old.pop('scoring');old['misinformation_risk_score']=None
         assert TextAnalysisResult.model_validate(old).claim_comparisons==[]
         for changes in [{'evidence_id':'unknown'}, {'evidence_quote':'Invented quote'}, {'claim_text':'Invented claim'}]:
             invalid=deepcopy(body);invalid['claim_comparisons'][0].update(changes)

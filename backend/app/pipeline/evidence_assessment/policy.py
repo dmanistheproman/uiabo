@@ -2,7 +2,7 @@
 
 import re
 from pydantic import BaseModel, ConfigDict, Field
-from app.pipeline.shared.models import ClaimComparison
+from app.pipeline.shared.models import ClaimComparison, PolicyContext
 from app.pipeline.shared.dates import future_scope_limitation
 
 ASPECT_NAMES = {"amount": "Amount", "frequency": "Payment frequency", "population": "Affected people",
@@ -40,6 +40,19 @@ SEPARATE decision about whether that rule resolves the claim's circumstances.
 applies_to_claim does NOT mean "the amount/frequency matches". An incompatible
 amount or frequency for the SAME applicable obligation requires finding:differs
 AND applies_to_claim:true. Do not set false merely because the values differ.
+This also applies to passport validity: six months versus one year is a VALUE
+difference, not a different subject. Separately check entry vs departure, traveller
+category and applicable period. General travel advice is not an entry-rejection
+rule. Do not apply rules for citizens to foreign visitors or vice versa.
+Keep a useful comparison to the published rule even when a future change remains
+unverified: finding:differs, applies_to_claim:false. Never describe a numeric
+difference alone as a scope mismatch.
+An official denial explicitly refuting the SAME alleged change can establish
+contradiction without repeating the exact month and year. It must address the
+same authority, action, requirement, people and alleged change, and be applicable
+to the period being checked. Old denials of a different rumour, missing
+announcements, conditional statements and ordinary existing rules do not qualify.
+Do not add an unresolved start_date solely because a direct denial omits the date.
 Example: claim "From January, residents pay a $40 daily permit fee", with
 date_context.year=2026. Source: "Effective 1 January 2026, residents pay a $120
 annual permit fee." Both amount and frequency are differs with applies_to_claim:
@@ -84,7 +97,7 @@ class SentenceComparisonDraft(BaseModel):
 def is_policy_claim(text):
     return bool(re.search(r"\b(?:polic(?:y|ies)|premiums?|deductions?|deduct(?:ed|ion)?|tax(?:es)?|"
         r"fees?|permits?|visa|entry|compulsory|mandatory|subsid(?:y|ies)|benefits?|"
-        r"pensions?|must|required|government|CPF|MediSave)\b", text, re.I))
+        r"pensions?|must|required|government|CPF|MediSave|passports?|immigration|ICA|border)\b", text, re.I))
 
 
 def unspecified_start_date(claim):
@@ -115,7 +128,32 @@ def bind_comparisons(claim, source, drafts, copy_quote):
     return comparisons
 
 
-def scope_comparisons(claim, source, comparisons, date_context=None):
+def applicable_official_denial(judgment, source, date_context=None):
+    """A narrow exception to the exact-period guard, not a stance classifier.
+
+    Retrieval and assessment must agree on scope, and the literal quotation must
+    contain an explicit denial. Semantic subject/negation checking remains needed.
+    """
+    if not judgment.denies_alleged_change or judgment.stance != "contradicting":
+        return False
+    quote = judgment.evidence_quote
+    if source.source_type != "government" or not quote or quote not in source.passage:
+        return False
+    provenance = source.provenance
+    if not provenance or provenance.relevance != "direct" or provenance.applicability != "established":
+        return False
+    # A dated old denial cannot establish the status of this year's new change.
+    # An explicit matching-period rule can still use the normal period path.
+    if date_context and source.published_at and source.published_at.year < date_context.year:
+        return False
+    return bool(re.search(
+        r"\b(?:false|untrue|fabricated|baseless|hoax|denies|denied|refutes?|refuted)\b"
+        r"|\b(?:will|shall)\s+not\s+(?:be\s+)?(?:introduc\w*|implement\w*|reject\w*|requir\w*|increas\w*|chang\w*)\b"
+        r"|\bno\s+(?:such\s+(?:rule|requirement|change)|plans?\s+to)\b",
+        quote, re.I))
+
+
+def scope_comparisons(claim, source, comparisons, date_context=None, *, explicit_denial=False):
     result=[item.model_copy(deep=True) for item in comparisons]
     provenance=source.provenance
     limitation=None
@@ -123,11 +161,13 @@ def scope_comparisons(claim, source, comparisons, date_context=None):
         limitation=provenance.applicability_reason if provenance.applicability != "established" else provenance.relevance_reason
     if unspecified_start_date(claim) and date_context is None:
         limitation="The claimed start month has no year, so applicability to that change is unresolved."
-    limitation = future_scope_limitation(date_context, source.passage) or limitation
+    future_limitation = future_scope_limitation(date_context, source.passage, explicit_denial=explicit_denial)
+    if future_limitation:
+        limitation = " ".join(value for value in (limitation, future_limitation) if value)
     for item in result:
         if limitation:
             item.applies_to_claim=False
-            item.explanation=(item.explanation + " " + limitation)[:1200]
+            item.scope_limitation=limitation[:1200]
     return result
 
 
@@ -141,17 +181,56 @@ def add_date_gap(claim, comparisons, date_context=None):
 
 def summarise_policy(result, claim, retrieval, comparisons, date_context=None):
     result.claim_comparisons=comparisons
-    if result.concern_label != "Not Enough Information":
-        result.assessment_outcome={"Low Concern":"supported","High Concern":"contradicted","Needs Caution":"conflicting"}[result.concern_label]
-        return result
     by_id={item.evidence_id:item for item in retrieval.evidence}
     useful=[item for item in comparisons if item.evidence_id
             and by_id[item.evidence_id].source_type=="government"
-            and (item.evidence_quote or by_id[item.evidence_id].provenance)]
+            and item.evidence_quote]
+    # Do not present unrelated populations/schemes as the applicable current rule.
+    policy_findings=[item for item in useful if item.finding in {"matches", "differs"}
+        and item.applies_to_claim and by_id[item.evidence_id].provenance
+        and by_id[item.evidence_id].provenance.relevance == "direct"
+        and by_id[item.evidence_id].provenance.applicability == "established"]
+    future_change = (date_context is not None and date_context.is_future) or bool(re.search(
+        r"\b(?:will|shall|plans?\s+to|going\s+to)\b", claim, re.I))
+    if is_policy_claim(claim) and future_change and (useful or result.assessment_outcome in {"supported", "contradicted", "conflicting"}):
+        status = result.assessment_outcome if result.assessment_outcome in {"supported", "contradicted", "conflicting"} else "unverified"
+        period = f" for {date_context.display_date}" if date_context else ""
+        summaries = {
+            "unverified": f"The evidence checked does not confirm the alleged change{period}. A different published rule alone does not disprove a future change.",
+            "supported": "Applicable evidence supports the alleged change. Review the cited announcement and its conditions.",
+            "contradicted": "Applicable evidence contradicts the alleged change. Read the quoted denial or rule for the relevant circumstances.",
+            "conflicting": "Applicable evidence disagrees about the alleged change. Review both sides before sharing.",
+        }
+        selected = sorted(policy_findings or useful, key=lambda item: item.finding != "differs")[:1]
+        comparable = bool(policy_findings)
+        # Preserve the source's actual qualifications instead of upgrading a
+        # model paraphrase of travel advice into a mandatory entry requirement.
+        policy_summary = " ".join(f'{ASPECT_NAMES[item.aspect]} — official source: "{item.evidence_quote}"' for item in selected)
+        if selected and not comparable:
+            scope_notes = list(dict.fromkeys(by_id[item.evidence_id].provenance.applicability_reason
+                for item in selected if by_id[item.evidence_id].provenance))
+            policy_summary = "Related guidance only; the applicable rule has not been established. " + policy_summary
+            if scope_notes:
+                policy_summary += " Scope: " + scope_notes[0]
+        evidence_ids = list(dict.fromkeys(item.evidence_id for item in selected))
+        if not evidence_ids:
+            evidence_ids = [item.evidence_id for item in result.assessed_evidence if item.stance != "neutral"][:6]
+        result.policy_context = PolicyContext(
+            published_policy_summary=(policy_summary
+                or "The cited evidence addresses the alleged change directly; an existing rule alone is not used as a refutation.")[:3000],
+            policy_scope="comparable_policy" if comparable else "related_guidance",
+            change_status=status, change_summary=summaries[status], evidence_ids=evidence_ids)
+    if result.assessment_outcome in {"supported", "contradicted", "conflicting"}:
+        return result
     if not is_policy_claim(claim) or not useful:
         result.assessment_outcome="insufficient_evidence"
         return result
     result.assessment_outcome="unsupported"
+    if result.policy_context:
+        result.explanation=("Claim not supported by the official evidence checked. "
+            + result.policy_context.published_policy_summary + " " + result.policy_context.change_summary)
+        result.recommended_action="Do not share this as an established announcement. Check the original official notice, affected travellers or people, and effective date."
+        return result
     result.explanation="Not supported by the published policy checked. "
     differences=[item for item in useful if item.finding=="differs"]
     chosen=differences[:2] or useful[:1]

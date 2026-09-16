@@ -14,14 +14,16 @@ import httpx
 from pydantic import ValidationError
 
 from app.pipeline.shared.models import EvidenceCandidate, EvidenceProvenance, RetrievalTrace
-from . import providers
+from . import providers, official_forecast
+from .coverage import missing_coverage, requires_weather_context_search, weather_queries, weather_page_priority
 from .query_planning import format_search_amounts, plan_queries
+from .passport_entry import current_entry_query, entry_page_priority
 from .relevance import select_with_client
 from .service import _date, _deduplicate, _finish, relevance, PROVIDER_ERRORS
 from .source_policy import classify_source, extractable_lead, original_links, public_url
 from app.pipeline.shared.dates import dated_search_claim
 
-VERSION = "retrieval-web-v6"
+VERSION = "retrieval-web-v10"
 TOTAL_TIMEOUT_SECONDS = 65.0
 MAX_PAGES = 4
 
@@ -33,9 +35,10 @@ def enough_evidence(items):
 
 
 class RetrievalRun:
-    def __init__(self, claim, client, google_key, tavily_key, ollama_key, *, date_context=None):
+    def __init__(self, claim, client, google_key, tavily_key, ollama_key, *, date_context=None, claim_context=None):
         self.claim, self.client = claim, client
         self.date_context = date_context
+        self.claim_context = claim_context
         self.search_claim = dated_search_claim(claim, date_context)
         self.google_key, self.tavily_key, self.ollama_key = google_key, tavily_key, ollama_key
         self.trace = RetrievalTrace()
@@ -44,7 +47,7 @@ class RetrievalRun:
         self.failed = False
         self.unavailable_pages = set()
         self.reviewed_pages = 0
-        self.now = datetime.now(timezone.utc)
+        self.now = claim_context.assessed_at if claim_context else datetime.now(timezone.utc)
 
     def event(self, decision, url="", **details):
         if len(self.trace.decisions) < 40:
@@ -114,6 +117,8 @@ class RetrievalRun:
         candidates = [item for url, item in self.pool.items() if url not in self.attempted
                       and (classify_source(url).eligible or (not eligible_only and extractable_lead(url)))]
         candidates.sort(key=lambda item: (classify_source(item["url"]).eligible,
+            weather_page_priority(self.claim_context, item["title"], item["url"]),
+            entry_page_priority(self.claim, item["title"], item["url"]),
             item["score"], relevance(self.claim, item["content"])), reverse=True)
         chosen, origins = [], set()
         # Source diversity before second pages from an already selected family.
@@ -190,7 +195,7 @@ class RetrievalRun:
         try:
             selection, passage = await select_with_client(self.client, self.claim, text,
                 self.ollama_key, as_of=self.date_context.as_of if self.date_context else self.now.date(),
-                published_at=item["published_at"], date_context=self.date_context)
+                published_at=item["published_at"], date_context=self.date_context, claim_context=self.claim_context)
             self.reviewed_pages += 1
             if selection.relevance == "irrelevant":
                 self.event("rejected_semantically_irrelevant", item["url"])
@@ -224,6 +229,30 @@ class RetrievalRun:
         query = format_search_amounts(" ".join(self.search_claim.split()))[:400]
         try:
             async with asyncio.timeout(TOTAL_TIMEOUT_SECONDS):
+                if official_forecast.eligible_context(self.claim_context, self.date_context):
+                    try:
+                        self.event("official_forecast_request", official_forecast.API_URL)
+                        forecast = await official_forecast.retrieve_forecast(self.client, self.claim_context, self.date_context)
+                        if forecast:
+                            self.evidence.append(forecast)
+                            self.event("accepted_official_forecast_" + forecast.provenance.applicability, official_forecast.API_URL)
+                            if (forecast.provenance.applicability == "established"
+                                    and not requires_weather_context_search(self.claim)):
+                                result = _finish(self.evidence, self.warnings, False)
+                                result.trace = self.trace
+                                return result
+                        else:
+                            self.event("official_forecast_outside_claim_dates", official_forecast.API_URL)
+                    except PROVIDER_ERRORS:
+                        # Optional specialised data cannot turn successful web
+                        # fallback into a provider outage by itself.
+                        self.warnings.append("The current official forecast could not be used; other sources were checked.")
+                        self.event("official_forecast_unavailable", official_forecast.API_URL)
+                if not (self.google_key and self.tavily_key and self.ollama_key):
+                    self.failure("configured web fallback")
+                    result = _finish(self.evidence, self.warnings, self.failed)
+                    result.trace = self.trace
+                    return result
                 await asyncio.gather(self.google(query), self.search(query))
                 await self.extract_pages(self.next_pages(2, eligible_only=True))
                 if not enough_evidence(self.evidence):
@@ -231,11 +260,23 @@ class RetrievalRun:
                     # failure still permits broad literal search.
                     async def expand():
                         try:
-                            return await plan_queries(self.client, self.search_claim, self.ollama_key, allow_policy_lookup=True)
+                            return await plan_queries(self.client, self.search_claim, self.ollama_key, allow_policy_lookup=True,
+                                claim_context=self.claim_context, date_context=self.date_context,
+                                coverage_gaps=missing_coverage(self.evidence, self.claim_context, self.date_context))
                         except PROVIDER_ERRORS:
                             self.failure("alternative query planning")
                             return []
-                    alternatives = await expand()
+                    weather = weather_queries(self.search_claim, self.claim_context, self.date_context)
+                    entry_query = current_entry_query(self.search_claim)
+                    if weather:
+                        alternatives = weather
+                    elif entry_query:
+                        # Reserve the same two search slots for different jobs:
+                        # the unchanged allegation/announcement and the current
+                        # entry rule. Discovery never substitutes for assessment.
+                        alternatives = [query[:378] + " official announcement", entry_query]
+                    else:
+                        alternatives = await expand()
                     await asyncio.gather(*(self.search(value, broad=True)
                                            for value in (alternatives[:2] or [query])))
                     # Leave room to follow an eligible original from an unknown page.
@@ -263,10 +304,12 @@ class RetrievalRun:
         return result
 
 
-async def retrieve_with_client(claim, client, google_key, tavily_key, ollama_key, *, date_context=None):
-    return await RetrievalRun(claim, client, google_key, tavily_key, ollama_key, date_context=date_context).run()
+async def retrieve_with_client(claim, client, google_key, tavily_key, ollama_key, *, date_context=None, claim_context=None):
+    return await RetrievalRun(claim, client, google_key, tavily_key, ollama_key, date_context=date_context,
+                              claim_context=claim_context).run()
 
 
-async def live(claim, google_key, tavily_key, ollama_key, *, date_context=None):
+async def live(claim, google_key, tavily_key, ollama_key, *, date_context=None, claim_context=None):
     async with httpx.AsyncClient(timeout=httpx.Timeout(20, connect=5), follow_redirects=False) as client:
-        return await retrieve_with_client(claim, client, google_key, tavily_key, ollama_key, date_context=date_context)
+        return await retrieve_with_client(claim, client, google_key, tavily_key, ollama_key, date_context=date_context,
+                                          claim_context=claim_context)

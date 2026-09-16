@@ -373,7 +373,8 @@ def assess(items):
 def test_scope_gate_overrides_even_a_supporting_stance(scope):
     result, retrieval = assess([evidence(applicability=scope)])
     assert result.concern_label == "Not Enough Information"
-    assert result.misinformation_risk_score is None
+    assert result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional"
     assert result.assessed_evidence[0].stance == "neutral"
     assert "supports the claim" not in result.explanation
     combined = _combine_evidence(retrieval, result.assessed_evidence)
