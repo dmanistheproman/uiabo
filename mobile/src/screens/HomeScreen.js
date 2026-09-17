@@ -10,7 +10,7 @@ const features = [
   { icon: 'Aa', label: 'Check text', colour: '#E5F3FA', ink: '#164D73', page: 'text' },
   { icon: 'URL', label: 'Check link\nsafety', colour: '#E2F4F0', ink: '#008980', page: 'link' },
   { icon: 'IMG', label: 'Image + caption', colour: '#FFF3D7', ink: '#946100', locked: true },
-  { icon: 'OCR', label: 'Read image text', colour: '#FFF3D7', ink: '#946100', locked: true },
+  { icon: 'OCR', label: 'Read image text', colour: '#FFF3D7', ink: '#946100', page: 'ocr', premiumOnly: true },
   { icon: 'CTX', label: 'Check image\ncontext', colour: '#EEE9F9', ink: '#7952AE', locked: true },
   { icon: 'AI', label: 'Check AI image', colour: '#EEE9F9', ink: '#7952AE', locked: true },
 ];
@@ -39,22 +39,23 @@ export default function HomeScreen({ onNavigate }) {
       <View><Text style={styles.greeting}>{greeting}, {firstName}</Text><Text style={styles.subtitle}>What would you like to check?</Text></View>
       <LinearGradient colors={['#123D5C', '#176F9C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.allowance}>
         <View style={{ flex: 1 }}><Text style={styles.allowanceLabel}>{premium ? "This month's allowance" : "Today's allowance"}</Text>
-          <View style={styles.allowanceRow}><Text style={styles.number}>{remaining ?? '—'}</Text><Text style={styles.available}>{remaining === 1 ? 'check available' : 'checks available'}</Text></View>
+          <View style={styles.allowanceRow}><Text style={styles.available}>{remaining === 1 ? 'Check available:' : 'Checks available:'}</Text><Text style={styles.number}>{remaining ?? '—'}</Text></View>
           <View style={styles.track}><View style={[styles.fill, { width: `${Math.min(100, 100 * (remaining || 0) / (profile?.allowance?.submission_limit || 1))}%` }]} /></View>
         </View><Feather name={remaining === 0 ? 'clock' : 'check'} color="white" size={28} />
       </LinearGradient>
       {!profile && <Pressable onPress={refresh} accessibilityRole="button"><Text style={styles.notice}>Your allowance could not be loaded. Tap to retry.</Text></Pressable>}
       {remaining === 0 && <Text style={styles.subtitle}>Your allowance resets {profile?.allowance?.reset_at ? `${new Date(profile.allowance.reset_at).toLocaleString([], { timeZone: 'Asia/Singapore', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} SGT` : 'at the next reset'}.</Text>}
       <View style={styles.grid}>{features.map(feature => <Pressable key={feature.icon} accessibilityRole="button"
-        accessibilityLabel={`${feature.label.replace('\n', ' ')}${feature.locked ? premium ? ', coming soon' : ', premium feature' : ''}`}
+        accessibilityLabel={`${feature.label.replace('\n', ' ')}${feature.locked ? premium ? ', coming soon' : ', premium feature' : feature.premiumOnly && !premium ? ', premium feature' : ''}`}
         onPress={() => onNavigate(feature.locked ? 'premium' : feature.page)}
-        style={({ pressed }) => [styles.tile, feature.locked && styles.locked, pressed && { opacity: 0.7 }]}>
+        style={({ pressed }) => [styles.tile, (feature.locked || (feature.premiumOnly && !premium)) && styles.locked, pressed && { opacity: 0.7 }]}>
         <View style={styles.tileTop}><View style={[styles.icon, { backgroundColor: feature.colour }]}><Text style={[styles.iconText, { color: feature.ink }]}>{feature.icon}</Text></View>
           {feature.locked && <Text style={styles.lock}>{premium ? 'SOON' : 'LOCK'}</Text>}</View>
+        {feature.premiumOnly && !premium && <Text style={styles.lock}>PREMIUM</Text>}
         <Text style={[styles.tileLabel, feature.locked && { color: '#657A88' }]}>{feature.label}</Text>
       </Pressable>)}</View>
       <Pressable accessibilityRole="button" onPress={() => onNavigate('premium')} style={styles.upgrade}>
-        <Text style={styles.upgradeText}>{premium ? <><Text style={{ fontWeight: '700' }}>Premium active</Text> · 60 checks each month. Image checks are coming soon.</> : <><Text style={{ fontWeight: '700' }}>Unlock image checks</Text> · Upgrade to Premium for SGD 20/month.</>}</Text>
+        <Text style={styles.upgradeText}>{premium ? <><Text style={{ fontWeight: '700' }}>Premium active</Text> · Read image text is ready. Other image checks are coming soon.</> : <><Text style={{ fontWeight: '700' }}>Read image text with Premium</Text> · View plan details.</>}</Text>
       </Pressable>
     </PageBody>
   </View>;
