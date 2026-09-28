@@ -17,10 +17,9 @@ from app.pipeline.orchestration.service import PipelineOrchestrator
 
 
 def _pool_v3_enabled() -> bool:
+    # Process env only: uvicorn --env-file sets it for the running backend,
+    # while tests (no --env-file) stay on the default pipeline and hermetic.
     import os
-    from pathlib import Path
-    from dotenv import load_dotenv
-    load_dotenv(Path(__file__).resolve().parents[3] / ".env", override=False)
     return os.environ.get("EVIDENCE_PIPELINE_V3", "").strip().lower() in ("1", "true", "yes")
 
 
