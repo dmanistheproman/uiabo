@@ -236,6 +236,9 @@ class EvidenceCandidate(PipelineModel):
     retrieved_at: datetime
     provenance: EvidenceProvenance | None = None
     forecast: ForecastData | None = None
+    # Whole-pool reading (pipeline-v3): the fetched page text the passage was
+    # selected from. Optional; never persisted into results.
+    full_text: str | None = None
 
 
 class RetrievalResult(PipelineModel):

@@ -205,6 +205,9 @@ class RetrievalRun:
                 title=item["title"], url=item["url"], publisher=source.publisher,
                 source_type=source.source_type, published_at=item["published_at"],
                 retrieved_at=self.now, passage=passage,
+                # Whole-pool reading (pipeline-v3) reads this text directly;
+                # in-memory only, never persisted into results.
+                full_text=text[:8000],
                 # Fixed ranking weights, NOT LLM confidence or truth probabilities.
                 retrieval_score=0.9 if selection.relevance == "direct" else 0.5,
                 provenance=EvidenceProvenance(source_policy=source.policy,

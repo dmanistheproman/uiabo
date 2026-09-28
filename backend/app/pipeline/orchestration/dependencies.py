@@ -1,6 +1,9 @@
 """Default runtime dependencies for the text pipeline.
 
 Input preparation, claim analysis, live evidence retrieval and assessment are connected.
+pipeline-v3 (EVIDENCE_PIPELINE_V3=1) swaps the claim-analysis ensemble for one merged
+call and the per-slice assessor for one whole-pool call with a strict Jev -> gpt-oss
+provider chain.
 """
 
 from functools import lru_cache
@@ -13,14 +16,29 @@ from app.pipeline.orchestration.repository import FirestoreResultRepository
 from app.pipeline.orchestration.service import PipelineOrchestrator
 
 
+def _pool_v3_enabled() -> bool:
+    import os
+    from pathlib import Path
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parents[3] / ".env", override=False)
+    return os.environ.get("EVIDENCE_PIPELINE_V3", "").strip().lower() in ("1", "true", "yes")
+
+
 @lru_cache
 def get_pipeline_orchestrator() -> PipelineOrchestrator:
     """Return the application pipeline used by the FastAPI dependency."""
-    assessor, version = configured_assessor()
+    if _pool_v3_enabled():
+        from app.pipeline.claim_analysis.pool_v3 import analyse_claim_v3
+        from app.pipeline.evidence_assessment.pool import configured_pool_assessor
+        assessor, version = configured_pool_assessor()
+        claim_analyser = analyse_claim_v3
+    else:
+        assessor, version = configured_assessor()
+        claim_analyser = analyse_claim
     retriever, retrieval_version = configured_retriever()
     return PipelineOrchestrator(
         prepare_input=prepare_text,
-        analyze_claim=analyse_claim,
+        analyze_claim=claim_analyser,
         retrieve_evidence=retriever,
         assess_evidence=assessor,
         pipeline_version=version + ":" + retrieval_version,
