@@ -25,6 +25,9 @@ export function getFirebaseAuth() {
 
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   try {
+    // Native: metro.config.js resolves firebase/auth to the RN build where
+    // getReactNativePersistence exists (Firebase SDK v12 dropped it from the
+    // public firebase/auth wrapper).
     authInstance = initializeAuth(app, {
       persistence: getReactNativePersistence(AsyncStorage),
     });

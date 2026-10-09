@@ -75,4 +75,10 @@ export function getResult(user, resultId) {
   return accountRequest(`/analysis/results/${encodeURIComponent(resultId)}`, user);
 }
 
+export function reportResult(user, resultId, reason, detail) {
+  return accountRequest(`/analysis/results/${encodeURIComponent(resultId)}/report`, user, {
+    method: 'POST', body: JSON.stringify({ reason, detail }),
+  });
+}
+
 export { API_URL };
