@@ -17,7 +17,7 @@ async function accountRequest(path, user, options = {}) {
     });
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error('The request is taking longer than expected. Open Results before retrying; your check may have finished.');
+      throw new Error(path === '/analysis/ocr' ? 'Reading the image took too long. No check was used. Try a clearer crop or retry shortly.' : 'The request is taking longer than expected. Open Results before retrying; your check may have finished.');
     }
     throw new Error(
       'Cannot reach UIABO. Check your connection and try again.',
@@ -52,16 +52,22 @@ export function getProfile(user) {
   return accountRequest('/account/me', user);
 }
 
-export function checkText(user, text, requestKey) {
+export function checkText(user, text, requestKey, inputSource = 'text') {
   return accountRequest('/analysis/text', user, {
     // Claim (90s), retrieval (65s), assessment (65s), plus transport/storage.
-    method: 'POST', body: JSON.stringify({ text }), timeout: 240000,
+    method: 'POST', body: JSON.stringify({ text, input_source: inputSource }), timeout: 240000,
     headers: { 'Idempotency-Key': requestKey },
   });
 }
 
 export function getResults(user, cursor) {
   return accountRequest(`/analysis/results${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, user);
+}
+
+export function readImageText(user, imageBase64) {
+  return accountRequest('/analysis/ocr', user, {
+    method: 'POST', body: JSON.stringify({ image_base64: imageBase64 }), timeout: 150000,
+  });
 }
 
 export function checkLink(user, url, requestKey) {

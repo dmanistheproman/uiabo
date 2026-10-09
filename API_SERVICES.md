@@ -15,6 +15,7 @@ For installation and startup instructions, follow the [teammate setup guide](TEA
 | Firebase Authentication | Registration, login and identity verification | Firebase app configuration and backend Admin credentials |
 | Cloud Firestore | Saving accounts, Premium status, allowances and assessment history | Same Firebase project and backend Admin credentials |
 | NEA/MSS four-day forecast API | Comparing Singapore temperature claims with official forecasts | No key needed for the current integration |
+| Unlimited-OCR | Extracting text from screenshots and images | No external API key; runs on the PC through a local server |
 
 ## Links and setup
 
@@ -73,6 +74,16 @@ For installation and startup instructions, follow the [teammate setup guide](TEA
 - [Readable MSS forecast page](https://www.weather.gov.sg/weather-forecast-4dayoutlook/)
 - No API key is used by the current integration.
 - The structured integration covers Singapore air temperature within the available four-day forecast.
+
+### 8. Unlimited-OCR
+
+- [Official repository and instructions](https://github.com/baidu/Unlimited-OCR)
+- [Project setup instructions](backend/OCR_SETUP.md)
+- Runs locally on the PC through Docker/vLLM.
+- Default server address: `http://127.0.0.1:8001`.
+- Optional configuration: `OCR_BASE_URL`.
+- No external API key is required for the current local setup.
+- Extracts image text; it does not determine whether an image is authentic or a deepfake.
 
 ## Credentials checklist
 

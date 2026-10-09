@@ -409,6 +409,7 @@ class TextAnalysisResult(PipelineModel):
     """Successful final API response assembled by Donovan."""
 
     result_id: str = Field(min_length=1)
+    input_source: Literal["text", "ocr"] = "text"
     processing_status: Literal["completed"] = "completed"
     original_text: str
     extracted_claim: str | None = None
@@ -462,6 +463,7 @@ class FailedAnalysisRecord(PipelineModel):
     """Internal Firestore record for a pipeline run that failed."""
 
     result_id: str
+    input_source: Literal["text", "ocr"] = "text"
     processing_status: Literal["failed"] = "failed"
     original_text: str
     failure_stage: str

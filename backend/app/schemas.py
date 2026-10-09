@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 from app.pipeline.shared.models import (
     EvidenceItem,
@@ -7,6 +8,7 @@ from app.pipeline.shared.models import (
 
 
 class TextAnalysisRequest(BaseModel):
+    input_source: Literal["text", "ocr"] = "text"
     text: str = Field(
         min_length=1,
         max_length=5000

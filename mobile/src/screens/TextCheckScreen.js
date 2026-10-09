@@ -21,7 +21,7 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
     setBusy(true); setWorking(true); setError(''); Keyboard.dismiss();
     requestKey.current ||= `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
     try {
-      const result = await checkText(firebaseUser, text, requestKey.current);
+      const result = await checkText(firebaseUser, text, requestKey.current, initialDraft?.inputSource || 'text');
       await refreshProfile().catch(() => {});
       onResult(result);
     } catch (problem) {
