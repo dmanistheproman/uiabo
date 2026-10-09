@@ -285,6 +285,24 @@ Press **a**. Start the optional OCR container as well only when needed. For a ph
 
 After editing backend configuration or pulling backend changes, stop it with **Ctrl+C** and run its command again. After editing `mobile/.env`, stop Expo and run `npx.cmd expo start --clear --lan`, then reload the app. Saved results keep their original assessment; submit a new check to test new pipeline behavior.
 
+## Optional: data-engineer portal
+
+The data-engineer web portal (report investigation, pipeline monitoring) runs from the same backend.
+
+1. Start the backend as above.
+2. In a second terminal:
+
+   ```powershell
+   cd C:\Dev\uiabo\portal
+   Copy-Item .env.example .env   # then fill the VITE_FIREBASE_* values from mobile/.env
+   npm.cmd install
+   npm.cmd run dev
+   ```
+
+3. Open <http://localhost:5174>. The easiest start is the seed script — from `backend` run `.\.venv\Scripts\python.exe -m scripts.seed_portal_demo`, which creates a ready-to-use data-engineer login (`demo.engineer@uiabo.test` / `EngineerDemo2026`) **and** demo reports, pipeline runs and ingestion runs. To use your own account instead: register and verify an email (mobile app), then run `.\.venv\Scripts\python.exe -m scripts.create_operational_account --email <address> --role data_engineer`, then log in.
+
+Full instructions, the demo walkthrough and troubleshooting are in [portal/README.md](portal/README.md); API and Firestore details are in [backend/app/portal/README.md](backend/app/portal/README.md).
+
 ## Common problems
 
 | Problem | Check / action |

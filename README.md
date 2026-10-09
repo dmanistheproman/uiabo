@@ -37,6 +37,9 @@ Completed so far:
 - Accessible free-user home screen with premium features visibly locked
 - TDM-style mobile text checks, result details, citations and authenticated result history
 - Atomic Firestore result saving and allowance charging, with idempotent request retries
+- User-reported incorrect results: app submission endpoint and audited reports
+- Data-engineer portal: role-gated login, report investigation, pipeline monitoring
+- Analysis run timing capture and data-ingestion jobs (forecast snapshot, source catalogue)
 
 Not yet implemented:
 
@@ -44,7 +47,7 @@ Not yet implemented:
 - Broader source-catalogue review and coverage evaluation
 - Calibrated risk/uncertainty scores and semantic evidence assessment
 - Evaluation of explanation and citation accuracy
-- Premium payments and operational dashboards
+- Premium payments and the system-administrator portal
 
 ## Project structure
 
@@ -54,19 +57,20 @@ uiabo/
 |   |-- app/
 |   |   |-- accounts/       # User profiles and free usage allowances
 |   |   |-- auth/           # Firebase token verification
+|   |   |-- ingestion/      # Data-ingestion jobs and run records
 |   |   |-- pipeline/       # Sprint 1 components and shared interfaces
+|   |   |-- portal/         # Data-engineer role gate, reports and monitoring
 |   |   |-- routers/        # API routes
 |   |   |-- services/       # Compatibility service layer
 |   |   |-- firebase.py     # Firestore client
 |   |   |-- main.py         # FastAPI application
 |   |   `-- schemas.py      # API request and error models
-|   |-- scripts/
-|   |   `-- firestore_smoke_test.py
+|   |-- scripts/            # Smoke tests and account provisioning
 |   |-- tests/
-|   |   `-- test_analysis.py
 |   `-- requirements.txt
 |-- evaluation/              # Datasets, scoring rules and reports
 |-- mobile/                  # Expo/React Native Android application
+|-- portal/                  # Data-engineer web portal (Vite + React)
 |-- submission/              # UIABO source documents and preliminary PTD/PUM
 |-- sprint_1_samples/        # Shared JSON interfaces for each member
 `-- README.md
@@ -244,7 +248,11 @@ This consumes Ollama and Tavily allowance and Google API quota. It makes no Fire
 
 ## Mobile app
 
-The working authentication slice is in [`mobile`](mobile). Follow [`mobile/README.md`](mobile/README.md) to configure Firebase, select the correct backend address, run the Android app, and perform the full account test.
+The working authentication slice is in [`mobile`](mobile). Follow [`mobile/README.md`](mobile/README.md) to configure Firebase, select the correct backend address, run the Android app, and perform the full account test. Saved completed results now include a "Report a problem with this result" flow that feeds the data-engineer portal.
+
+## Data-engineer portal
+
+The role-gated web portal for data engineers is in [`portal`](portal/README.md). It covers report investigation, pipeline monitoring (analysis runs and data-ingestion runs) and the operator account journey. The backend API and Firestore schemas are documented in [`backend/app/portal/README.md`](backend/app/portal/README.md).
 
 ## Firebase and Firestore
 
@@ -279,7 +287,7 @@ Runtime functions are connected in [`backend/app/pipeline/orchestration/dependen
 - Link and webpage analysis
 - Premium subscriptions and role-management tools
 - Usage limits and premium features
-- Administrator and data-engineer dashboards
+- System-administrator portal (the data-engineer portal is connected)
 - OCR and image-caption analysis
 - Security, accessibility, performance, deployment, and user testing
 
