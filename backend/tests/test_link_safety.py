@@ -6,6 +6,7 @@ import pytest
 
 from app.auth.models import AuthenticatedUser
 from app.link_safety.service import LinkSafetyError, WebRiskClient, get_web_risk_client, validate_url
+from app.pipeline.orchestration.run_recorder import InMemoryRunStore, get_run_store
 from app.main import app
 
 
@@ -115,6 +116,7 @@ def test_timeout_and_missing_configuration():
 def context(signed_analysis):
     service, requests = provider(MATCH)
     app.dependency_overrides[get_web_risk_client] = lambda: service
+    app.dependency_overrides[get_run_store] = lambda: InMemoryRunStore()
     with TestClient(app) as client:
         yield client, *signed_analysis, requests
 
