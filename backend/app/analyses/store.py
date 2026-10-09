@@ -61,6 +61,13 @@ class AnalysisStore:
     def __init__(self, clock=None):
         self.clock = clock or (lambda: datetime.now(timezone.utc))
 
+    def require_premium(self, uid):
+        def operation(tx):
+            profile = active_profile(tx.get("users", uid))
+            if profile.get("role") != "premium":
+                reject(403, "PREMIUM_REQUIRED", "Read image text is available to Premium accounts.")
+        self.run(operation)
+
     def reserve(self, uid, request_key, text, input_type="text"):
         now = self.clock()
         result_id = sha256(f"{uid}:{request_key}".encode()).hexdigest()[:32]

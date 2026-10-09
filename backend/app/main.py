@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers.account import router as account_router
 from app.routers.analysis import router as analysis_router
 from app.routers.link_safety import router as link_safety_router
+from app.routers.ocr import router as ocr_router
 
 
 app = FastAPI(
@@ -25,6 +26,7 @@ app.add_middleware(
 
 app.include_router(analysis_router)
 app.include_router(link_safety_router)
+app.include_router(ocr_router)
 app.include_router(account_router)
 
 

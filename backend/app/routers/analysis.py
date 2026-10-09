@@ -33,7 +33,10 @@ def analyse_text(request: TextAnalysisRequest, user: User, store: Store,
                  idempotency_key: Annotated[str | None, Header(max_length=64, pattern=r"^[a-zA-Z0-9-]+$")] = None):
     reservation = None
     try:
-        reservation = store.reserve(user.uid, idempotency_key or str(uuid4()), request.text)
+        if request.input_source == "ocr":
+            store.require_premium(user.uid)
+        reservation = store.reserve(user.uid, idempotency_key or str(uuid4()), request.text,
+                                    input_type="ocr_text" if request.input_source == "ocr" else "text")
         if "existing" in reservation:
             existing = reservation["existing"]
             if existing["processing_status"] == "completed":
@@ -47,12 +50,13 @@ def analyse_text(request: TextAnalysisRequest, user: User, store: Store,
             result = isolated.analyze(request.text)
         except PipelineError as error:
             failure = FailedAnalysisRecord(result_id=reservation["result_id"],
-                original_text=request.text, failure_stage=error.stage, error_code=error.error_code,
+                original_text=request.text, input_source=request.input_source, failure_stage=error.stage, error_code=error.error_code,
                 message=error.message, retryable=error.retryable, pipeline_version="sprint-1-v1",
                 created_at=datetime.now(timezone.utc))
             store.finish(user.uid, reservation, failure)
             raise HTTPException(error.http_status, detail={"error_code": error.error_code,
                 "message": error.message, "stage": error.stage, "retryable": error.retryable}) from None
+        result = result.model_copy(update={"input_source": request.input_source})
         return store.finish(user.uid, reservation, result)
     except HTTPException:
         raise

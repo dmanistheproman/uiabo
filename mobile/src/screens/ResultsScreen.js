@@ -49,7 +49,7 @@ export default function ResultsScreen({ onResult, onNavigate }) {
       {items.length > 0 && <View style={styles.list}>{items.map((item, index) => <Pressable key={item.result_id} disabled={!!opening} accessibilityRole="button"
         accessibilityLabel={`Open result: ${item.submitted_url || item.extracted_claim || item.original_text}`}
         onPress={() => open(item)} style={[styles.row, index > 0 && styles.divider]}>
-        <View style={styles.icon}><Text style={styles.letters}>{item.input_type === 'link_safety' ? 'URL' : 'Aa'}</Text></View>
+        <View style={styles.icon}><Text style={styles.letters}>{item.input_type === 'link_safety' ? 'URL' : item.input_source === 'ocr' ? 'OCR' : 'Aa'}</Text></View>
         <View style={{ flex: 1, gap: 7 }}><Text numberOfLines={2} style={styles.claim}>{item.submitted_url || item.extracted_claim || item.original_text}</Text><Text style={styles.date}>Text · {new Date(item.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</Text>
           <ConcernBadge label={assessmentLabel(item)} concern={item.processing_status === 'failed' ? 'Failed' : item.input_type === 'link_safety' ? (item.safety_status === 'threat_detected' ? 'High Concern' : 'Not Enough Information') : item.concern_label} /></View>
         {opening === item.result_id ? <ActivityIndicator color={colours.blue} /> : <Feather name="chevron-right" color="#78909F" size={18} />}

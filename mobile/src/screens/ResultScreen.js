@@ -64,6 +64,7 @@ export default function ResultScreen({ result, onNavigate }) {
       <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.heading}>{failed ? 'Your message' : 'The claim we checked'}</Text>
         <Text selectable style={styles.copy}>{result.extracted_claim || result.original_text}</Text>
+        {result.input_source === 'ocr' && <Text style={styles.secondary}>This checks the words you reviewed from the image. It does not check whether the image is real.</Text>}
       </View>
 
       {!failed && !!timing && <View style={styles.card}>
@@ -72,7 +73,7 @@ export default function ResultScreen({ result, onNavigate }) {
         <Text style={styles.copy}>{timing.caution}</Text>
         <Button secondary onPress={() => onNavigate('text', { draft: { text: result.original_text,
           correctYear: result.date_context.basis === 'assumed_current_year' || !result.date_context.basis,
-          correctDate: true } })}>{timing.action}</Button>
+          correctDate: true, inputSource: result.input_source } })}>{timing.action}</Button>
       </View>}
 
       {!failed && !!result.plausibility_context && <View style={styles.card}>
@@ -96,7 +97,7 @@ export default function ResultScreen({ result, onNavigate }) {
         <Details title="What went wrong?">
           <Text style={styles.copy}>{result.message}</Text>
         </Details>
-        <Button onPress={() => onNavigate('text')}>Try another check</Button>
+        <Button onPress={() => onNavigate(result.input_source === 'ocr' ? 'ocr' : 'text')}>Try another check</Button>
       </> : <>
         <Details title="Why this result?">
           <Text style={styles.copy}>{result.explanation}</Text>
