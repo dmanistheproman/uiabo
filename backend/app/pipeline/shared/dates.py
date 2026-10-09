@@ -15,7 +15,9 @@ START_DATE = re.compile(
     rf"(?:\s+(?P<after>{DAY}))?(?:,?\s+(?P<year>(?:19|20|21)\d{{2}})\b)?",
     re.I,
 )
-RELATIVE_DATE = re.compile(r"\b(?:today|tonight|tomorrow|yesterday|(?:this|next|last)\s+(?:weekend|week))\b", re.I)
+WEEKDAYS = {name.lower(): index for index, name in enumerate(calendar.day_name)}
+RELATIVE_DATE = re.compile(r"\b(?:today|tonight|tomorrow|yesterday|(?:this|next|last)\s+(?:weekend|week|"
+                           + "|".join(WEEKDAYS) + r"))\b", re.I)
 ISO_DATE = re.compile(r"\b(?P<iso>(?:19|20|21)\d{2}-\d{2}-\d{2})\b")
 NAMED_DATE = re.compile(
     rf"\b(?:(?:from|starting|effective|beginning|in|on|by)(?:\s+(?:in|on))?\s+)?"
@@ -79,8 +81,8 @@ def infer_date_context(text, now=None):
             which, period = phrase.split()
             monday = as_of - timedelta(days=as_of.weekday())
             offset = {"this": 0, "next": 7, "last": -7}[which]
-            start = monday + timedelta(days=offset + (5 if period == "weekend" else 0))
-            end = start + timedelta(days=1 if period == "weekend" else 6)
+            start = monday + timedelta(days=offset + WEEKDAYS.get(period, 5 if period == "weekend" else 0))
+            end = start if period in WEEKDAYS else start + timedelta(days=1 if period == "weekend" else 6)
         return _context(match.group(), start, end, as_of, "relative_submission_date")
     if iso:
         if named or len(iso) > 2:
@@ -169,7 +171,7 @@ def assumption_notice(context):
     if context.basis == "relative_submission_date":
         notice = (f"Interpreted date: {context.display_date}, using the submission date "
                   f"{context.as_of.isoformat()} in Asia/Singapore. Relative dates refer to when this check was submitted.")
-        if "week" in context.claim_text.lower():
+        if "week" in context.claim_text.lower() or any(day in context.claim_text.lower() for day in WEEKDAYS):
             notice += " Weeks run Monday to Sunday; weekends run Saturday to Sunday."
         return notice
     if context.basis == "explicit_date":

@@ -111,17 +111,55 @@ def test_scoring_summary_survives_storage_history_and_replay(context, version, s
     assert pipeline.calls == 1
 
 
+@pytest.mark.parametrize("outcome", ["supported", "contradicted", "conflicting", "insufficient_evidence"])
+def test_credibility_contract_survives_api_history_storage_and_replay(context, outcome):
+    from app.pipeline.shared.credibility import build_credibility
+    from app.pipeline.shared.models import ScoringSummary
+    client, store, _, pipeline = context
+    original_analyze = pipeline.analyze
+
+    def analyze(text):
+        value = original_analyze(text).model_dump()
+        s = .94 if outcome in {"supported", "conflicting"} else 0
+        c = .94 if outcome in {"contradicted", "conflicting"} else 0
+        value.update(assessment_outcome=outcome,
+            concern_label={"supported": "Low Concern", "contradicted": "High Concern",
+                "conflicting": "Needs Caution", "insufficient_evidence": "Not Enough Information"}[outcome],
+            misinformation_risk_score=round(50 * (1 - s + c)) if s or c else None,
+            scoring=ScoringSummary(version="evidence-v4", status="evidence_based" if s or c else "provisional",
+                evidence_strength="Strong" if s or c else "Insufficient", supporting_strength=s,
+                contradicting_strength=c, supporting_origins=int(bool(s)), contradicting_origins=int(bool(c)),
+                reasons=["Applicable fixture evidence."]))
+        result = TextAnalysisResult.model_validate(value)
+        return TextAnalysisResult.model_validate({**result.model_dump(), "credibility": build_credibility(result)})
+
+    pipeline.analyze = analyze
+    response = submit(client)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    result_id = result["result_id"]
+    expected = {"supported": 97, "contradicted": 3, "conflicting": 50, "insufficient_evidence": None}[outcome]
+    assert result["credibility"]["score"] == expected
+    for item in [client.get(f"/analysis/results/{result_id}").json(),
+                 client.get("/analysis/results").json()["results"][0],
+                 store.documents["analysis_results", result_id], submit(client).json()]:
+        assert item["credibility"] == result["credibility"]
+    assert pipeline.calls == 1
+    assert store.documents["usage_allowances", "analysis-user"]["successful_submissions"] == 1
+
+
 @pytest.mark.parametrize("outcome", ["insufficient_evidence", "unsupported"])
-def test_provisional_factual_score_survives_storage_history_and_replay(context, outcome):
+@pytest.mark.parametrize("version,score", [("evidence-v3", 50), ("evidence-v4", None)])
+def test_provisional_factual_score_survives_storage_history_and_replay(context, outcome, version, score):
     from app.pipeline.evidence_assessment.scoring import provisional_summary
     client, store, _, pipeline = context
     original_analyze = pipeline.analyze
 
     def analyze(text):
         value = original_analyze(text).model_dump()
-        value.update(concern_label="Not Enough Information", misinformation_risk_score=50,
+        value.update(concern_label="Not Enough Information", misinformation_risk_score=score,
             assessment_outcome=outcome, evidence=[],
-            scoring=provisional_summary("No applicable evidence establishes the claim.").model_dump())
+            scoring={**provisional_summary("No applicable evidence establishes the claim.").model_dump(), "version": version})
         return TextAnalysisResult.model_validate(value)
 
     pipeline.analyze = analyze
@@ -133,9 +171,9 @@ def test_provisional_factual_score_survives_storage_history_and_replay(context, 
     history = client.get("/analysis/results").json()["results"][0]
     stored = store.documents["analysis_results", result_id]
     for item in [result, saved, history, stored]:
-        assert item["misinformation_risk_score"] == 50
+        assert item["misinformation_risk_score"] == score
         assert item["assessment_outcome"] == outcome
-        assert item["scoring"]["version"] == "evidence-v3"
+        assert item["scoring"]["version"] == version
         assert item["scoring"]["status"] == "provisional"
         assert item["scoring"]["supporting_strength"] == item["scoring"]["contradicting_strength"] == 0
     assert submit(client).json() == result
@@ -325,3 +363,52 @@ def test_client_cannot_choose_premium_role_or_quota(context):
     assert client.post('/analysis/text', json={'text': TEXT, 'role': 'premium', 'submission_limit': 60}).status_code == 200
     assert store.documents["users", "analysis-user"]["role"] == "free"
     assert store.documents["usage_allowances", "analysis-user"]["remaining_submissions"] == 0
+
+
+@pytest.mark.parametrize("has_evidence", [True, False])
+def test_component_result_survives_submission_history_and_replay(context, monkeypatch, has_evidence):
+    from app.pipeline.evidence_assessment import components as component_stage
+    from app.pipeline.evidence_assessment.pool import assess_pool_evidence
+    from app.pipeline.input_preparation.service import prepare_text
+    from app.pipeline.orchestration.service import PipelineOrchestrator
+    from app.pipeline.orchestration.repository import InMemoryResultRepository
+    from app.pipeline.shared.models import ClaimAnalysis, EvidenceCandidate, RetrievalResult
+    client, store, _, pipeline = context
+    text = "The council is closing the bridge because inspectors found severe structural damage."
+    source = EvidenceCandidate(evidence_id="inspection", title="Synthetic inspection report",
+        url="https://synthetic.example/inspection", publisher="Synthetic council",
+        source_type="government", retrieval_score=.94, retrieved_at="2026-10-08T00:00:00Z",
+        passage="Inspectors examined this bridge today and found no structural damage.")
+    async def judge(claim, parts, evidence):
+        return {key: component_stage.Draft(stance="contradicting" if part.component_id == "premise" else "unresolved",
+            basis="direct" if part.component_id == "premise" else "none",
+            scope="established" if part.component_id == "premise" else "unknown",
+            decisiveness=.9, explanation="Synthetic inspection addresses the alleged structural damage.")
+            for key,(part,_) in component_stage.pairs_for(parts,evidence).items()}, "oss"
+    monkeypatch.setattr(component_stage, "judge_components", judge)
+    runner = PipelineOrchestrator(prepare_input=prepare_text,
+        analyze_claim=lambda _: ClaimAnalysis(extracted_claim=text, claim_category="factual", checkable=True,
+            classification_reason="Synthetic check", claim_confidence=1),
+        retrieve_evidence=lambda _: RetrievalResult(retrieval_status="completed" if has_evidence else "no_evidence",
+            evidence=[source] if has_evidence else []),
+        assess_evidence=assess_pool_evidence, repository=InMemoryResultRepository(),
+        clock=lambda: datetime(2026,10,8,tzinfo=timezone.utc))
+    def analyze(value):
+        pipeline.calls += 1
+        return runner.analyze(value)
+    pipeline.analyze=analyze
+    response=submit(client,text=text)
+    assert response.status_code == 200, response.text
+    body=response.json()
+    assert body['credibility']['version'] == 'credibility-v2'
+    assert body['credibility']['label'] == ('Likely misinformation' if has_evidence else 'Not enough evidence')
+    assert body['component_assessment']['finding'] == ('material_contradiction' if has_evidence else 'unresolved')
+    assert len(body['component_assessment']['components']) == 3
+    result_id=body['result_id']
+    for saved in [client.get(f"/analysis/results/{result_id}").json(),
+                  client.get('/analysis/results').json()['results'][0],
+                  store.documents['analysis_results',result_id], submit(client,text=text).json()]:
+        assert saved['component_assessment'] == body['component_assessment']
+        assert saved['credibility'] == body['credibility']
+    assert pipeline.calls == 1
+    assert store.documents['usage_allowances','analysis-user']['successful_submissions'] == 1

@@ -4,17 +4,35 @@
 
 Set `EVIDENCE_RETRIEVAL_MODE=web` in the ignored repository-root `.env` and restart the backend. `catalogue` selects the previous retrieval path and is the default when the setting is absent. The template defaults to `catalogue` until evaluation/review is complete.
 
-The web mode uses the existing Google Fact Check, Tavily and Ollama keys, all on the server. Singapore air-temperature forecasts can additionally use the public NEA/MSS API without a key. No local model download or mobile API key is needed. Its pipeline version includes `retrieval-web-v10`.
+The web mode uses the existing Google Fact Check, Tavily and Ollama keys, all on the server. Singapore air-temperature forecasts can additionally use the public NEA/MSS API without a key. No local model download or mobile API key is needed. Its current pipeline version includes `retrieval-web-v16`. See [claim interpretation](CLAIM_INTERPRETATION.md) for the revised corporate-source selection and definite-prediction scoring rules; those revisions supersede the older forecast-only limitations below.
 
 ## Flow
 
 1. For an eligible Singapore air-temperature claim with explicit interpreted dates, first request the public NEA/MSS four-day forecast. A complete validated match can finish retrieval with that official source. Additional causal, heatwave or record-breaking clauses still need web discovery. Otherwise search Google Fact Check and the preferred Tavily domains concurrently.
-2. Extract up to two eligible original pages. Search snippets and Google's repeated claims are discovery metadata, never final evidence.
-3. Select a relevant passage and assess its scope using Ollama. The model selects numbered source sentences and the backend copies exact original text, including formatting. The bounded shortlist retains opening context, literal matches and payment-rule passages that can use a different amount or frequency. These discovery ranks do not determine acceptance. The relevance prompt (`relevance-v9`) distinguishes the subject from the alleged rule, forecast versus observation, and air versus apparent or surface temperature. It uses medium reasoning.
+2. Extract up to two eligible original pages, or one for focused relationship, ranking or causal-component discovery to reserve later slots. Search snippets and Google's repeated claims are discovery metadata, never final evidence.
+3. Select a relevant passage and assess its scope using Ollama. The model selects numbered source sentences and the backend copies exact original text, including formatting. The bounded shortlist retains opening context, literal matches, component matches and financial or payment-rule passages that can use a different amount or frequency. These discovery ranks do not determine acceptance. The relevance prompt (`relevance-v13`) distinguishes the subject from the alleged rule, component relevance from whole-claim applicability, the named fund from other financial balances, forecast versus observation, and air versus apparent or surface temperature. It uses medium reasoning. Accepted and rejected selections record bounded reasons in the trace; a missing allegation is not itself a reason to discard useful funding context.
 4. If fewer than two origin groups provide direct, applicable evidence, use up to two alternative queries and search the wider web. The first retains the discovery claim's numbers, including any visibly assumed year; the second may omit disputed numbers to find the underlying policy but cannot introduce new numbers. A repeated page can receive an improved discovery rank without receiving another extraction slot. If query planning fails, still try the original query broadly. Passport queries separate the alleged announcement from current entry rules; the known ICA/Singapore lookup uses two deterministic discovery hints within the same budget instead of an extra planner call.
-5. Extract remaining candidates within a four-URL budget. An unfamiliar page can supply a literal link to an eligible original, which must itself be extracted. Major social platforms are not extracted.
-6. Send accepted passages to the existing semantic stance assessor. Context-only, inapplicable or temporally unresolved evidence is forced neutral during aggregation, even if stance assessment says supporting.
+5. Extract remaining candidates within a four-URL budget, allowing up to two replacement URLs when individual eligible pages are explicitly unavailable. Fetch the discovered URL with its original hostname, path and query; use normalised identities only for deduplication. An unfamiliar page can supply a literal link to an eligible original, which must itself be extracted. Major social platforms are not extracted.
+6. Send accepted passages to the configured assessor. Ordinary whole-claim aggregation keeps context-only, inapplicable or temporally unresolved evidence neutral. In v3, eligible causal assertions receive explicit per-component scope checks: a contextual passage can address an essential premise without pretending to settle the whole message. The original provenance remains unchanged.
 7. Return the result through the existing API and save optional evidence provenance, assessment outcome and grounded claim comparisons through the normal Firestore persistence path. The app displays policy comparisons and quoted sources. Old records without these optional fields remain readable.
+
+For eligible causal claims, the existing two follow-up searches are reserved for
+the event and material premise even if event-led retrieval already found useful
+pages. Premise-discovered eligible pages receive an extraction attempt within the
+same page/relevance limits. No extra query planner call is needed. Financial
+queries add neutral accounting terms while retaining the alleged premise; neither
+the queries nor a source's official status establish a verdict. Hypotheses,
+negation, quoted/report scope, chained causes and other ambiguous structures do
+not use deterministic decomposition. The current-discussion interpretation never
+implies that a discussion happened or that a policy will take effect.
+
+Component queries retain a shared explicit country where available. CPF expands
+to Singapore's Central Provident Fund only in a retirement/savings context without
+food-company, stock-ticker or conflicting-country wording. That discovery hint
+is recorded in the trace and does not rewrite the claim. CPF/MOF/MOM pages about
+the subject are prioritised over unrelated foreign government or CPF-stock pages;
+current allegations also favour more recent accounts over clearly old reports.
+No publisher gains eligibility or a decisive stance through this ordering.
 
 ## Explicit source decisions
 
@@ -32,11 +50,11 @@ Namespace eligibility does not establish topical expertise, page authorship, tru
 
 ## Limits and failures
 
-- Maximum three Tavily searches, one Google request, four extracted URLs and four relevance assessments; at most six final evidence passages (one per extracted eligible page, plus at most one official forecast). A relevant Singapore temperature check may make one additional public forecast request, bounded to six seconds inside the existing 65-second deadline. Complete forecast coverage skips the paid retrieval providers for a pure temperature claim.
+- Maximum three Tavily searches, one Google request and four relevance assessments. Extraction normally allows four URLs, with at most two replacement URLs for explicitly unavailable eligible pages (six total). Provider outages do not earn replacement slots. At most six final evidence passages are retained. A relevant Singapore temperature check may make one additional public forecast request, bounded to six seconds inside the existing 65-second deadline. Complete forecast coverage skips the paid retrieval providers for a pure temperature claim.
 - Relevance assessment receives at most six overlapping windows of 1,800 characters from the first 60,000 characters of a page. It can still miss decisive context outside those windows.
 - One 65-second retrieval deadline; existing assessment and app deadlines are retained. Already validated evidence survives a later retrieval timeout with a warning.
 - Failures to extract eligible evidence or validate relevance are reported as technical failures when no evidence survives. Failed optional lead extraction alone does not turn a successful empty search into an outage.
-- A provider-reported inaccessible page is a coverage warning when another eligible page was successfully reviewed, including a valid irrelevant result. If no eligible page could be reviewed, retrieval remains a technical failure. Provider outages, malformed responses and failed relevance checks are still errors when no evidence survives.
+- A provider-reported inaccessible page is a coverage warning when another eligible page was successfully reviewed, including a valid irrelevant result. If no eligible page could be reviewed and there were no other failures, the API returns `SOURCE_PAGES_UNAVAILABLE` with a page-reading explanation. Provider outages, malformed responses and failed relevance checks are still errors when no evidence survives.
 - Relevance does not require a source to repeat an alleged amount or date. An explanation of the same scheme can be retained as context with unresolved conditions; absence of the allegation does not prove it false. A named date without a year uses a visible current-year assumption from the Singapore submission date; it is not treated as a source fact.
 - Missing context, wrong population and unresolved current/future applicability cannot drive a verdict. These semantic decisions still require evaluation; the prototype does not prove dates or scope infallibly.
 - Exact duplicate passages/URLs are removed. Repeated pages from the same origin contribute at most once per stance. Conflicting pages from that origin remain represented.

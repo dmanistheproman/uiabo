@@ -1,0 +1,73 @@
+{
+  "dataset_id": "uiabo_branch_comparison_regression_v1",
+  "created_at": "2026-09-29",
+  "status": "candidate_inputs_pending_independent_human_review",
+  "author": "Codex",
+  "notes": "Test inputs include deliberately false, ambiguous and invented statements. No gold labels. Do not treat as advice. Related claims share group IDs. Final set is reserved for evaluation, not tuning.",
+  "cases": [
+    {
+      "id": "R01",
+      "split": "regression",
+      "group": "known_sia",
+      "topic": "corporate_relationship",
+      "claim": "SIA is ran by Singapore Government.",
+      "requires_forecast": false
+    },
+    {
+      "id": "R02",
+      "split": "regression",
+      "group": "known_sia",
+      "topic": "corporate_relationship",
+      "claim": "SIA is majority-owned by Temasek Holdings (Private) Limited.",
+      "requires_forecast": false
+    },
+    {
+      "id": "R03",
+      "split": "regression",
+      "group": "known_passport",
+      "topic": "current_policy",
+      "claim": "ICA will begin rejecting passports with less than one year of validity.",
+      "requires_forecast": false
+    },
+    {
+      "id": "R04",
+      "split": "regression",
+      "group": "known_cpf",
+      "topic": "current_policy",
+      "claim": "From October, all Singaporeans above 60 will receive a compulsory $300 monthly deduction from CPF to fund MediShield Life.",
+      "requires_forecast": false
+    },
+    {
+      "id": "R05",
+      "split": "regression",
+      "group": "known_weather",
+      "topic": "forecast",
+      "claim": "Tomorrow it will be 50 degree celcius in Singapore.",
+      "requires_forecast": true
+    },
+    {
+      "id": "R06",
+      "split": "regression",
+      "group": "known_weather",
+      "topic": "forecast",
+      "claim": "Could Singapore reach 50 degrees Celsius tomorrow?",
+      "requires_forecast": true
+    },
+    {
+      "id": "R07",
+      "split": "regression",
+      "group": "known_weather",
+      "topic": "forecast",
+      "claim": "This Saturday it will be 50 degrees Celsius in Singapore.",
+      "requires_forecast": true
+    },
+    {
+      "id": "R08",
+      "split": "regression",
+      "group": "known_weather_hypothetical",
+      "topic": "hypothetical",
+      "claim": "What if it were 50 degrees Celsius in Singapore?",
+      "requires_forecast": false
+    }
+  ]
+}

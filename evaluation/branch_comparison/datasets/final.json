@@ -1,0 +1,489 @@
+{
+  "dataset_id": "uiabo_branch_comparison_final_v1",
+  "created_at": "2026-09-29",
+  "status": "candidate_inputs_pending_independent_human_review",
+  "author": "Codex",
+  "notes": "Test inputs include deliberately false, ambiguous and invented statements. No gold labels. Do not treat as advice. Related claims share group IDs. Final set is reserved for evaluation, not tuning.",
+  "cases": [
+    {
+      "id": "F01",
+      "split": "final",
+      "group": "bcrs",
+      "topic": "environment_policy",
+      "claim": "As of 29 September 2026, Singapore's Beverage Container Return Scheme uses a refundable 10-cent deposit for eligible containers carrying the deposit mark.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F02",
+      "split": "final",
+      "group": "bcrs",
+      "topic": "environment_policy",
+      "claim": "Singapore's Beverage Container Return Scheme began on 1 April 2025.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F03",
+      "split": "final",
+      "group": "bcrs",
+      "topic": "environment_policy",
+      "claim": "As of 29 September 2026, every glass drink bottle in Singapore is covered by the Beverage Container Return Scheme.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F04",
+      "split": "final",
+      "group": "bcrs",
+      "topic": "environment_policy",
+      "claim": "Can I claim the Beverage Container Return Scheme deposit back for an eligible marked container in Singapore, as of 29 September 2026?",
+      "requires_forecast": false
+    },
+    {
+      "id": "F05",
+      "split": "final",
+      "group": "gst",
+      "topic": "tax_policy",
+      "claim": "Singapore's standard GST rate increased to 9% on 1 January 2024.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F06",
+      "split": "final",
+      "group": "gst",
+      "topic": "tax_policy",
+      "claim": "Singapore's standard GST rate was already 9% throughout 2023.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F07",
+      "split": "final",
+      "group": "gst",
+      "topic": "tax_policy",
+      "claim": "Goods exported from Singapore can qualify for zero-rated GST when IRAS's conditions are met.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F08",
+      "split": "final",
+      "group": "gov_impersonation",
+      "topic": "scams",
+      "claim": "Singapore police officers will ask people to transfer their savings into a personal bank account to help an investigation.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F09",
+      "split": "final",
+      "group": "gov_impersonation",
+      "topic": "scams",
+      "claim": "A caller claiming to be from MAS says I must disclose my banking OTP to prove I am innocent. This is a standard government verification procedure.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F10",
+      "split": "final",
+      "group": "gov_impersonation",
+      "topic": "scams",
+      "claim": "Is it normal for a Singapore government official to ask me to hand over my bank card and PIN to an unknown person?",
+      "requires_forecast": false
+    },
+    {
+      "id": "F11",
+      "split": "final",
+      "group": "active_mobility",
+      "topic": "transport_rules",
+      "claim": "As of 29 September 2026, e-scooters are generally allowed on Singapore footpaths if the rider travels slowly.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F12",
+      "split": "final",
+      "group": "active_mobility",
+      "topic": "transport_rules",
+      "claim": "As of 29 September 2026, Singapore requires e-scooters used on cycling paths to be registered.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F13",
+      "split": "final",
+      "group": "active_mobility",
+      "topic": "transport_rules",
+      "claim": "As of 29 September 2026, every footpath in Singapore allows bicycles without exception.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F14",
+      "split": "final",
+      "group": "government_sms",
+      "topic": "digital_services",
+      "claim": "The gov.sg SMS Sender ID is restricted to the Singapore Government and its agencies.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F15",
+      "split": "final",
+      "group": "government_sms",
+      "topic": "digital_services",
+      "claim": "Any private company in Singapore can register the gov.sg SMS Sender ID for its marketing messages.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F16",
+      "split": "final",
+      "group": "singpass_otp",
+      "topic": "digital_services",
+      "claim": "It is safe to give my Singpass password and OTP to a stranger who says they are helping with a government payout.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F17",
+      "split": "final",
+      "group": "library_ebooks",
+      "topic": "public_services",
+      "claim": "NLB members can borrow eBooks using the NLB Mobile app.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F18",
+      "split": "final",
+      "group": "library_ebooks",
+      "topic": "public_services",
+      "claim": "NLB provides only physical books and has no eBook borrowing service.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F19",
+      "split": "final",
+      "group": "food_crosscontamination",
+      "topic": "food_safety",
+      "claim": "Using the same unwashed chopping board for raw chicken and ready-to-eat food can cause cross-contamination.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F20",
+      "split": "final",
+      "group": "food_smell",
+      "topic": "food_safety",
+      "claim": "Food is always safe to eat if it smells normal.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F21",
+      "split": "final",
+      "group": "food_freezing",
+      "topic": "food_safety",
+      "claim": "Freezing food kills every harmful bacterium, making cooking unnecessary.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F22",
+      "split": "final",
+      "group": "microwave_metal",
+      "topic": "household_safety",
+      "claim": "Putting ordinary metal cutlery in a microwave oven is always safe.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F23",
+      "split": "final",
+      "group": "lightning_tree",
+      "topic": "weather_safety",
+      "claim": "Standing under an isolated tall tree is the safest place outdoors during a thunderstorm.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F24",
+      "split": "final",
+      "group": "lightning_car",
+      "topic": "weather_safety",
+      "claim": "A fully enclosed metal-topped car can offer protection from lightning when its windows are closed.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F25",
+      "split": "final",
+      "group": "earthquake_prediction",
+      "topic": "science",
+      "claim": "Scientists can reliably predict the exact day and time of every earthquake months in advance.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F26",
+      "split": "final",
+      "group": "ozone_uv",
+      "topic": "science",
+      "claim": "The ozone layer absorbs much of the Sun's harmful ultraviolet radiation.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F27",
+      "split": "final",
+      "group": "co2_composition",
+      "topic": "science",
+      "claim": "Carbon dioxide is the most abundant gas in Earth's atmosphere.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F28",
+      "split": "final",
+      "group": "aurora_cause",
+      "topic": "science",
+      "claim": "Auroras are caused by sunlight reflecting off polar ice.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F29",
+      "split": "final",
+      "group": "earth_age",
+      "topic": "science",
+      "claim": "Earth is approximately 4.5 billion years old.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F30",
+      "split": "final",
+      "group": "octopus_anatomy",
+      "topic": "science",
+      "claim": "An octopus has three hearts.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F31",
+      "split": "final",
+      "group": "spider_anatomy",
+      "topic": "science",
+      "claim": "Spiders are insects with six legs.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F32",
+      "split": "final",
+      "group": "bat_sight",
+      "topic": "science",
+      "claim": "All bats are completely blind.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F33",
+      "split": "final",
+      "group": "venus_star",
+      "topic": "science",
+      "claim": "Venus is a planet even though people sometimes call it the morning star.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F34",
+      "split": "final",
+      "group": "pluto_classification",
+      "topic": "science",
+      "claim": "The International Astronomical Union currently classifies Pluto as one of the eight planets.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F35",
+      "split": "final",
+      "group": "earth_gravity",
+      "topic": "science",
+      "claim": "Astronauts float on the International Space Station because there is no gravity at its altitude.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F36",
+      "split": "final",
+      "group": "internet_encryption",
+      "topic": "digital_literacy",
+      "claim": "A padlock icon and HTTPS guarantee that a website is honest and cannot be a phishing site.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F37",
+      "split": "final",
+      "group": "qr_safety",
+      "topic": "digital_literacy",
+      "claim": "A QR code can lead to a phishing website.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F38",
+      "split": "final",
+      "group": "ai_text",
+      "topic": "digital_literacy",
+      "claim": "A fluent answer from an AI chatbot guarantees that every fact in it is correct.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F39",
+      "split": "final",
+      "group": "photo_metadata",
+      "topic": "digital_literacy",
+      "claim": "Missing EXIF metadata proves that a photograph is AI-generated.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F40",
+      "split": "final",
+      "group": "photo_context",
+      "topic": "digital_literacy",
+      "claim": "A real photograph can still mislead people when shared with a false caption about where it was taken.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F41",
+      "split": "final",
+      "group": "sg_independence",
+      "topic": "history",
+      "claim": "Singapore became independent on 9 August 1965.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F42",
+      "split": "final",
+      "group": "sg_independence",
+      "topic": "history",
+      "claim": "Singapore became independent in 1975.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F43",
+      "split": "final",
+      "group": "asean_membership",
+      "topic": "history",
+      "claim": "Singapore was one of the five founding members of ASEAN in 1967.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F44",
+      "split": "final",
+      "group": "sg_time",
+      "topic": "geography",
+      "claim": "Singapore uses UTC+8 as its standard time.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F45",
+      "split": "final",
+      "group": "sg_time",
+      "topic": "geography",
+      "claim": "Singapore changes its clocks every summer for daylight saving time.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F46",
+      "split": "final",
+      "group": "co2_composition",
+      "topic": "question",
+      "claim": "Is nitrogen the most abundant gas in Earth's atmosphere?",
+      "requires_forecast": false
+    },
+    {
+      "id": "F47",
+      "split": "final",
+      "group": "question_mercury",
+      "topic": "question",
+      "claim": "Is Mercury the closest planet to the Sun?",
+      "requires_forecast": false
+    },
+    {
+      "id": "F48",
+      "split": "final",
+      "group": "question_boiling",
+      "topic": "question",
+      "claim": "Does pure water boil at about 100 degrees Celsius at standard atmospheric pressure?",
+      "requires_forecast": false
+    },
+    {
+      "id": "F49",
+      "split": "final",
+      "group": "ambiguous_place",
+      "topic": "ambiguity",
+      "claim": "The airport will close next Friday. Everyone needs to change their flights.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F50",
+      "split": "final",
+      "group": "ambiguous_policy",
+      "topic": "ambiguity",
+      "claim": "From October, everyone above 60 must pay the new monthly fee.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F51",
+      "split": "final",
+      "group": "ambiguous_company",
+      "topic": "ambiguity",
+      "claim": "The government owns this company, so it personally approves every purchase the company makes.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F52",
+      "split": "final",
+      "group": "ambiguous_quote",
+      "topic": "ambiguity",
+      "claim": "He confirmed yesterday that all the tests were fake.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F53",
+      "split": "final",
+      "group": "personal_receipt",
+      "topic": "personal",
+      "claim": "My neighbour paid 18 dollars for lunch at a coffee shop yesterday.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F54",
+      "split": "final",
+      "group": "personal_message",
+      "topic": "personal",
+      "claim": "My aunt received a WhatsApp message about a new subsidy this morning.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F55",
+      "split": "final",
+      "group": "opinion_transit",
+      "topic": "opinion",
+      "claim": "Taking the MRT is more enjoyable than taking a taxi.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F56",
+      "split": "final",
+      "group": "opinion_design",
+      "topic": "opinion",
+      "claim": "Blue is the best colour for an app.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F57",
+      "split": "final",
+      "group": "hypothetical_transport",
+      "topic": "hypothetical",
+      "claim": "What if all buses in Singapore became free tomorrow?",
+      "requires_forecast": false
+    },
+    {
+      "id": "F58",
+      "split": "final",
+      "group": "hypothetical_space",
+      "topic": "hypothetical",
+      "claim": "Imagine that humans could breathe in outer space without equipment.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F59",
+      "split": "final",
+      "group": "future_unannounced",
+      "topic": "future",
+      "claim": "Every MRT ride in Singapore will definitely become free on 1 January 2035.",
+      "requires_forecast": false
+    },
+    {
+      "id": "F60",
+      "split": "final",
+      "group": "future_sport",
+      "topic": "future",
+      "claim": "Singapore will definitely win the football World Cup in 2038.",
+      "requires_forecast": false
+    }
+  ]
+}

@@ -41,13 +41,14 @@ async def tavily_extract(client: httpx.AsyncClient, urls: list[str], key: str, *
     return data
 
 
-async def tavily_search(client: httpx.AsyncClient, query: str, key: str, *, broad: bool = False) -> list[dict]:
+async def tavily_search(client: httpx.AsyncClient, query: str, key: str, *, broad: bool = False,
+                        preferred_domains: list[str] | None = None) -> list[dict]:
     data = await request_json(client, "POST", "https://api.tavily.com/search",
         headers={"Authorization": f"Bearer {key}"},
         json={"query": query, "search_depth": "advanced", "max_results": 8,
               "chunks_per_source": 3, "topic": "general", "include_answer": False,
               "include_raw_content": False, "include_images": False,
-              "auto_parameters": False, **({} if broad else {"include_domains": list(SOURCES)})})
+              "auto_parameters": False, **({} if broad else {"include_domains": preferred_domains or list(SOURCES)})})
     results = data.get("results")
     if not isinstance(results, list) or any(not isinstance(item, dict) for item in results):
         raise ValueError("Invalid search results")

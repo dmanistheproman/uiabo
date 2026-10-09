@@ -16,6 +16,22 @@ def prepared(text="Every household can claim S$800 in CDC vouchers this year."):
                         warnings=[])
 
 
+@pytest.mark.parametrize("text", ["What if Singapore reaches 50 C this Saturday?",
+                                  "Suppose Singapore reaches 50 C this Saturday."])
+def test_imagined_scenario_is_not_an_asserted_weather_claim(text, monkeypatch):
+    monkeypatch.setattr(pool_v3, "_keys", lambda: pytest.fail("Imagined scenario must not call providers"))
+    result = pool_v3.analyse_claim_v3(prepared(text))
+    assert not result.checkable
+    assert "imagined scenario" in result.classification_reason
+
+
+@pytest.mark.parametrize("text", ["Could Singapore reach 50 degrees Celsius tomorrow?", "could singapore reach 50 degrees celsius tomorrow?"])
+def test_specific_weather_question_keeps_its_question_and_possibility_words(monkeypatch, text):
+    monkeypatch.setattr(pool_v3, "_keys", lambda: pytest.fail("Grounded forecast question needs no classification call"))
+    result = pool_v3.analyse_claim_v3(prepared(text))
+    assert result.checkable and result.extracted_claim == text
+
+
 def test_reconcile_checkable_wins_over_choice():
     # choice said opinion but noul says a checkable assertion exists -> factual
     assert pool_v3.reconcile(0.91, "opinion") == ("factual", True, 0.91)

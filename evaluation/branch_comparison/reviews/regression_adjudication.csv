@@ -1,0 +1,9 @@
+﻿id,claim,reviewer_a,label_a,reason_a,sources_a,reviewer_b,label_b,reason_b,sources_b,final_label,adjudicator,decision_reason,final_sources,reviewed_at,dataset_sha256
+R01,SIA is ran by Singapore Government.,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R02,SIA is majority-owned by Temasek Holdings (Private) Limited.,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R03,ICA will begin rejecting passports with less than one year of validity.,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R04,"From October, all Singaporeans above 60 will receive a compulsory $300 monthly deduction from CPF to fund MediShield Life.",,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R05,Tomorrow it will be 50 degree celcius in Singapore.,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R06,Could Singapore reach 50 degrees Celsius tomorrow?,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R07,This Saturday it will be 50 degrees Celsius in Singapore.,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258
+R08,What if it were 50 degrees Celsius in Singapore?,,,,,,,,,,,,,,64d729270baa0cab5d0f7bd8b4bb74acc36c836acf8da8d831e6ce434a895258

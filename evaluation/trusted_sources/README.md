@@ -2,7 +2,8 @@
 
 The experimental `web` retrieval mode treats this list as preferred sources, then allows wider discovery. It also recognises `.gov`, `.gov.uk` and `.gov.au` namespaces using the registries' eligibility policies. Unknown publishers remain leads and cannot independently drive verdicts. [Source policy, registry references and limitations](../../backend/app/pipeline/evidence_retrieval/WEB_RETRIEVAL.md).
 
-The runtime allowlist is `backend/app/pipeline/evidence_retrieval/sources.py`.
+The runtime catalogue is `backend/app/pipeline/evidence_retrieval/sources.py`;
+topic-scoped additions are in `source_policy.py`.
 This deliberately limited English prototype catalogue was assembled on 7 September
 2026. Inclusion is a search-scope decision, not a guarantee that every statement is
 true, current, independent, or relevant. It is not a completed source-credibility audit.
@@ -20,10 +21,22 @@ true, current, independent, or relevant. It is not a completed source-credibilit
 | apnews.com | news | Reported evidence and published fact checks | Reports may quote disputed claims or share the same underlying source |
 | channelnewsasia.com | news | Singapore and regional reporting | Related reports may not independently establish the specific claim |
 | nus.edu.sg | academic | University research and historical/legal materials | A university hostname does not imply every page is peer reviewed |
+| bbc.com, bbc.co.uk | news | BBC reporting; added 5 October 2026 | Shared publisher family, not two independent sources; articles, quotations and comparisons require scope/date checks |
+| cnbc.com | news | Business and international reporting; added 5 October 2026 | Distinguish reported future benchmarks from current actual pay; reporting is not a comprehensive salary audit |
+| politicalsalaries.com, www.politicalsalaries.com | other, topic-scoped | Original comparison project, eligible only for political salary-ranking claims; added 5 October 2026 | Manually compiled figures, irregular updates, missing countries and uneven inclusion of allowances; no blanket eligibility for unrelated claims |
 
 Matching accepts the named domain and actual subdomains, not lookalike suffixes.
 The precise hostname is used as publisher for the government domain family.
 Broader coverage should be added with per-source review and retrieval evaluation.
+
+The October additions were checked using the [BBC's public-service remit](https://www.gov.uk/government/organisations/bbc/about),
+[CNBC's own description of its news coverage](https://fm.cnbc.com/applications/cnbc.com/resources/editorialfiles/in-pursuit-of-success.pdf),
+and Political Salaries' [identity](https://politicalsalaries.com/about/) and
+[data methodology](https://politicalsalaries.com/about-the-data/).
+The methodology says salaries are manually sourced from official publications and
+reporting, with base pay preferred and incomplete coverage acknowledged. Publication
+and effective dates must be checked in each passage. This is a bounded publisher
+review, not certification of every article or a measured accuracy improvement.
 
 References used for the initial scope include [Singapore government trusted sites](https://www.gov.sg/trusted-sites/),
 [Full Fact's description of its work](https://fullfact.org/about/) and

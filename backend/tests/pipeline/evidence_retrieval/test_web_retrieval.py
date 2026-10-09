@@ -101,6 +101,55 @@ def test_invalid_or_nonpublic_urls_are_rejected(url):
         public_url(url)
 
 
+def test_fetch_preserves_www_trailing_slash_and_query_while_deduplicating():
+    original = "https://www.nlb.gov.sg/article/?b=2&a=1&utm_source=search"
+    alias = "https://nlb.gov.sg/article?a=1&b=2"
+    base = Provider(preferred=[result_item(original), result_item(alias)])
+    def handler(request):
+        if request.url.path == "/extract":
+            # Regression: this page is readable only at the discovered URL.
+            assert json.loads(request.content)["urls"] == [original]
+        return base(request)
+    result = run(handler)
+    assert result.retrieval_status == "completed"
+    assert base.extractions == [original]
+    assert str(result.evidence[0].url) == original
+
+
+def test_first_party_eligibility_is_scoped_to_reviewed_identity_and_relationship():
+    url = "https://www.temasek.com.sg/en/about-us/corporate-governance"
+    assert classify_source(url, "SIA is run by Singapore Government").policy == "scoped_first_party"
+    assert classify_source(url, "SIA is owned by Temasek").eligible
+    assert not classify_source(url, "Singapore will reach 50 C tomorrow").eligible
+    assert not classify_source(url, "A new airline is run by the government").eligible
+    assert not classify_source("https://temasek.com.sg.evil.com/governance", "SIA is run by the government").eligible
+
+
+def test_management_question_prioritises_governance_over_funding():
+    run = enhanced.RetrievalRun("SIA is run by Singapore Government", None, "g", "t", "o")
+    run.add(result_item("https://reuters.com/rescue", title="Airline rescue funding", score=1), "web_search")
+    run.add(result_item("https://www.singaporeair.com/governance", title="Corporate governance", score=.6), "web_search")
+    assert run.next_pages(1)[0]["url"] == "https://www.singaporeair.com/governance"
+    run.add(result_item("https://unknown-company.com/management-team", score=1), "web_search")
+    assert run.next_pages(1)[0]["url"] == "https://www.singaporeair.com/governance"
+
+
+def test_relevant_pages_keep_priority_before_diversity_of_unrelated_pages():
+    run = enhanced.RetrievalRun("SIA is run by Singapore Government", None, "g", "t", "o")
+    for url in ["https://www.singaporeair.com/management-team", "https://www.singaporeair.com/corporate-governance"]:
+        run.add(result_item(url, score=.6), "web_search")
+    run.add(result_item("https://reuters.com/rescue", title="Airline rescue", score=1), "web_search")
+    assert all("singaporeair.com" in item["url"] for item in run.next_pages(2))
+
+
+def test_governance_passage_survives_long_page_with_ownership_keywords():
+    rule = "The board delegates responsibility for day-to-day business decisions to management."
+    page = "Singapore Airlines government ownership and Singapore Airlines shares. " * 2300 + rule
+    assert page.index(rule) > 60000
+    assert any(rule in window for window in source_windows("SIA is run by the government", page))
+    assert len(source_windows("SIA is run by the government", page)) <= 6
+
+
 def test_broad_search_finds_new_authority_and_ignores_word_overlap_threshold():
     assert service.relevance(CLAIM, TEXT) < 0.6
     provider = Provider(broad=[result_item()])
@@ -214,7 +263,42 @@ def test_no_readable_eligible_pages_remains_a_technical_failure():
             return httpx.Response(200, json={"results": [], "failed_results": [
                 {"url": url, "error": "Could not fetch"} for url in urls]})
         return base(request)
-    assert run(handler).retrieval_status == "failed"
+    result = run(handler)
+    assert result.retrieval_status == "failed"
+    assert result.failure_reason == "source_pages_unavailable"
+
+
+@pytest.mark.parametrize("unavailable_count", [1, 4, 8])
+def test_unavailable_pages_get_at_most_two_alternatives(unavailable_count):
+    urls = [f"https://gov.sg/page-{i}" for i in range(8)]
+    base = Provider(preferred=[result_item(url, score=1 - i / 100) for i, url in enumerate(urls)],
+                    judgment=selection(relevance="context"))
+    def handler(request):
+        response = base(request)
+        if request.url.path == "/extract":
+            payload = response.json()
+            failed = [item for item in payload["results"] if item["url"] in urls[:unavailable_count]]
+            payload["results"] = [item for item in payload["results"] if item not in failed]
+            payload["failed_results"] = [{"url": item["url"], "error": "Could not fetch"} for item in failed]
+            return httpx.Response(200, json=payload)
+        return response
+    result = run(handler)
+    assert result.trace.extraction_urls == min(4 + unavailable_count, 6)
+    assert len(set(base.extractions)) == len(base.extractions)
+    assert result.trace.relevance_calls <= 4
+    assert result.trace.search_requests == 3
+    assert result.retrieval_status == ("failed" if unavailable_count == 8 else "completed")
+    if unavailable_count == 4:
+        assert str(result.evidence[0].url) == urls[4]
+
+
+def test_provider_outage_does_not_increase_extraction_budget():
+    base = Provider(preferred=[result_item(f"https://gov.sg/{i}") for i in range(8)], fail="extract")
+    result = run(base)
+    assert result.retrieval_status == "failed"
+    assert result.failure_reason is None
+    assert result.trace.extraction_urls == 4
+    assert result.trace.relevance_calls == 0
 
 
 @pytest.mark.parametrize("failure", ["http", "missing_result", "relevance"])
@@ -373,7 +457,7 @@ def assess(items):
 def test_scope_gate_overrides_even_a_supporting_stance(scope):
     result, retrieval = assess([evidence(applicability=scope)])
     assert result.concern_label == "Not Enough Information"
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
     assert result.assessed_evidence[0].stance == "neutral"
     assert "supports the claim" not in result.explanation

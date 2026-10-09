@@ -40,6 +40,6 @@ def get_pipeline_orchestrator() -> PipelineOrchestrator:
         analyze_claim=claim_analyser,
         retrieve_evidence=retriever,
         assess_evidence=assessor,
-        pipeline_version=version + ":" + retrieval_version,
+        pipeline_version=version + ":" + retrieval_version + ":credibility-v2",
         repository=FirestoreResultRepository(),
     )

@@ -290,6 +290,9 @@ def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
     if not claim.checkable:
         result = RetrievalResult(retrieval_status="no_evidence", warnings=[
             "The claim is not checkable, so evidence retrieval was skipped."])
+    elif claim.claim_context and claim.claim_context.claim_type == "weather_forecast" and not claim.claim_context.location:
+        result = RetrievalResult(retrieval_status="no_evidence", warnings=[
+            "A location is needed to select the relevant weather forecast. Add the city or country and check again."])
     elif search_func is not None:
         result = _injected(dated_search_claim(claim.extracted_claim, claim.date_context), search_func)
     else:

@@ -407,7 +407,7 @@ def _not_enough_information(
     )
     return AssessmentResult(
         concern_label="Not Enough Information",
-        misinformation_risk_score=50,
+        misinformation_risk_score=None,
         uncertainty="High",
         uncertainty_reasons=reasons,
         explanation=explanation,

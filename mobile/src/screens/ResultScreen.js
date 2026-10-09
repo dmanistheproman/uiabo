@@ -3,7 +3,7 @@ import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-
 import Feather from '@expo/vector-icons/Feather';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
-import { scoreDescription, isProvisionalScore, comparisonAspects, comparisonFindings, changeVerificationLabel } from '../utils/assessment';
+import { credibilityDetails, componentDetails, comparisonAspects, comparisonFindings, changeVerificationLabel } from '../utils/assessment';
 import { resultPresentation, plainSourceStance, datePresentation } from '../utils/resultPresentation';
 
 function Details({ title, children }) {
@@ -30,11 +30,10 @@ function WebsiteButton({ source, onPress }) {
 export default function ResultScreen({ result, onNavigate }) {
   const summary = resultPresentation(result);
   const failed = result.processing_status === 'failed';
-  const score = result.misinformation_risk_score;
-  const provisional = isProvisionalScore(result);
   const timing = datePresentation(result.date_context);
   const forecast = result.forecast_context;
   const sources = result.evidence || [];
+  const components = componentDetails(result);
   const limitations = (result.uncertainty_reasons || []).filter(reason =>
     !reason.startsWith('The risk indicator uses prototype rules;') && !reason.startsWith('Assumed date:'));
 
@@ -45,8 +44,7 @@ export default function ResultScreen({ result, onNavigate }) {
   }
   async function share() {
     try {
-      const scoreText = score == null ? '' : `\nMisinformation risk score: ${score}/100${provisional ? ' — Unverified (provisional)' : ''}.\n${scoreDescription(result)}\n`;
-      await Share.share({ message: `UIABO result: ${summary.title}\n${result.extracted_claim || result.original_text}\n\n${summary.meaning}\n${scoreText}${timing ? `\n${timing.explanation}\n${timing.caution}\n` : ''}\n${result.explanation}\n\n${summary.action}\n\nSources:\n${sources.map(item => item.url).join('\n')}\n\nAutomated checks can make mistakes.` });
+      await Share.share({ message: `UIABO result: ${summary.title}\n${result.extracted_claim || result.original_text}\n\n${summary.meaning}\n${timing ? `\n${timing.explanation}\n${timing.caution}\n` : ''}\nWhy this result?\n${result.explanation}\n\n${credibilityDetails(result)}\n\n${summary.action}\n\nSources:\n${sources.map(item => item.url).join('\n')}\n\nAutomated checks can make mistakes.` });
     } catch { Alert.alert('Could not share', 'Please try again.'); }
   }
 
@@ -57,23 +55,6 @@ export default function ResultScreen({ result, onNavigate }) {
         <Feather name={summary.icon} size={32} color={summary.color} accessible={false} />
         <Text accessibilityRole="header" style={[styles.title, { color: summary.color }]}>{summary.title}</Text>
         <Text style={styles.copy}>{summary.meaning}</Text>
-        {!failed && <View style={styles.riskScore}>
-          <Text accessibilityRole="header" style={styles.heading}>Misinformation risk score:</Text>
-          {score == null ? <>
-            <Text style={styles.heading}>{summary.outcome === 'not_checkable' ? 'No factual claim to score' : 'Not enough information to give a score'}</Text>
-            <Text style={styles.secondary}>No score does not mean zero risk.</Text>
-            {result.checkable !== false && summary.outcome !== 'not_checkable' && <Text style={styles.secondary}>This saved check has no score. Check the message again to use the updated scoring.</Text>}
-          </> : <>
-            <Text accessibilityLabel={`Risk score: ${score} out of 100${provisional ? ', unverified, provisional score' : ''}`} style={styles.scoreValue}>
-              {score}<Text style={styles.scoreTotal}> / 100</Text>
-            </Text>
-            {provisional ? <>
-              <Text style={styles.label}>Unverified — provisional score</Text>
-              <Text style={styles.secondary}>{scoreDescription(result)}</Text>
-            </> : <Text style={styles.secondary}>Lower means less concern. Higher means more concern. This is not a percentage chance that the claim is false.</Text>}
-            {!result.scoring && <Text style={styles.secondary}>This saved score uses older rules. Check the message again for an updated score.</Text>}
-          </>}
-        </View>}
         <View style={styles.action}>
           <Text accessibilityRole="header" style={styles.heading}>What you should do</Text>
           <Text style={styles.copy}>{summary.action}</Text>
@@ -92,6 +73,12 @@ export default function ResultScreen({ result, onNavigate }) {
         <Button secondary onPress={() => onNavigate('text', { draft: { text: result.original_text,
           correctYear: result.date_context.basis === 'assumed_current_year' || !result.date_context.basis,
           correctDate: true } })}>{timing.action}</Button>
+      </View>}
+
+      {!failed && !!result.plausibility_context && <View style={styles.card}>
+        <Text accessibilityRole="header" style={styles.heading}>Why this prediction is unlikely</Text>
+        <Text style={styles.copy}>{result.plausibility_context.explanation}</Text>
+        {result.plausibility_context.limitations.map((reason, index) => <Text key={index} style={styles.secondary}>{reason}</Text>)}
       </View>}
 
       {!failed && !!forecast && <View style={styles.card}>
@@ -113,6 +100,29 @@ export default function ResultScreen({ result, onNavigate }) {
       </> : <>
         <Details title="Why this result?">
           <Text style={styles.copy}>{result.explanation}</Text>
+          <Text style={styles.secondary}>{credibilityDetails(result)}</Text>
+          {!!components.length && <View style={styles.section}>
+            <Text accessibilityRole="header" style={styles.heading}>The parts we checked</Text>
+            <Text style={styles.copy}>We checked the main statement and its stated reason separately. A finding about one part does not settle every part of the message.</Text>
+            {components.map((part, index) => <View key={part.id || index} style={styles.section}>
+              <Text selectable style={styles.label}>{index + 1}. {part.text}</Text>
+              <Text style={styles.label}>{part.status}</Text>
+              <Text style={styles.copy}>{part.explanation}</Text>
+              {!!part.findings.length && <Details title="Read the evidence for this part">
+                {part.findings.map((finding, findingIndex) => <View key={findingIndex} style={findingIndex ? styles.section : styles.detailBody}>
+                  <Text style={styles.label}>{finding.status}</Text>
+                  <Text style={styles.copy}>{finding.explanation}</Text>
+                  {!!finding.basis && <Text style={styles.secondary}>{finding.basis}</Text>}
+                  {!!finding.limitation && <Text style={styles.secondary}>{finding.limitation}</Text>}
+                  {finding.quotes.map((item, quoteIndex) => <View key={`${item.evidence_id}-${quoteIndex}`} style={styles.detailBody}>
+                    <Text selectable style={styles.quote}>{item.quote}</Text>
+                    <Text style={styles.secondary}>{item.source.publisher}</Text>
+                    <WebsiteButton source={item.source} onPress={openSource} />
+                  </View>)}
+                </View>)}
+              </Details>}
+            </View>)}
+          </View>}
           {!!result.policy_context && <View style={styles.section}>
             <Text accessibilityRole="header" style={styles.heading}>{result.policy_context.policy_scope === 'comparable_policy' ? 'What the official information says' : 'Related official information'}</Text>
             <Text selectable style={styles.copy}>{result.policy_context.published_policy_summary}</Text>
@@ -135,7 +145,7 @@ export default function ResultScreen({ result, onNavigate }) {
           <Text style={styles.secondary}>{plainSourceStance(source.stance)}</Text>
           <Details title="Read source details">
             {!!source.assessment_reason && <Text style={styles.copy}>{source.assessment_reason}</Text>}
-            <Text style={styles.label}>{source.forecast ? 'Values from the official forecast' : source.evidence_quote ? 'Words from this source' : 'Source passage'}</Text>
+            <Text style={styles.label}>{source.climate_record ? 'Values from official climate records' : source.forecast ? 'Values from the official forecast' : source.evidence_quote ? 'Words from this source' : 'Source passage'}</Text>
             <Text selectable style={styles.quote}>{source.evidence_quote || source.passage}</Text>
             {!!source.evidence_quote && source.evidence_quote !== source.passage && <Details title="Read the surrounding text">
               <Text selectable style={styles.copy}>{source.passage}</Text>
@@ -162,10 +172,6 @@ export default function ResultScreen({ result, onNavigate }) {
           })}
         </Details>}
 
-        <Details title="About the score">
-          <Text style={styles.copy}>{scoreDescription(result)}</Text>
-          <Text style={styles.copy}>Use the explanation and sources to decide what to do. A number alone cannot tell you whether to trust a message.</Text>
-        </Details>
         <Text style={styles.secondary}>Automated checks can make mistakes. Read the sources before you share.</Text>
         <Button secondary onPress={share}>Share this result</Button>
       </>}
@@ -178,9 +184,6 @@ export default function ResultScreen({ result, onNavigate }) {
 const styles = StyleSheet.create({
   summary: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 14 },
   title: { fontWeight: '800', fontSize: 27, lineHeight: 35 },
-  riskScore: { backgroundColor: 'white', borderRadius: 12, padding: 16, gap: 10 },
-  scoreValue: { color: '#173447', fontWeight: '800', fontSize: 46, lineHeight: 58 },
-  scoreTotal: { fontWeight: '600', fontSize: 24 },
   card: { borderRadius: 16, backgroundColor: 'white', borderWidth: 1, borderColor: '#CCDCE5', padding: 16, gap: 14 },
   source: { borderRadius: 16, backgroundColor: 'white', borderWidth: 1, borderColor: '#CCDCE5', padding: 16, gap: 14 },
   heading: { color: '#173447', fontWeight: '700', fontSize: 21, lineHeight: 29 },

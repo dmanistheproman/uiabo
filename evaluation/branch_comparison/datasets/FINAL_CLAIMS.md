@@ -1,0 +1,66 @@
+# Final claim set
+
+**These are test inputs, not factual guidance. Expected answers are deliberately blank.**
+
+Reserve this set for the final comparison. Do not use its results to tune the pipeline.
+
+- **F01**: As of 29 September 2026, Singapore's Beverage Container Return Scheme uses a refundable 10-cent deposit for eligible containers carrying the deposit mark.
+- **F02**: Singapore's Beverage Container Return Scheme began on 1 April 2025.
+- **F03**: As of 29 September 2026, every glass drink bottle in Singapore is covered by the Beverage Container Return Scheme.
+- **F04**: Can I claim the Beverage Container Return Scheme deposit back for an eligible marked container in Singapore, as of 29 September 2026?
+- **F05**: Singapore's standard GST rate increased to 9% on 1 January 2024.
+- **F06**: Singapore's standard GST rate was already 9% throughout 2023.
+- **F07**: Goods exported from Singapore can qualify for zero-rated GST when IRAS's conditions are met.
+- **F08**: Singapore police officers will ask people to transfer their savings into a personal bank account to help an investigation.
+- **F09**: A caller claiming to be from MAS says I must disclose my banking OTP to prove I am innocent. This is a standard government verification procedure.
+- **F10**: Is it normal for a Singapore government official to ask me to hand over my bank card and PIN to an unknown person?
+- **F11**: As of 29 September 2026, e-scooters are generally allowed on Singapore footpaths if the rider travels slowly.
+- **F12**: As of 29 September 2026, Singapore requires e-scooters used on cycling paths to be registered.
+- **F13**: As of 29 September 2026, every footpath in Singapore allows bicycles without exception.
+- **F14**: The gov.sg SMS Sender ID is restricted to the Singapore Government and its agencies.
+- **F15**: Any private company in Singapore can register the gov.sg SMS Sender ID for its marketing messages.
+- **F16**: It is safe to give my Singpass password and OTP to a stranger who says they are helping with a government payout.
+- **F17**: NLB members can borrow eBooks using the NLB Mobile app.
+- **F18**: NLB provides only physical books and has no eBook borrowing service.
+- **F19**: Using the same unwashed chopping board for raw chicken and ready-to-eat food can cause cross-contamination.
+- **F20**: Food is always safe to eat if it smells normal.
+- **F21**: Freezing food kills every harmful bacterium, making cooking unnecessary.
+- **F22**: Putting ordinary metal cutlery in a microwave oven is always safe.
+- **F23**: Standing under an isolated tall tree is the safest place outdoors during a thunderstorm.
+- **F24**: A fully enclosed metal-topped car can offer protection from lightning when its windows are closed.
+- **F25**: Scientists can reliably predict the exact day and time of every earthquake months in advance.
+- **F26**: The ozone layer absorbs much of the Sun's harmful ultraviolet radiation.
+- **F27**: Carbon dioxide is the most abundant gas in Earth's atmosphere.
+- **F28**: Auroras are caused by sunlight reflecting off polar ice.
+- **F29**: Earth is approximately 4.5 billion years old.
+- **F30**: An octopus has three hearts.
+- **F31**: Spiders are insects with six legs.
+- **F32**: All bats are completely blind.
+- **F33**: Venus is a planet even though people sometimes call it the morning star.
+- **F34**: The International Astronomical Union currently classifies Pluto as one of the eight planets.
+- **F35**: Astronauts float on the International Space Station because there is no gravity at its altitude.
+- **F36**: A padlock icon and HTTPS guarantee that a website is honest and cannot be a phishing site.
+- **F37**: A QR code can lead to a phishing website.
+- **F38**: A fluent answer from an AI chatbot guarantees that every fact in it is correct.
+- **F39**: Missing EXIF metadata proves that a photograph is AI-generated.
+- **F40**: A real photograph can still mislead people when shared with a false caption about where it was taken.
+- **F41**: Singapore became independent on 9 August 1965.
+- **F42**: Singapore became independent in 1975.
+- **F43**: Singapore was one of the five founding members of ASEAN in 1967.
+- **F44**: Singapore uses UTC+8 as its standard time.
+- **F45**: Singapore changes its clocks every summer for daylight saving time.
+- **F46**: Is nitrogen the most abundant gas in Earth's atmosphere?
+- **F47**: Is Mercury the closest planet to the Sun?
+- **F48**: Does pure water boil at about 100 degrees Celsius at standard atmospheric pressure?
+- **F49**: The airport will close next Friday. Everyone needs to change their flights.
+- **F50**: From October, everyone above 60 must pay the new monthly fee.
+- **F51**: The government owns this company, so it personally approves every purchase the company makes.
+- **F52**: He confirmed yesterday that all the tests were fake.
+- **F53**: My neighbour paid 18 dollars for lunch at a coffee shop yesterday.
+- **F54**: My aunt received a WhatsApp message about a new subsidy this morning.
+- **F55**: Taking the MRT is more enjoyable than taking a taxi.
+- **F56**: Blue is the best colour for an app.
+- **F57**: What if all buses in Singapore became free tomorrow?
+- **F58**: Imagine that humans could breathe in outer space without equipment.
+- **F59**: Every MRT ride in Singapore will definitely become free on 1 January 2035.
+- **F60**: Singapore will definitely win the football World Cup in 2038.

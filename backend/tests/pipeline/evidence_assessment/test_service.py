@@ -78,10 +78,10 @@ def test_shared_samples_keep_core_contract_and_outcome(sample: dict) -> None:
     assert validated.concern_label == expected["concern_label"]
     # Archived Sprint 1 fixtures retain their original numeric scores.
     # V3 preserves their verdicts and adds an explicit unresolved midpoint.
-    assert validated.scoring.version == "evidence-v3"
+    assert validated.scoring.version == "evidence-v4"
     if expected["misinformation_risk_score"] is None:
         if sample["input"]["claim_analysis"]["checkable"]:
-            assert validated.misinformation_risk_score == 50
+            assert validated.misinformation_risk_score is None
             assert validated.scoring.status == "provisional"
         else:
             assert validated.misinformation_risk_score is None

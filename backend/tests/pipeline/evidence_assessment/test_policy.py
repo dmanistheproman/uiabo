@@ -42,7 +42,7 @@ def assess(raw=None,text=CLAIM,item=None):
 def test_unspecified_october_does_not_turn_an_old_fee_into_a_false_verdict():
     result=assess(judgment(stance="contradicting",evidence_quote=PASSAGE))
     assert result.assessment_outcome=="unsupported"
-    assert result.concern_label=="Not Enough Information" and result.misinformation_risk_score == 50
+    assert result.concern_label=="Not Enough Information" and result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
     assert result.claim_comparisons[0].finding=="differs"
     assert not result.claim_comparisons[0].applies_to_claim

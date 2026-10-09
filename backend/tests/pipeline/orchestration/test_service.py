@@ -99,10 +99,13 @@ def test_real_evidence_assessment_integrates_with_orchestrator() -> None:
     assert result.misinformation_risk_score == 96
     assert result.evidence[0].stance == "contradicting"
     assert result.evidence[0].quality_score == 0.93
-    assert result.scoring.version == "evidence-v3"
+    assert result.scoring.version == "evidence-v4"
     assert result.scoring.status == "evidence_based"
     assert result.scoring.evidence_strength == "Strong"
     assert result.assessment_outcome == "contradicted"
+    assert result.credibility.score == 4
+    assert result.credibility.label == "Strong evidence this is false"
+    assert TextAnalysisResult.model_validate_json(result.model_dump_json()).credibility == result.credibility
     assert repository.results[result.result_id] == result
 
 
@@ -176,7 +179,7 @@ def test_no_evidence_skips_assessment_and_returns_provisional_score() -> None:
     )
 
     assert result.concern_label == "Not Enough Information"
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
     assert result.assessment_outcome == "insufficient_evidence"
     assert result.uncertainty == "High"
@@ -206,6 +209,21 @@ def test_failed_retrieval_is_not_reported_as_no_evidence() -> None:
     failure = repository.failures["fixture-result-tax-1"]
     assert failure.processing_status == "failed"
     assert failure.failure_stage == "evidence_retrieval"
+
+
+def test_unreadable_sources_have_a_specific_retryable_error() -> None:
+    repository = InMemoryResultRepository()
+    pipeline = _orchestrator(repository=repository, retrieve_evidence=lambda claim: {
+        "retrieval_status": "failed", "failure_reason": "source_pages_unavailable",
+    })
+    with pytest.raises(PipelineComponentError) as raised:
+        pipeline.analyze("A new recycling rule begins next month.")
+    assert raised.value.error_code == "SOURCE_PAGES_UNAVAILABLE"
+    assert "could not read their pages" in raised.value.message
+    assert raised.value.retryable is True
+    assert raised.value.http_status == 503
+    assert not repository.results
+    assert repository.failures["fixture-result-tax-1"].error_code == "SOURCE_PAGES_UNAVAILABLE"
 
 
 def test_component_not_ready_is_saved_as_a_failed_run() -> None:

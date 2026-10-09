@@ -47,7 +47,7 @@ def test_passport_policy_difference_is_visible_but_change_remains_unverified():
     item.provenance.applicability="uncertain_time"
     result=assess(item, stance="neutral", comparisons=[difference()])
     assert result.assessment_outcome == "unsupported"
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
     assert result.policy_context.change_status == "unverified"
     assert "six months" in result.policy_context.published_policy_summary
@@ -70,7 +70,7 @@ def test_applicable_quoted_official_denial_needs_no_literal_month_or_year():
     "ICA has not commented on the claim about one-year passport validity."])
 def test_existing_rules_silence_and_no_comment_cannot_use_denial_exception(quote):
     result=assess(source(quote), denies=True)
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 
@@ -79,14 +79,14 @@ def test_denial_cannot_override_retrieval_scope_failure(scope):
     item=source(DENIAL)
     item.provenance.applicability=scope
     result = assess(item, denies=True)
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 
 @pytest.mark.parametrize("changes", [{"source_type":"news"}, {"provenance":None}, {"published_at":date(2024, 9, 15)}])
 def test_nonofficial_unscoped_or_old_denial_does_not_override_guard(changes):
     result = assess(source(DENIAL, **changes), denies=True)
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 
@@ -94,14 +94,14 @@ def test_unrelated_or_conditional_denial_with_neutral_semantic_judgment_stays_pr
     for passage in ["ICA denies plans to increase visa fees.",
                     "If the rumour were false, ICA would deny plans to reject these passports."]:
         result = assess(source(passage), stance="neutral")
-        assert result.misinformation_risk_score == 50
+        assert result.misinformation_risk_score is None
         assert result.scoring.status == "provisional"
 
 
 def test_denial_signal_without_quoted_denial_never_bypasses_guard():
     # Even a model flag cannot turn an ordinary rule into an explicit denial.
     result = assess(source(RULE), denies=True)
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 
@@ -141,7 +141,7 @@ def test_future_announcement_support_is_reported_separately_from_current_rules()
 
 def test_current_rule_is_not_accepted_as_support_for_future_change():
     result=assess(source("ICA requires one year of passport validity under the current rules."), stance="supporting")
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 
@@ -167,5 +167,5 @@ def test_different_population_not_presented_as_the_current_rule_for_everyone():
     assert result.policy_context.policy_scope == "related_guidance"
     assert "applicable rule has not been established" in result.policy_context.published_policy_summary
     assert result.policy_context.change_status == "unverified"
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"

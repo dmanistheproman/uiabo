@@ -1,5 +1,80 @@
 # Evidence retrieval - Chu
 
+## Material-part retrieval update (8 October 2026)
+
+Current web version `retrieval-web-v16` keeps the ranking and source-access fixes
+below and adds discovery for conservative causal claim components. The shared
+`components.py` splits one explicit asserted cause into exact event, premise and
+causal-link spans. Ambiguous scope remains on the existing whole-claim route.
+
+- The initial search still uses the original allegation. One initial extraction
+  leaves room for the two existing follow-up search slots: one for the event and
+  one for the material premise. Financial premises include neutral financial
+  statement terms; no verdict or financial fact is inserted into the query.
+- Eligible pages discovered for the premise receive a reserved extraction
+  attempt so event-heavy results do not consume all the slots. Query membership
+  is only a scheduling hint and never establishes relevance or truth.
+- Shared entity/country context is retained across both queries. In the narrow
+  retirement/savings context, CPF expands to Singapore's Central Provident Fund
+  for discovery; food-company, stock-ticker and conflicting-country uses do not.
+  Subject-matching CPF/MOF/MOM pages precede foreign social-security or CPF-stock
+  results, with old accounts deprioritised for a current allegation. Eligibility
+  and semantic applicability are still checked separately. The discovery
+  interpretation is recorded in the retrieval trace, not substituted for a claim.
+- `relevance-v13` receives the literal components and retains substantive
+  component passages. A useful financial-premise passage can remain whole-claim
+  context; it is not automatically promoted to direct/applicable evidence.
+- Financial passage selection prioritises the named fund's backing or trend
+  over another balance with similar words. General government reserves are not
+  interchangeable with pension member balances. Useful funding context does not
+  need to repeat the allegation, and retaining it does not refute the allegation.
+- Accepted and rejected selections record bounded relevance and applicability
+  reasons in the retrieval trace, so lost source coverage can be diagnosed.
+- Current alleged discussions are interpreted separately from the future policy
+  implementation date. Missing coverage, ordinary published policy and generic
+  financial guarantees do not themselves prove the causal allegation false.
+- Bounds remain three Tavily searches, one Google request, four relevance calls,
+  four base extraction slots, at most two unavailable-page replacements and the
+  existing stage deadline. No extra provider or unbounded search loop is added.
+
+The v3 assessor can subsequently evaluate each component against the retained
+passages. See the [assessment rules](../evidence_assessment/README.md#material-parts-of-causal-claims-8-october-2026).
+Regression tests in `test_component_coverage.py` and `shared/test_components.py`
+cover literal spans, excluded scopes, financial discovery, source-policy gates,
+passage retention and request budgets. They do not establish live accuracy.
+
+An 8 October live selector replay of the two extracted MOF reserves pages kept
+their CPF backing passages as context after this change. One had previously been
+rejected for not mentioning the precise allegation; the other selected general
+fiscal spending instead of CPF funding. Assessment of the unchanged retirement-
+age/depletion allegation with these passages still returned insufficient evidence.
+This verifies improved passage retention, not a successful misinformation verdict
+or an end-to-end retrieval accuracy benchmark.
+
+## Ranking retrieval update (5 October 2026)
+
+Web version `retrieval-web-v14` recognises superlative/ranking claims and seeks
+comparative evidence. It preserves the submitted claim and adds discovery hints;
+it never hard-codes a subject's rank. Ranking pages are prioritised over salary
+policy introductions. Passage windows retain comparative statements and the
+selector checks geography, period, population, metric and qualifications.
+
+BBC and CNBC join the reviewed news catalogue. Political Salaries is a scoped
+comparison source for political-pay ranking claims only. See the
+[source review](../../../../evaluation/trusted_sources/README.md).
+
+An explicit unavailable page lowers that publisher's priority for the rest of
+the request. Subsequent extraction batches contain at most two pages, or one
+when both are from the same publisher, allowing failure feedback before spending
+more slots there. Alternatives are preferred, but no publisher is permanently
+banned. Existing limits remain: three searches, four relevance calls, four base
+extraction slots and at most two replacements for explicitly unavailable pages.
+
+The salary diagnostic now retrieves accessible comparison articles instead of
+only background about pay policy. Historical rankings with unresolved dates
+remain context and cannot drive a current verdict. This is a targeted diagnostic,
+not an accuracy benchmark.
+
 The optional **web** mode adds broader search, original-page extraction, semantic relevance and applicability checks. See [the implementation and rollout guide](WEB_RETRIEVAL.md). The flow below documents the retained **catalogue** mode.
 
 The live Sprint 1 implementation connects Google Fact Check Tools and Tavily.
@@ -55,6 +130,30 @@ are preserved. Unsupported schemes, credentials and nonstandard ports are reject
 Duplicate content is also removed, but this does not establish source independence.
 
 ## Failures and bounds
+
+### Web mode (`EVIDENCE_RETRIEVAL_MODE=web`)
+
+`retrieval-web-v12` preserves discovered fetch URLs, including `www.`, trailing
+slashes and query ordering. Normalised URLs are used only as duplicate keys;
+citations retain the URL used for extraction.
+
+See [claim interpretation and forecast scoring](CLAIM_INTERPRETATION.md) for
+relationship-focused discovery, scoped first-party sources, long-document passage
+selection, question/hypothetical handling and the forecast-conflict indicator.
+
+Web mode allows three Tavily searches, one Google request, four semantic relevance
+calls and four extracted pages. Explicitly unavailable source pages allow up to
+two replacement pages from the discovered candidates (six extraction URLs total).
+Provider outages and invalid responses do not increase this budget. All work
+remains inside the 65-second deadline, and a failed URL is not repeatedly fetched.
+
+If every eligible page is unreadable, the orchestrator returns a retryable HTTP
+503 with `SOURCE_PAGES_UNAVAILABLE` and explains that sources were found but could
+not be read. Other retrieval failures retain `RETRIEVAL_UNAVAILABLE`. Readable,
+inconclusive evidence can still produce an unresolved assessment; failed page
+access is not evidence that a claim is true or false.
+
+### Catalogue baseline
 
 - Each provider call has a 20-second deadline; connections time out after 5 seconds.
 - The whole retrieval stage has a 65-second deadline. There are no automatic retries.

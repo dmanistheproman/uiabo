@@ -18,6 +18,9 @@ SOURCES = {
     "reuters.com": ("Reuters", "news"),
     "apnews.com": ("Associated Press", "news"),
     "channelnewsasia.com": ("CNA", "news"),
+    "bbc.com": ("BBC", "news"),
+    "bbc.co.uk": ("BBC", "news"),
+    "cnbc.com": ("CNBC", "news"),
     "nus.edu.sg": ("National University of Singapore", "academic"),
 }
 

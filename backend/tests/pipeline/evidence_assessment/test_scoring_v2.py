@@ -36,7 +36,7 @@ def test_strong_supported_fact_is_near_zero_and_corroboration_can_reach_zero():
     results = [assess([source(name) for name in "abc"[:n]]) for n in (1, 2, 3)]
     assert [r.misinformation_risk_score for r in results] == [3, 1, 0]
     assert all(r.assessment_outcome == "supported" and r.scoring.evidence_strength == "Strong" for r in results)
-    assert all(r.scoring.version == "evidence-v3" and r.scoring.status == "evidence_based" for r in results)
+    assert all(r.scoring.version == "evidence-v4" and r.scoring.status == "evidence_based" for r in results)
 
 
 def test_score_changes_smoothly_with_quality_instead_of_old_buckets():
@@ -49,7 +49,7 @@ def test_score_changes_smoothly_with_quality_instead_of_old_buckets():
 def test_weak_evidence_cannot_award_a_verdict_or_zero(stance, quality):
     result = assess([source("a")], [stance], [quality])
     assert result.assessment_outcome == "insufficient_evidence"
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
     assert result.scoring.evidence_strength == "Insufficient"
     assert result.scoring.supporting_strength == result.scoring.contradicting_strength == 0
@@ -93,7 +93,7 @@ def test_scope_gates_take_priority_over_strong_support(scope):
     item = source("a")
     item.provenance.applicability = scope
     result = assess([item])
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 
@@ -133,7 +133,7 @@ def test_partial_compound_support_remains_provisional_in_semantic_path():
         "finding":"unresolved", "applies_to_claim":False, "explanation":"Eligibility is not stated.",
         "evidence_quote":""}]}, item.passage, claim=text, evidence=item)
     result = aggregate(claim, RetrievalResult(retrieval_status="completed", evidence=[item]), [judgment])
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.scoring.status == "provisional"
 
 

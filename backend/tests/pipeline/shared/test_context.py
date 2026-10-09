@@ -5,9 +5,50 @@ from datetime import date, datetime, timezone
 import pytest
 
 from app.pipeline.shared.context import build_claim_context
+from app.pipeline.shared.dates import infer_date_context
 
 
 NOW = datetime(2026, 9, 17, 1, 30, tzinfo=timezone.utc)
+
+
+def test_ordinary_temperature_prediction_and_common_spelling_are_understood():
+    context = build_claim_context("This Saturday it will be 50 degree celcius in Singapore.", NOW)
+    assert context.claim_type == "weather_forecast"
+    assert context.measurement == "air_temperature"
+    assert context.location == "Singapore"
+    assert context.quantities[0].value == 50 and context.quantities[0].unit == "C"
+    assert context.input_intent == "assertion"
+
+
+def test_missing_location_is_not_silently_assumed():
+    context = build_claim_context("This Saturday it will be 50 degree celcius.", NOW)
+    assert context.claim_type == "weather_forecast"
+    assert context.location is None
+
+
+@pytest.mark.parametrize("phrase,expected", [("this Saturday", "2026-09-19"),
+    ("next Monday", "2026-09-21"), ("last Saturday", "2026-09-12")])
+def test_named_weekday_resolves_against_submission_week(phrase, expected):
+    result = infer_date_context("Singapore will reach 50 C " + phrase, NOW)
+    assert result.start_date.isoformat() == expected
+    assert result.start_date == result.end_date
+    assert result.basis == "relative_submission_date"
+
+
+def test_multiple_weekdays_do_not_silently_choose_one():
+    assert infer_date_context("This Saturday and next Sunday will be hot", NOW) is None
+
+
+def test_question_intent_survives_claim_extraction():
+    context = build_claim_context("Singapore will reach 50 C this Saturday", NOW,
+                                  original_text="Will Singapore reach 50 C this Saturday?")
+    assert context.input_intent == "question"
+
+
+@pytest.mark.parametrize("text,relationship", [("SIA is ran by Singapore Government", "management"),
+    ("SIA is owned by Temasek", "ownership"), ("SIA is funded by Temasek", "funding")])
+def test_corporate_relationships_are_distinct(text, relationship):
+    assert build_claim_context(text, NOW).relationship == relationship
 
 
 def test_weather_claim_keeps_possible_modality_and_exact_quantities_without_rewriting():

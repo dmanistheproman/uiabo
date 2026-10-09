@@ -26,6 +26,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..shared.errors import PipelineComponentError
 from ..shared.models import ClaimAnalysis, ClaimCategory, PreparedText
 from .service import _grounded_claim
+from ..shared.interpretation import input_intent
+from ..shared.context import build_claim_context
+from ..shared.dates import infer_date_context
 
 PROJECT_ENV = Path(__file__).resolve().parents[4] / ".env"
 REQUEST_TIMEOUT_SECONDS = 45.0
@@ -47,7 +50,9 @@ HAS_CLAIM_QUESTION = {
                     "forecast claim with a named location, date/period and measurable "
                     "detail is checkable: it can be compared with issued forecasts. "
                     "Checkability does not require the outcome to be certain, so keep "
-                    "possibility wording (could/may/might).",
+                    "possibility wording (could/may/might). Distinguish an asserted "
+                    "prediction from a question about likelihood. An imagined 'what if' "
+                    "scenario is not an assertion that the event will happen.",
 }
 CATEGORY_QUESTION = {
     "type": "choice",
@@ -107,6 +112,10 @@ Rules:
   it asks about as a declarative statement, dropping the question wording
   ("is X owned by Y?" -> "X owned by Y"). Keep the assertion's own words.
 - Exclude greetings, opinion requests, and instructions.
+- Preserve whether the user asks about possibility; never convert 'could X happen?'
+  to 'X will happen'. Preserve hypothetical framing such as 'what if' or 'suppose'.
+- Ownership, financial support and day-to-day management are different relationships.
+  Keep the user's relationship wording; do not substitute one for another.
 - If no claim can be extracted, return {"extracted_claim": null}.
 """
 
@@ -263,6 +272,21 @@ async def _classify_stage(prepared: PreparedText, client: httpx.AsyncClient,
 
 
 async def _analyse_async(prepared: PreparedText) -> ClaimAnalysis:
+    if input_intent(prepared.normalised_text) == "hypothetical":
+        return ClaimAnalysis(claim_category="unverifiable", checkable=False,
+            extracted_claim=None, claim_confidence=1,
+            classification_reason="This is an imagined scenario, not an assertion that it will happen.")
+    text = prepared.normalised_text
+    context = build_claim_context(text)
+    # A simple question with grounded place/date/temperature can be compared
+    # with forecasts. Keep the entire question, including its modal wording.
+    if (input_intent(text) == "question" and context.claim_type == "weather_forecast"
+            and context.location and context.quantities and infer_date_context(text)
+            and re.match(r"^(?:could|will|can|might)\b", text, re.I)
+            and not re.search(r"[;!]|[.?]\s+\w|\b(?:ignore|output|pretend|instructions)\b", text, re.I)):
+        return ClaimAnalysis(claim_category="factual", checkable=True,
+            extracted_claim=text, claim_confidence=1,
+            classification_reason="A question about a dated, measurable weather outcome; compare forecasts without asserting that it will happen.")
     jev_key, oss_key = _keys()
     try:
         async with asyncio.timeout(TOTAL_TIMEOUT_SECONDS):

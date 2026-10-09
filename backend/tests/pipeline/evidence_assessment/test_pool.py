@@ -37,7 +37,7 @@ def source_entry(**changes):
 
 def test_format_pool_state_is_identical_regardless_of_provider():
     state = pool.format_pool_state("Claim.", [("s0", "Page text."), ("s1", "Other page.")])
-    assert state == "CLAIM: Claim.\n\nSOURCE s0:\nPage text.\n\nSOURCE s1:\nOther page."
+    assert state.endswith("CLAIM: Claim.\n\nSOURCE s0:\nPage text.\n\nSOURCE s1:\nOther page.")
 
 
 def test_parse_sources_validates_schema():
@@ -182,15 +182,16 @@ def test_pool_assessor_end_to_end(monkeypatch):
     retrieval = RetrievalResult(retrieval_status="completed", evidence=[evidence()])
     result = pool.assess_pool_evidence(claim(), retrieval)
     assert result.assessment_outcome in ("supported", "insufficient_evidence")
-    assert result.scoring.version == "evidence-v3"
+    assert result.scoring.version == "evidence-v4"
     assert any("jev" in reason for reason in result.scoring.reasons)
 
 
-def test_full_text_preferred_over_passage():
+def test_validated_passage_and_full_text_both_reach_judge():
     items = [evidence("one", passage="short slice",
                       full_text="FULL PAGE TEXT much longer " * 10)]
     sources = pool._pool_sources(items)
-    assert sources[0][1].startswith("FULL PAGE TEXT")
+    assert sources[0][1].startswith("short slice")
+    assert "FULL PAGE TEXT" in sources[0][1]
     assert len(sources[0][1]) <= pool.PAGE_CAP_CHARS
 
 

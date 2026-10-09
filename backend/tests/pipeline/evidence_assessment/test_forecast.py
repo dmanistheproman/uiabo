@@ -54,7 +54,7 @@ def test_lower_forecast_does_not_prove_possible_future_temperature_false(monkeyp
     monkeypatch.setattr(semantic, "api_key", lambda: pytest.fail("Structured forecast must not require an Ollama key"))
     result = assess()
     assert result.assessment_outcome == "unsupported"
-    assert result.misinformation_risk_score == 50 and result.scoring.status == "provisional"
+    assert result.misinformation_risk_score is None and result.scoring.status == "provisional"
     assert result.forecast_context.status == "not_supported_by_forecast"
     assert result.forecast_context.forecast_high == 34
     assert result.forecast_context.start_date == START and result.forecast_context.end_date == END
@@ -64,10 +64,56 @@ def test_lower_forecast_does_not_prove_possible_future_temperature_false(monkeyp
     assert result.assessed_evidence[0].evidence_quote == evidence().passage
 
 
+@pytest.mark.parametrize("value,expected", [(35, None), (36, 80), (40, 88), (50, 95)])
+def test_definite_prediction_risk_increases_with_matching_forecast_gap(value, expected):
+    data = claim(f"Temperatures in Singapore will reach {value} C this weekend.",
+                 value=value, quantity=f"{value} C", modality="asserted")
+    result = assess(data)
+    assert result.misinformation_risk_score == expected
+    if value >= 36:
+        assert result.forecast_context.risk_basis == "forecast_comparison"
+        assert result.forecast_context.deviation_c == value - 34
+        assert result.forecast_context.scoring_rule == "forecast-gap-v1"
+        assert "prediction conflicts" in result.explanation
+        assert "what the official forecast says" not in result.explanation
+        # Validate the same payload shape that is persisted and sent to the app.
+        type(result).model_validate(result.model_dump(mode="json"))
+    else:
+        assert result.forecast_context.risk_basis is None
+
+
+@pytest.mark.parametrize("text,intent,modality", [
+    ("Could temperatures in Singapore reach 50 C this weekend?", "question", "possible"),
+    ("Will temperatures in Singapore reach 50 C this weekend?", "question", "asserted"),
+    ("What if temperatures in Singapore will reach 50 C this weekend?", "hypothetical", "asserted"),
+    ("Temperatures in Singapore will not reach 50 C this weekend.", "assertion", "asserted"),
+    ("Temperatures in Singapore will reach 50 C this weekend because of a heatwave.", "assertion", "asserted"),
+])
+def test_nonassertions_negation_and_extra_claims_do_not_get_prediction_conflict(text, intent, modality):
+    result = assess(claim(text, value=50, quantity="50 C", modality=modality, input_intent=intent))
+    assert result.misinformation_risk_score is None
+    assert result.forecast_context.risk_basis is None
+
+
+@pytest.mark.parametrize("changes", [{"measurement": "apparent_temperature"}, {"measurement": "surface_temperature"}])
+def test_definite_prediction_still_requires_matching_measurement(changes):
+    result = assess(claim("Temperatures in Singapore will reach 50 C this weekend.",
+        value=50, quantity="50 C", modality="asserted", **changes))
+    assert result.misinformation_risk_score is None
+
+
+def test_definite_prediction_still_requires_fresh_full_date_coverage():
+    data = claim("Temperatures in Singapore will reach 50 C this weekend.",
+                 value=50, quantity="50 C", modality="asserted")
+    for source in [evidence(data_changes={"issued_at": NOW-timedelta(hours=25)}),
+                   evidence(data_changes={"periods": [ForecastPeriod(date=START, low=25, high=34)]})]:
+        assert assess(data, [source]).misinformation_risk_score is None
+
+
 def test_compatible_prediction_is_not_a_guarantee():
     result = assess(claim("Temperatures in Singapore could reach 34 C this weekend.", value=34, quantity="34 C"))
     assert result.forecast_context.status == "supported_by_forecast"
-    assert result.misinformation_risk_score == 50 and result.scoring.status == "provisional"
+    assert result.misinformation_risk_score is None and result.scoring.status == "provisional"
     assert "not confirmation" in result.explanation
 
 
@@ -93,7 +139,7 @@ def test_pure_reported_maximum_can_be_supported():
 ])
 def test_temperature_match_does_not_verify_causes_or_other_compound_clauses(text):
     result = assess(claim(text, value=34, quantity="34 C"))
-    assert result.scoring.status == "provisional" and result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional" and result.misinformation_risk_score is None
     assert any("does not establish" in item for item in result.forecast_context.limitations)
 
 
@@ -111,7 +157,7 @@ def test_fahrenheit_conversion_matches_celsius_forecast():
 ])
 def test_scope_and_quantity_mismatches_do_not_produce_decisive_scores(changes, expected):
     result = assess(claim(**changes))
-    assert result.forecast_context.status == "unresolved" and result.misinformation_risk_score == 50
+    assert result.forecast_context.status == "unresolved" and result.misinformation_risk_score is None
     assert any(expected in item for item in result.forecast_context.limitations)
 
 
@@ -157,7 +203,7 @@ def test_temperature_bounds_are_not_mistaken_for_exact_points(phrase, value):
     result = assess(data)
     assert result.forecast_context.status == "unresolved"
     assert result.scoring.status == "provisional"
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
 
 
 def test_overall_maximum_does_not_establish_every_day_maximum():
@@ -211,7 +257,7 @@ def test_conflicting_structured_forecasts_remain_mixed():
     data = claim("Temperatures in Singapore could reach 32 C this weekend.", value=32, quantity="32 C")
     result = assess(data, [evidence("one", high=32), evidence("two", high=30)])
     assert result.forecast_context.status == "mixed"
-    assert result.scoring.status == "provisional" and result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional" and result.misinformation_risk_score is None
     assert result.forecast_context.evidence_ids == ["one", "two"]
     reported = data.model_copy(update={"extracted_claim": "MSS predicts temperatures in Singapore could reach 32 C this weekend."})
     assert assess(reported, [evidence("one", high=32), evidence("two", high=30)]).assessment_outcome == "conflicting"
@@ -234,7 +280,7 @@ def test_async_structured_route_uses_no_provider_calls():
     async def run():
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
             return await semantic.assess_with_client(claim(), RetrievalResult(retrieval_status="completed", evidence=[evidence()]), client)
-    assert asyncio.run(run()).misinformation_risk_score == 50
+    assert asyncio.run(run()).misinformation_risk_score is None
 
 
 def mixed_run(items, handler, data=None):
@@ -277,7 +323,7 @@ def test_forecast_only_web_comparison_cannot_decide_a_future_possibility(stance)
     passage = "The forecast for this weekend in Singapore gives 25 C to 34 C."
     web = evidence("web", forecast=None, passage=passage)
     result = mixed_run([evidence(), web], lambda request: web_response(passage, stance=stance))
-    assert result.scoring.status == "provisional" and result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional" and result.misinformation_risk_score is None
     assert result.assessed_evidence[1].stance == "neutral"
     assert "does not prove or disprove" in result.assessed_evidence[1].assessment_reason
 
@@ -299,7 +345,7 @@ def test_one_failed_web_call_does_not_discard_valid_refutation_or_forecast():
 
 def test_all_failed_web_calls_still_return_grounded_forecast():
     result = mixed_run([evidence(), evidence("web", forecast=None)], lambda request: httpx.Response(503))
-    assert result.scoring.status == "provisional" and result.misinformation_risk_score == 50
+    assert result.scoring.status == "provisional" and result.misinformation_risk_score is None
     assert result.forecast_context.status == "not_supported_by_forecast"
     assert "verification of the whole message is incomplete" in result.explanation
 

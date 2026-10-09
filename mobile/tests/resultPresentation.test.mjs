@@ -1,10 +1,26 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+
+test('climate plausibility finding is not hidden by an unavailable forecast', () => {
+  const view = resultPresentation({ assessment_outcome: 'highly_unlikely',
+    forecast_context: { status: 'unresolved' } });
+  assert.equal(view.title, 'This prediction is highly unlikely');
+  assert.match(view.meaning, /do not prove/);
+  assert.equal(view.color, '#963128');
+});
 import { resultPresentation, plainSourceStance, datePresentation } from '../src/utils/resultPresentation.js';
+
+test('forecast-based high risk explains the prediction without claiming impossibility', () => {
+  const result = resultPresentation({ assessment_outcome: 'contradicted',
+    forecast_context: { status: 'not_supported_by_forecast', risk_basis: 'forecast_comparison' } });
+  assert.equal(result.title, 'This prediction conflicts with the forecast');
+  assert.match(result.meaning, /not a guarantee/);
+  assert.doesNotMatch(result.title, /false|impossible/);
+});
 
 test('uncertainty never becomes a danger rating', () => {
   const result = resultPresentation({ assessment_outcome: 'insufficient_evidence', uncertainty: 'High' });
-  assert.equal(result.title, 'We could not confirm this');
+  assert.equal(result.title, 'Not enough evidence');
   assert.match(result.meaning, /true or false/);
   assert.doesNotMatch(result.title, /danger|incorrect|risk/i);
 });
@@ -12,9 +28,9 @@ test('uncertainty never becomes a danger rating', () => {
 test('unsupported is visibly different from contradicted', () => {
   const unconfirmed = resultPresentation({ assessment_outcome: 'unsupported' });
   const contradicted = resultPresentation({ assessment_outcome: 'contradicted' });
-  assert.equal(unconfirmed.title, 'This claim is not confirmed');
+  assert.equal(unconfirmed.title, 'Not enough evidence');
   assert.match(unconfirmed.meaning, /does not prove the claim is false/);
-  assert.equal(contradicted.title, 'This claim appears incorrect');
+  assert.equal(contradicted.title, 'Evidence suggests this is false');
 });
 
 test('an unverified future change keeps the date limitation in the plain explanation', () => {
@@ -33,12 +49,12 @@ test('old saved results use their verdict without reversing uncertainty', () => 
 
 test('zero never becomes a guarantee of truth', () => {
   const result = resultPresentation({ assessment_outcome: 'supported', misinformation_risk_score: 0 });
-  assert.equal(result.title, 'The sources support this claim');
+  assert.equal(result.title, 'Evidence suggests this is true');
   assert.match(result.action, /mistake/);
 });
 
 test('numeric score cannot override the explicit conflict verdict', () => {
-  assert.equal(resultPresentation({ assessment_outcome: 'conflicting', misinformation_risk_score: 20 }).title, 'The sources disagree');
+  assert.equal(resultPresentation({ assessment_outcome: 'conflicting', misinformation_risk_score: 20 }).title, 'Mixed evidence');
 });
 
 test('failures and opinions do not receive truth verdicts', () => {
@@ -77,7 +93,7 @@ test('incomplete or disagreeing forecasts stay distinct from a supported forecas
   assert.equal(resultPresentation({ forecast_context: { status: 'unresolved' } }).title, 'We could not compare the full forecast');
   assert.equal(resultPresentation({ forecast_context: { status: 'mixed' } }).title, 'The forecasts differ');
   assert.equal(resultPresentation({ processing_status: 'failed', forecast_context: { status: 'supported_by_forecast' } }).outcome, 'failed');
-  assert.equal(resultPresentation({ assessment_outcome: 'contradicted', forecast_context: { status: 'unresolved' } }).title, 'This claim appears incorrect');
+  assert.equal(resultPresentation({ assessment_outcome: 'contradicted', forecast_context: { status: 'unresolved' } }).title, 'Evidence suggests this is false');
 });
 
 test('relative dates show the submission-time assumption and can be corrected', () => {
@@ -92,12 +108,12 @@ test('relative dates show the submission-time assumption and can be corrected', 
 test('a partial forecast comparison never hides a decisive whole-claim finding', () => {
   for (const status of ['unresolved', 'supported_by_forecast', 'not_supported_by_forecast', 'mixed']) {
     assert.equal(resultPresentation({ assessment_outcome: 'contradicted', forecast_context: { status } }).title,
-      'This claim appears incorrect');
+      'Evidence suggests this is false');
     assert.equal(resultPresentation({ assessment_outcome: 'conflicting', forecast_context: { status } }).title,
-      'The sources disagree');
+      'Mixed evidence');
   }
   assert.equal(resultPresentation({ assessment_outcome: 'supported',
-    forecast_context: { status: 'not_supported_by_forecast' } }).title, 'The sources support this claim');
+    forecast_context: { status: 'not_supported_by_forecast' } }).title, 'Evidence suggests this is true');
 });
 
 test('explicit dates do not claim the user omitted a year', () => {

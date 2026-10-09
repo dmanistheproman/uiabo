@@ -6,12 +6,14 @@ import re
 
 from .dates import assumption_notice, infer_date_context, submission_time
 from .models import ClaimContext, ClaimQuantity
+from .interpretation import input_intent, claim_relationship
+from .rankings import political_salary_ranking, SALARY_SCOPE
 
 
 NUMBER = r"[-+]?\d+(?:\.\d+)?"
 TEMPERATURE = re.compile(
     rf"(?<![\w.])(?P<value>{NUMBER})\s*(?:(?:°|degrees?\s*)\s*)?"
-    r"(?P<unit>Celsius|Fahrenheit|C|F)\b", re.I)
+    r"(?P<unit>Celsius|Celcius|Fahrenheit|C|F)\b", re.I)
 OTHER_QUANTITY = re.compile(
     rf"(?<![\w.])(?P<value>{NUMBER})\s*(?P<unit>%|percent\b|baht\b|dollars?\b|"
     r"months?\b|years?\b|km/h\b|mm\b|kilomet(?:er|re)s?\b)", re.I)
@@ -42,6 +44,8 @@ def _location(text, *, allow_leading=False):
     """Only retain a literal place-like span; no geocoding or assumed home city."""
     candidates = []
     patterns = [
+        (rf"^\s*(?i:could|will|can|might)\s+(?P<place>{PLACE_WORD}(?:\s+{PLACE_WORD}){{0,4}}?)\s+"
+         r"(?:reach|hit|be|have|experience)\b", re.I),
         (rf"(?=\b(?:in|across|throughout|over)\s+(?P<place>{PLACE_WORD}(?:\s+{PLACE_WORD}){{0,5}}))", re.I),
         (rf"(?=\b(?:weather|temperatures?|forecasts?)\s+(?:for|of)\s+(?P<place>{PLACE_WORD}(?:\s+{PLACE_WORD}){{0,5}}))", re.I),
         (rf"^\s*(?P<place>{PLACE_WORD}(?:\s+{PLACE_WORD}){{0,4}}?)(?:'s|’s)?\s+"
@@ -88,7 +92,7 @@ def _quantities(text):
     return [item for _, item in sorted(found, key=lambda pair: pair[0])[:12]]
 
 
-def build_claim_context(text, now=None):
+def build_claim_context(text, now=None, *, original_text=None):
     """Build deterministic context from literal text and one submission instant.
 
     Temperature quantities retain their original value; C/F are canonical unit
@@ -101,9 +105,15 @@ def build_claim_context(text, now=None):
     temperatures = [item for item in quantities if item.unit in {'C', 'F'}]
     location = _location(text, allow_leading=bool(temperatures or WEATHER.search(text)))
     assumptions = []
+    if political_salary_ranking(text):
+        assumptions.append(SALARY_SCOPE)
+    if re.search(r"\b(?:run|ran)\s+by\b", text, re.I):
+        assumptions.append("Interpreted 'run by' as day-to-day management. Shareholding and financial support are assessed separately from operational decisions.")
     if date_context and date_context.basis != 'explicit_date':
         assumptions.append(assumption_notice(date_context))
     weather = bool(WEATHER.search(text) or APPARENT.search(text) or SURFACE.search(text))
+    if temperatures and date_context and re.search(r"\b(?:will|could|may|might)\s+(?:be|reach|hit)\b", text, re.I):
+        weather = True
     if temperatures and location and re.search(r"\b(?:reach|hit|rise|climb|drop|fall)\b", text, re.I):
         weather = True
     measurement = 'unspecified'
@@ -123,5 +133,6 @@ def build_claim_context(text, now=None):
                   else 'policy_change' if POLICY.search(text) and (future_language or date_context)
                   else 'general')
     return ClaimContext(claim_type=claim_type, modality='possible' if POSSIBILITY.search(modality_text) else 'asserted',
+        input_intent=input_intent(original_text or text), relationship=claim_relationship(text),
         location=location, measurement=measurement, quantities=quantities,
         as_of=assessed_at.date(), assessed_at=assessed_at, assumptions=assumptions)

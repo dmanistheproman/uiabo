@@ -16,6 +16,8 @@ from app.pipeline.evidence_assessment.scoring import unscored_summary, provision
 from app.pipeline.orchestration.repository import ResultRepository
 from app.pipeline.shared.dates import infer_date_context, assumption_notice
 from app.pipeline.shared.context import build_claim_context
+from app.pipeline.shared.credibility import build_credibility
+from app.pipeline.shared.interpretation import input_intent
 from app.pipeline.shared.errors import (
     PipelineComponentError,
     PipelineContractError,
@@ -103,12 +105,12 @@ class PipelineOrchestrator:
             # date or rewrite the quoted claim. Use one clock for the whole run.
             claim.date_context = (infer_date_context(claim.extracted_claim, created_at)
                                   if claim.checkable else None)
-            claim.claim_context = (build_claim_context(claim.extracted_claim, created_at)
+            claim.claim_context = (build_claim_context(claim.extracted_claim, created_at, original_text=prepared.normalised_text)
                                    if claim.checkable else None)
 
             retrieval: RetrievalResult | None = None
             if not claim.checkable:
-                assessment = _non_checkable_assessment(claim)
+                assessment = _non_checkable_assessment(claim, prepared.normalised_text)
             else:
                 retrieval = self._run_component(
                     stage="evidence_retrieval",
@@ -119,16 +121,24 @@ class PipelineOrchestrator:
                 warnings.extend(retrieval.warnings)
 
                 if retrieval.retrieval_status == "failed":
+                    pages_unavailable = retrieval.failure_reason == "source_pages_unavailable"
                     raise PipelineComponentError(
-                        "Analysis could not be completed because evidence "
-                        "search is temporarily unavailable.",
-                        error_code="RETRIEVAL_UNAVAILABLE",
+                        ("We found possible sources, but could not read their pages. "
+                         "Please try again later." if pages_unavailable else
+                         "Analysis could not be completed because evidence "
+                         "retrieval is temporarily unavailable. Please try again later."),
+                        error_code="SOURCE_PAGES_UNAVAILABLE" if pages_unavailable else "RETRIEVAL_UNAVAILABLE",
                         stage="evidence_retrieval",
                         retryable=True,
                     )
 
                 if retrieval.retrieval_status == "no_evidence":
                     assessment = _no_evidence_assessment(retrieval)
+                    from app.pipeline.shared.components import decompose_claim
+                    components = decompose_claim(claim.extracted_claim or "")
+                    if components and claim.claim_context.claim_type != "weather_forecast":
+                        from app.pipeline.evidence_assessment.components import unresolved_components
+                        assessment = unresolved_components(claim, retrieval, components)
                 else:
                     assessment = self._run_component(
                         stage="evidence_assessment",
@@ -137,6 +147,10 @@ class PipelineOrchestrator:
                         args=(claim, retrieval),
                     )
 
+            if (claim.claim_context and claim.claim_context.claim_type == "weather_forecast"
+                    and not claim.claim_context.location):
+                assessment.explanation = "A location is needed to check this weather claim. Please include the city or country."
+                assessment.recommended_action = "Add a location, such as 'in Singapore', and check the message again."
             if claim.date_context and claim.date_context.basis != "explicit_date":
                 assessment.uncertainty_reasons.append(assumption_notice(claim.date_context))
                 if assessment.uncertainty == "Low":
@@ -262,8 +276,9 @@ def _validate_component_output(
         ) from error
 
 
-def _non_checkable_assessment(claim: ClaimAnalysis) -> AssessmentResult:
+def _non_checkable_assessment(claim: ClaimAnalysis, original_text: str = "") -> AssessmentResult:
     category = claim.claim_category.replace("_", " ")
+    hypothetical = input_intent(original_text) == "hypothetical"
     return AssessmentResult(
         concern_label="Not Enough Information",
         misinformation_risk_score=None,
@@ -273,11 +288,13 @@ def _non_checkable_assessment(claim: ClaimAnalysis) -> AssessmentResult:
         uncertainty_reasons=[
             "No objectively checkable factual claim was found."
         ],
-        explanation=(
+        explanation=("This is an imagined scenario, not an assertion that the event will happen. A misinformation score does not apply."
+            if hypothetical else
             f"This statement was classified as {category}, so it cannot be "
             "assessed as a factual misinformation claim."
         ),
-        recommended_action=(
+        recommended_action=("To check a prediction, state what is claimed to happen, where and when."
+            if hypothetical else
             "Treat this as non-factual content rather than a verified fact."
         ),
         assessed_evidence=[],
@@ -292,7 +309,7 @@ def _no_evidence_assessment(
     ]
     return AssessmentResult(
         concern_label="Not Enough Information",
-        misinformation_risk_score=50,
+        misinformation_risk_score=None,
         assessment_outcome="insufficient_evidence",
         scoring=provisional_summary("No sufficient evidence for a factual verdict was found."),
         uncertainty="High",
@@ -321,7 +338,7 @@ def _assemble_result(
 ) -> TextAnalysisResult:
     evidence = _combine_evidence(retrieval, assessment.assessed_evidence)
 
-    return TextAnalysisResult(
+    result = TextAnalysisResult(
         result_id=result_id,
         original_text=prepared.original_text,
         extracted_claim=claim.extracted_claim,
@@ -330,8 +347,10 @@ def _assemble_result(
         concern_label=assessment.concern_label,
         misinformation_risk_score=assessment.misinformation_risk_score,
         scoring=assessment.scoring,
+        component_assessment=assessment.component_assessment,
         policy_context=assessment.policy_context,
         forecast_context=assessment.forecast_context,
+        plausibility_context=assessment.plausibility_context,
         claim_context=claim.claim_context,
         uncertainty=assessment.uncertainty,
         uncertainty_reasons=assessment.uncertainty_reasons,
@@ -349,6 +368,9 @@ def _assemble_result(
         pipeline_version=pipeline_version,
         created_at=created_at,
     )
+    return TextAnalysisResult.model_validate({
+        **result.model_dump(), "credibility": build_credibility(result),
+    })
 
 
 def _combine_evidence(
@@ -390,6 +412,7 @@ def _combine_evidence(
             evidence_quote=assessed[candidate.evidence_id].evidence_quote,
             provenance=candidate.provenance,
             forecast=candidate.forecast,
+            climate_record=candidate.climate_record,
         )
         for candidate in retrieval.evidence
     ]

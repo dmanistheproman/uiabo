@@ -13,12 +13,88 @@ from app.pipeline.orchestration.service import PipelineOrchestrator
 from app.pipeline.shared.models import (
     AssessmentResult, AssessedEvidence, ClaimAnalysis, EvidenceCandidate,
     ForecastContext, ForecastData, ForecastPeriod, RetrievalResult,
+    EvidenceProvenance,
 )
 
 
 TEXT = 'Temperatures in Singapore could reach 52°C this weekend because of a record-breaking heatwave.'
 # Thursday in Singapore, Wednesday in UTC: all stages must share the same clock.
 NOW = datetime(2026, 9, 16, 18, tzinfo=timezone.utc)
+
+
+def test_climate_plausibility_survives_api_history_and_replay(signed_analysis):
+    from app.pipeline.evidence_assessment.pool import assess_pool_evidence
+    from app.pipeline.shared.climate import RECORD_URL, render_record
+    from app.pipeline.shared.models import ClimateRecord, TextAnalysisResult
+    now = datetime(2026, 10, 4, 8, tzinfo=timezone.utc)
+    record = ClimateRecord(maximum_c=37, updated_at=date(2026, 9, 22))
+    passage = render_record(record)
+    source = EvidenceCandidate(evidence_id='climate', url=RECORD_URL,
+        title='MSS historical extremes', publisher='MSS', source_type='government',
+        retrieved_at=now, retrieval_score=.9, passage=passage, climate_record=record,
+        provenance=EvidenceProvenance(source_policy='catalogue', source_reason='Fixed MSS page',
+            origin_group='gov.sg', discovery_method='source_link', relevance='context',
+            relevance_reason='Historical context', relevance_quote=passage,
+            applicability='uncertain_time', applicability_reason='Not a forecast'))
+    pipeline = PipelineOrchestrator(prepare_input=prepare_text,
+        analyze_claim=lambda prepared: ClaimAnalysis(extracted_claim=prepared.normalised_text,
+            claim_category='factual', checkable=True, claim_confidence=1, classification_reason='Prediction'),
+        retrieve_evidence=lambda claim: RetrievalResult(retrieval_status='completed', evidence=[source]),
+        assess_evidence=assess_pool_evidence, repository=InMemoryResultRepository(), clock=lambda: now)
+    app.dependency_overrides[get_pipeline_orchestrator] = lambda: pipeline
+    with TestClient(app) as client:
+        response = client.post('/analysis/text', json={'text': 'Singapore will hit 50 degree celcius next Saturday.'},
+                               headers={'Idempotency-Key': 'climate-check'})
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert result['assessment_outcome'] == 'highly_unlikely'
+        assert result['misinformation_risk_score'] == 85
+        saved = client.get('/analysis/results/' + result['result_id']).json()
+        history = client.get('/analysis/results').json()['results'][0]
+        replay = client.post('/analysis/text', json={'text': result['original_text']},
+                             headers={'Idempotency-Key': 'climate-check'}).json()
+        for value in [saved, history, replay]:
+            assert value['plausibility_context'] == result['plausibility_context']
+            assert value['evidence'][0]['climate_record'] == result['evidence'][0]['climate_record']
+            TextAnalysisResult.model_validate(value)
+        # A saved finding cannot silently lose or replace its source.
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            TextAnalysisResult.model_validate({**result, 'evidence': []})
+
+
+def test_prediction_conflict_score_and_basis_survive_api_history(signed_analysis):
+    from app.pipeline.evidence_assessment.pool import assess_pool_evidence
+    from app.pipeline.shared.forecast_format import render_forecast
+    data = ForecastData(location='Singapore', issued_at=NOW,
+        periods=[ForecastPeriod(date=date(2026, 9, 19), low=25, high=34)])
+    passage = render_forecast(data)
+    source = EvidenceCandidate(evidence_id='official', title='Official forecast', publisher='NEA / MSS',
+        url='https://api-open.data.gov.sg/v2/real-time/api/four-day-outlook', source_type='government',
+        retrieved_at=NOW, retrieval_score=.95, passage=passage, forecast=data,
+        provenance=EvidenceProvenance(source_policy='catalogue', source_reason='Official API',
+            origin_group='gov.sg', discovery_method='official_api', relevance='direct',
+            relevance_reason='Matching forecast', relevance_quote=passage,
+            applicability='established', applicability_reason='Same location, date and measurement'))
+    pipeline = PipelineOrchestrator(prepare_input=prepare_text,
+        analyze_claim=lambda prepared: ClaimAnalysis(extracted_claim=prepared.normalised_text,
+            claim_category='factual', checkable=True, claim_confidence=1, classification_reason='Prediction'),
+        retrieve_evidence=lambda claim: RetrievalResult(retrieval_status='completed', evidence=[source]),
+        assess_evidence=assess_pool_evidence, repository=InMemoryResultRepository(), clock=lambda: NOW)
+    app.dependency_overrides[get_pipeline_orchestrator] = lambda: pipeline
+    with TestClient(app) as client:
+        response = client.post('/analysis/text', json={'text': 'This Saturday it will be 50 degree celcius in Singapore.'},
+                               headers={'Idempotency-Key': 'prediction-conflict'})
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert result['misinformation_risk_score'] == 95
+        assert result['forecast_context']['risk_basis'] == 'forecast_comparison'
+        assert result['forecast_context']['deviation_c'] == 16
+        saved = client.get('/analysis/results/' + result['result_id']).json()
+        history = client.get('/analysis/results').json()['results'][0]
+        assert saved['forecast_context'] == history['forecast_context'] == result['forecast_context']
+        assert saved['scoring'] == result['scoring']
 
 
 def test_relative_dates_context_and_forecast_survive_api_history_and_replay(signed_analysis):
@@ -44,7 +120,7 @@ def test_relative_dates_context_and_forecast_survive_api_history_and_replay(sign
     def assess(claim, retrieval):
         assert claim is seen[0]
         return AssessmentResult(concern_label='Not Enough Information',
-            misinformation_risk_score=50, assessment_outcome='unsupported',
+            misinformation_risk_score=None, assessment_outcome='unsupported',
             scoring=provisional_summary('The prediction remains unverified.'),
             uncertainty='High', uncertainty_reasons=['A forecast cannot establish a future event.'],
             explanation='The official forecast does not support 52°C; the claimed cause remains unresolved.',

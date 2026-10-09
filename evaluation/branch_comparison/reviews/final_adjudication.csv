@@ -1,0 +1,61 @@
+﻿id,claim,reviewer_a,label_a,reason_a,sources_a,reviewer_b,label_b,reason_b,sources_b,final_label,adjudicator,decision_reason,final_sources,reviewed_at,dataset_sha256
+F01,"As of 29 September 2026, Singapore's Beverage Container Return Scheme uses a refundable 10-cent deposit for eligible containers carrying the deposit mark.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F02,Singapore's Beverage Container Return Scheme began on 1 April 2025.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F03,"As of 29 September 2026, every glass drink bottle in Singapore is covered by the Beverage Container Return Scheme.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F04,"Can I claim the Beverage Container Return Scheme deposit back for an eligible marked container in Singapore, as of 29 September 2026?",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F05,Singapore's standard GST rate increased to 9% on 1 January 2024.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F06,Singapore's standard GST rate was already 9% throughout 2023.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F07,Goods exported from Singapore can qualify for zero-rated GST when IRAS's conditions are met.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F08,Singapore police officers will ask people to transfer their savings into a personal bank account to help an investigation.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F09,A caller claiming to be from MAS says I must disclose my banking OTP to prove I am innocent. This is a standard government verification procedure.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F10,Is it normal for a Singapore government official to ask me to hand over my bank card and PIN to an unknown person?,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F11,"As of 29 September 2026, e-scooters are generally allowed on Singapore footpaths if the rider travels slowly.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F12,"As of 29 September 2026, Singapore requires e-scooters used on cycling paths to be registered.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F13,"As of 29 September 2026, every footpath in Singapore allows bicycles without exception.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F14,The gov.sg SMS Sender ID is restricted to the Singapore Government and its agencies.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F15,Any private company in Singapore can register the gov.sg SMS Sender ID for its marketing messages.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F16,It is safe to give my Singpass password and OTP to a stranger who says they are helping with a government payout.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F17,NLB members can borrow eBooks using the NLB Mobile app.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F18,NLB provides only physical books and has no eBook borrowing service.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F19,Using the same unwashed chopping board for raw chicken and ready-to-eat food can cause cross-contamination.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F20,Food is always safe to eat if it smells normal.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F21,"Freezing food kills every harmful bacterium, making cooking unnecessary.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F22,Putting ordinary metal cutlery in a microwave oven is always safe.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F23,Standing under an isolated tall tree is the safest place outdoors during a thunderstorm.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F24,A fully enclosed metal-topped car can offer protection from lightning when its windows are closed.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F25,Scientists can reliably predict the exact day and time of every earthquake months in advance.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F26,The ozone layer absorbs much of the Sun's harmful ultraviolet radiation.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F27,Carbon dioxide is the most abundant gas in Earth's atmosphere.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F28,Auroras are caused by sunlight reflecting off polar ice.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F29,Earth is approximately 4.5 billion years old.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F30,An octopus has three hearts.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F31,Spiders are insects with six legs.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F32,All bats are completely blind.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F33,Venus is a planet even though people sometimes call it the morning star.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F34,The International Astronomical Union currently classifies Pluto as one of the eight planets.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F35,Astronauts float on the International Space Station because there is no gravity at its altitude.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F36,A padlock icon and HTTPS guarantee that a website is honest and cannot be a phishing site.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F37,A QR code can lead to a phishing website.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F38,A fluent answer from an AI chatbot guarantees that every fact in it is correct.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F39,Missing EXIF metadata proves that a photograph is AI-generated.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F40,A real photograph can still mislead people when shared with a false caption about where it was taken.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F41,Singapore became independent on 9 August 1965.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F42,Singapore became independent in 1975.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F43,Singapore was one of the five founding members of ASEAN in 1967.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F44,Singapore uses UTC+8 as its standard time.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F45,Singapore changes its clocks every summer for daylight saving time.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F46,Is nitrogen the most abundant gas in Earth's atmosphere?,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F47,Is Mercury the closest planet to the Sun?,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F48,Does pure water boil at about 100 degrees Celsius at standard atmospheric pressure?,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F49,The airport will close next Friday. Everyone needs to change their flights.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F50,"From October, everyone above 60 must pay the new monthly fee.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F51,"The government owns this company, so it personally approves every purchase the company makes.",,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F52,He confirmed yesterday that all the tests were fake.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F53,My neighbour paid 18 dollars for lunch at a coffee shop yesterday.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F54,My aunt received a WhatsApp message about a new subsidy this morning.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F55,Taking the MRT is more enjoyable than taking a taxi.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F56,Blue is the best colour for an app.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F57,What if all buses in Singapore became free tomorrow?,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F58,Imagine that humans could breathe in outer space without equipment.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F59,Every MRT ride in Singapore will definitely become free on 1 January 2035.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34
+F60,Singapore will definitely win the football World Cup in 2038.,,,,,,,,,,,,,,3d0f18ecde344f0bdf9da41511929ee0b910cfd2228e26f8d4329a9202c59b34

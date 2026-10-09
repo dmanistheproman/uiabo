@@ -11,15 +11,32 @@ import re
 from urllib.parse import urlsplit, urlunsplit
 
 from .sources import SOURCES, canonical_url, source_details, SourceNotAllowed
+from app.pipeline.shared.interpretation import claim_relationship
+from app.pipeline.shared.rankings import political_salary_ranking
 
 # Registry policies are linked in evaluation/trusted_sources/README.md.
 GOVERNMENT_NAMESPACES = ("gov.uk", "gov.au", "gov")
 BLOCKED_HOSTS = ("localhost", "local", "internal", "test", "invalid", "example")
 LEAD_ONLY_PLATFORMS = ("facebook.com", "instagram.com", "reddit.com", "tiktok.com", "youtube.com", "quora.com")
 
+# Reviewed identities, narrowly scoped to corporate relationships. This registry
+# grants eligibility, never truth. See CLAIM_INTERPRETATION.md for review links.
+FIRST_PARTY = {
+    "temasek.com.sg": ("Temasek", r"\b(?:Temasek|SIA|Singapore Airlines)\b", "temasek-portfolio"),
+    "singaporeair.com": ("Singapore Airlines", r"\b(?:SIA|Singapore Airlines)\b", "temasek-portfolio"),
+}
+
+
+def preferred_corporate_domains(claim):
+    domains = [domain for domain in FIRST_PARTY if classify_source("https://" + domain, claim).eligible]
+    return ["gov.sg", *domains] if domains else None
+
 
 def public_url(value: str) -> str:
-    """Syntactic public-web boundary, not a DNS/redirect security guarantee."""
+    """Validate a fetch URL without changing its hostname, path or query semantics.
+
+    Syntactic public-web boundary, not a DNS/redirect security guarantee.
+    """
     if (not isinstance(value, str) or len(value) > 2048
             or re.search(r"[\s\\\x00-\x1f\x7f]", value)):
         raise ValueError("Invalid public URL")
@@ -38,14 +55,18 @@ def public_url(value: str) -> str:
             raise ValueError("IP-style URL is not accepted") from None
     else:
         raise ValueError("IP URLs are not accepted")
-    if host.startswith("www."):
-        host = host[4:]
-    # Only legacy-approved URLs lose tracking; unknown query semantics survive.
-    clean = urlunsplit((parsed.scheme, host, parsed.path or "/", parsed.query, ""))
+    return urlunsplit((parsed.scheme, host, parsed.path or "/", parsed.query, ""))
+
+
+def url_identity(value: str) -> str:
+    """Deduplication key only: never send this normalised URL to extraction."""
+    clean = public_url(value)
     try:
         return canonical_url(clean)
     except SourceNotAllowed:
-        return clean
+        parsed = urlsplit(clean)
+        host = parsed.hostname.removeprefix("www.")
+        return urlunsplit((parsed.scheme, host, parsed.path, parsed.query, ""))
 
 
 @dataclass(frozen=True)
@@ -58,12 +79,22 @@ class SourceDecision:
     reason: str
 
 
-def classify_source(url: str) -> SourceDecision:
+def classify_source(url: str, claim: str = "") -> SourceDecision:
     host = urlsplit(public_url(url)).hostname
+    if (host in {"politicalsalaries.com", "www.politicalsalaries.com"}
+            and political_salary_ranking(claim)):
+        return SourceDecision(True, "catalogue", "Political Salaries", "other", "politicalsalaries.com",
+            "Reviewed political-pay comparison project for salary-ranking claims only. Manually compiled public figures can be incomplete or dated; verify metric, period and underlying sources.")
+    for domain, (publisher, subjects, origin) in FIRST_PARTY.items():
+        if ((host == domain or host.endswith("." + domain))
+                and claim_relationship(claim) != "general" and re.search(subjects, claim, re.I)):
+            return SourceDecision(True, "scoped_first_party", publisher, "other", origin,
+                "Reviewed first-party publisher for its own corporate relationships. Check that the passage establishes the named company's scope; self-publication is not independent corroboration.")
     for domain in SOURCES:
         if host == domain or host.endswith("." + domain):
             publisher, kind = source_details(url)
-            origin = ("thailand-government" if domain in {"mfa.go.th", "thaiembassy.org"}
+            origin = ("bbc" if domain in {"bbc.com", "bbc.co.uk"} else
+                      "thailand-government" if domain in {"mfa.go.th", "thaiembassy.org"}
                       else "gov" if kind == "government" and domain.endswith(".gov") else domain)
             return SourceDecision(True, "catalogue", publisher, kind, origin,
                 "Publisher is in the reviewed prototype catalogue; passage relevance and applicability are checked separately.")
@@ -82,13 +113,13 @@ def extractable_lead(url):
     return not any(host == domain or host.endswith("." + domain) for domain in LEAD_ONLY_PLATFORMS)
 
 
-def original_links(markdown: str) -> list[str]:
+def original_links(markdown: str, claim: str = "") -> list[str]:
     """Follow only literal, eligible source links; never an LLM-invented URL."""
     found = []
     for value in re.findall(r"https?://[^\s<>\]\)\"']+", markdown[:60000]):
         try:
             clean = public_url(value.rstrip(".,;"))
-            if classify_source(clean).eligible and clean not in found:
+            if classify_source(clean, claim).eligible and clean not in found:
                 found.append(clean)
         except ValueError:
             continue

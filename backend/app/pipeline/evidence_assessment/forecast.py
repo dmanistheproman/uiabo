@@ -9,10 +9,16 @@ import re
 
 from app.pipeline.shared.forecast_format import render_forecast
 from app.pipeline.shared.models import AssessedEvidence, ForecastContext
+from app.pipeline.shared.interpretation import input_intent
 from . import service as baseline
 
 
 MAX_FORECAST_AGE = timedelta(hours=24)
+# Prototype decision policy, not a meteorological error distribution. Ignore
+# small deviations; increase concern for definite predictions farther outside
+# a matching issued range. Calibrate on labelled examples before deployment.
+MIN_FORECAST_GAP_C = 2.0
+STRONG_FORECAST_GAP_C = 10.0
 FORECAST_LIMIT = "A forecast can change and is not a guarantee of what will happen."
 UNASSESSED_WEB = "Additional web sources were retained but were not substantively assessed in this structured forecast comparison."
 WEB_UNAVAILABLE = "Some additional web sources could not be assessed reliably. The official forecast comparison remains available, but verification of the whole message is incomplete."
@@ -74,8 +80,24 @@ fields, even if a causal keyword list did not recognise them.
                  *(item.text for item in claim.claim_context.quantities)]:
         if span:
             text = re.sub(re.escape(span), " ", text, flags=re.I)
-    allowed = set("mss nea meteorological service singapore national environment agency s weather forecast forecasts predict predicts expects says states shows the air temperature temperatures in could may might will can reach reaching high highs maximum a of is are to be expected".split())
+    allowed = set("mss nea meteorological service singapore national environment agency s weather forecast forecasts predict predicts expects says states shows the air temperature temperatures in could may might will can reach reaching high highs maximum a of is are to be expected it hit on at".split())
     return set(re.findall(r"[a-z]+", text.casefold())) <= allowed
+
+
+def _definite_prediction(claim):
+    context = claim.claim_context
+    text = claim.extracted_claim or ""
+    return (context.input_intent == "assertion" and input_intent(text) == "assertion"
+            and context.modality == "asserted" and bool(re.search(r"\b(?:will|shall)\b", text, re.I))
+            and not re.search(r"\b(?:not|never|if|unless|would|could|may|might|can)\b|n['’]t\b", text, re.I)
+            and _simple_temperature_report(claim))
+
+
+def forecast_gap_strength(gap):
+    if gap < MIN_FORECAST_GAP_C:
+        return 0.0
+    return round(0.60 + 0.30 * min(1.0,
+        (gap - MIN_FORECAST_GAP_C) / (STRONG_FORECAST_GAP_C - MIN_FORECAST_GAP_C)), 4)
 
 
 def _matching_periods(claim, source):
@@ -119,8 +141,10 @@ def assess_structured(claim, retrieval):
     causal = bool(CAUSAL.search(text))
     compound = causal or bool(OTHER_CLAUSES.search(text))
     assessed, matches, limitations = [], [], []
+    prediction_gaps = []
     for source in retrieval.evidence:
         stance, quote = "neutral", None
+        prediction_strength = None
         if source.forecast is None:
             reason = "This web source is retained for reading; it was not used to decide the structured forecast comparison."
         else:
@@ -143,10 +167,21 @@ def assess_structured(claim, retrieval):
                 elif reported and compatible and not compound and _simple_temperature_report(claim) and abs(target - high) < 0.05 and re.search(r"\b(?:reach|highs?|maximum)\b", text, re.I):
                     stance = "supporting"
                     reason += "The reported maximum agrees with the issued forecast; actual future weather is not guaranteed."
+                elif not reported and not compatible and not compound and _definite_prediction(claim):
+                    gap = max(low - target, target - high, 0)
+                    strength = forecast_gap_strength(gap)
+                    if strength:
+                        stance, prediction_strength = "contradicting", strength
+                        prediction_gaps.append(gap)
+                        reason += (f"This definite prediction is {gap:g} degrees Celsius outside the issued range. "
+                                   "It conflicts with the current forecast; this is not proof of future impossibility.")
+                    else:
+                        reason += "The small difference is insufficient for a high-concern prediction finding."
                 else:
                     reason += "This compares a prediction; it does not prove or disprove what will happen."
         assessed.append(AssessedEvidence(evidence_id=source.evidence_id, stance=stance,
-            quality_score=baseline.calculate_quality_score(source, stance),
+            quality_score=min(baseline.calculate_quality_score(source, stance), prediction_strength)
+                if prediction_strength is not None else baseline.calculate_quality_score(source, stance),
             assessment_reason=reason, evidence_quote=quote))
 
     if causal:
@@ -179,11 +214,21 @@ def assess_structured(claim, retrieval):
     if result.scoring.status == "provisional" and matches:
         result.assessment_outcome = "unsupported"
     result.explanation = explanation
-    if result.assessment_outcome == "contradicted":
+    prediction_conflict = bool(prediction_gaps and result.assessment_outcome == "contradicted")
+    if prediction_conflict:
+        result.explanation = (f"The prediction conflicts with the current official forecast of {low:g} to {high:g} degrees Celsius "
+            f"for the checked dates. The claimed temperature is {max(prediction_gaps):g} degrees outside that range. "
+            "Do not share this definite prediction as established fact. Forecasts can change.")
+        result.scoring.reasons.append("forecast-gap-v1: concern reflects the size of a definite prediction's conflict with a matching forecast; it is not a probability or a claim of impossibility.")
+        result.uncertainty = "Medium"
+    elif result.assessment_outcome == "contradicted":
         result.explanation += " The claim about what the official forecast says is contradicted by that forecast."
     result.recommended_action = "Read the latest official forecast before sharing. Check the dates and whether the number means air temperature or feels-like temperature."
     result.uncertainty_reasons = list(dict.fromkeys(limitations))[:8]
-    result.forecast_context = ForecastContext(status=status, explanation=explanation,
+    result.forecast_context = ForecastContext(status=status, explanation=result.explanation if prediction_conflict else explanation,
+        risk_basis="forecast_comparison" if prediction_conflict else None,
+        scoring_rule="forecast-gap-v1" if prediction_conflict else None,
+        deviation_c=max(prediction_gaps) if prediction_conflict else None,
         limitations=result.uncertainty_reasons, evidence_ids=[item[0].evidence_id for item in matches][:6],
         start_date=claim.date_context.start_date if claim.date_context else None,
         end_date=claim.date_context.end_date if claim.date_context else None,

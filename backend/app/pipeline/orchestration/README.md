@@ -7,7 +7,7 @@ This part is implemented. It:
 - Maintains the shared schemas and interfaces.
 - Calls pipeline components in the correct order.
 - Skips retrieval for non-checkable content.
-- Assigns a provisional 50 to completed factual checks when evidence is insufficient.
+- Leaves completed factual checks unscored when evidence is insufficient.
 - Handles component failures without returning a false assessment.
 - Combines outputs into `TextAnalysisResult`.
 - Saves submissions, results, evidence, source links, warnings, timestamps, and the pipeline version in Firestore.
@@ -51,11 +51,11 @@ In `dependencies.py`, import each completed function and replace the matching `_
 
 - A non-checkable claim skips retrieval and assessment and returns `Not Enough Information`.
 - A completed search with no evidence skips semantic assessment and returns
-  `Not Enough Information` with a provisional 50/100 and an explicit explanation.
+  `Not Enough Information` with a null score (Not rated) and an explicit explanation.
 - A technical retrieval failure returns a controlled API error. It is not reported as missing evidence.
 - Invalid component output returns a contract error and is never shown as a normal assessment.
 
-All four text stages are connected. Evidence retrieval uses Google Fact Check and Tavily. Search failures without usable evidence return `RETRIEVAL_UNAVAILABLE`; partial failures with evidence retain warnings. Claim-provider failures stop earlier with a controlled claim-analysis error rather than a completed `Not Enough Information` result. The configured semantic or lexical assessor uses evidence-v3 scoring; broader accuracy evaluation remains necessary.
+All four text stages are connected. Evidence retrieval uses Google Fact Check and Tavily. Retrieval failures without usable evidence return `RETRIEVAL_UNAVAILABLE`. In web mode, successful discovery with no readable eligible pages returns `SOURCE_PAGES_UNAVAILABLE` with a specific explanation. Both are retryable HTTP 503 errors; partial failures with evidence retain warnings. Claim-provider failures stop earlier with a controlled claim-analysis error rather than a completed `Not Enough Information` result. The configured semantic or lexical assessor uses evidence-v4 scoring; broader accuracy evaluation remains necessary.
 
 ## Claim interpretation and forecasts
 
@@ -82,3 +82,35 @@ The normal account API stores these optional fields with the result. History
 and idempotent retries retain the original interpretation instead of recalculating
 "this weekend" later. The mobile result shows the dates and a correction action;
 a corrected submission creates a new check. Older saved records remain readable.
+
+### Public credibility contract
+
+Final assembly adds the validated `credibility-v2` rating before API output and
+Firestore persistence. Higher means evidence supports the claim; lower means
+evidence contradicts it. Insufficient evidence has a null score. The old risk
+field retains its old direction for compatibility and is not displayed by the
+mobile app. See the [assessment contract](../evidence_assessment/README.md#credibility-score-contract-6-october-2026)
+for the formula, five evidence labels, unrated states and legacy handling.
+
+Existing persisted `credibility-v1` ratings retain their original contract.
+The old risk fields are not repurposed, and earlier results are not rewritten.
+
+### Material-part assessment
+
+With `EVIDENCE_PIPELINE_V3=1`, eligible explicit causal assertions can use
+`components-v1`. The assessor checks the event, factual premise and causal link
+separately in one bounded provider batch, using Jev then GPT-OSS as fallback.
+Inferences requiring a written argument also go to GPT-OSS. A provider failure
+without a valid assessment remains a retryable technical error.
+
+Validated `component_assessment` travels with the final result through normal
+account storage, history and idempotent replay. It records the original claim
+spans, each cited finding and the aggregate reasoning. Exact-span, source and
+quotation validation prevent detached or invented findings from being persisted
+as an ordinary result.
+
+A material contradiction can yield **Likely misinformation** while explicitly
+identifying unresolved parts. Support for a different part does not cancel that
+contradiction; whole-message support requires every essential part. Missing
+evidence remains unscored, and existing-policy or funding-guarantee context alone
+does not automatically refute alleged discussions or financial depletion.

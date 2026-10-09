@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 from app.pipeline.shared.models import ScoringSummary
 
 MIN_DECISIVE_QUALITY = 0.60
-SCORING_VERSION = "evidence-v3"
+SCORING_VERSION = "evidence-v4"
 LABELS = {
     "supported": "Low Concern", "contradicted": "High Concern",
     "conflicting": "Needs Caution", "insufficient_evidence": "Not Enough Information",
@@ -77,13 +77,15 @@ def score_evidence(voting, sources):
     # Decide the verdict from admissible stances BEFORE computing the indicator.
     score = round(round(50 * (1 - s + c), 8))
     provisional = not (support or contradict)
+    if provisional:
+        score = None
     strength = max(s, c)
     level = ("Insufficient" if provisional else "Strong" if strength >= 0.90
              else "Moderate" if strength >= 0.75 else "Limited")
     reasons = []
     if provisional:
         reasons.append("No sufficiently strong evidence establishes or contradicts the complete claim.")
-        reasons.append("50 is a provisional neutral starting point, not a 50% chance of being false. Missing evidence is not proof of truth or falsity.")
+        reasons.append("Not rated: insufficient evidence cannot support a numeric risk indicator. Missing evidence is not proof of truth or falsity.")
     else:
         reasons.append(f"{len(support)} supporting and {len(contradict)} contradicting source groups meet relevance, scope and quality checks.")
         reasons.append("Repeated publishers, hosts and identical passages do not add votes. Corroboration bonuses require recorded source origins.")
@@ -105,4 +107,4 @@ def unscored_summary(reason):
 def provisional_summary(reason):
     return ScoringSummary(version=SCORING_VERSION, status="provisional",
         evidence_strength="Insufficient", reasons=[reason,
-            "50 is a provisional neutral starting point, not a 50% chance of being false. Missing evidence is not proof of truth or falsity."])
+            "Not rated: insufficient evidence cannot support a numeric risk indicator. Missing evidence is not proof of truth or falsity."])

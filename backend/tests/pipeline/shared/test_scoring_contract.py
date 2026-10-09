@@ -19,7 +19,7 @@ def payload(model, *, outcome="insufficient_evidence", status="provisional"):
     name = "not_enough_information.json" if model is AssessmentResult else "text_analysis_result.json"
     value = json.loads((FIXTURES / name).read_text())
     value.update(concern_label="Not Enough Information", assessment_outcome=outcome,
-                 misinformation_risk_score=50,
+                 misinformation_risk_score=None,
                  scoring=provisional_summary("No applicable evidence.").model_dump())
     if model is TextAnalysisResult:
         value["evidence"] = []
@@ -33,9 +33,9 @@ def payload(model, *, outcome="insufficient_evidence", status="provisional"):
 
 @pytest.mark.parametrize("model", MODELS)
 @pytest.mark.parametrize("outcome", ["insufficient_evidence", "unsupported"])
-def test_completed_unresolved_claim_has_explicit_provisional_midpoint(model, outcome):
+def test_completed_unresolved_claim_has_no_numeric_score(model, outcome):
     result = model.model_validate(payload(model, outcome=outcome))
-    assert result.misinformation_risk_score == 50
+    assert result.misinformation_risk_score is None
     assert result.assessment_outcome == outcome
     assert result.scoring.status == "provisional"
     assert result.scoring.supporting_strength == result.scoring.contradicting_strength == 0
@@ -44,7 +44,7 @@ def test_completed_unresolved_claim_has_explicit_provisional_midpoint(model, out
 
 @pytest.mark.parametrize("model", MODELS)
 @pytest.mark.parametrize("changes", [
-    {"misinformation_risk_score": None}, {"misinformation_risk_score": 0},
+    {"misinformation_risk_score": 50}, {"misinformation_risk_score": 0},
     {"misinformation_risk_score": 49}, {"misinformation_risk_score": 51},
     {"assessment_outcome": "supported"}, {"assessment_outcome": "not_checkable"},
     {"assessment_outcome": None}, {"concern_label": "Needs Caution"},
@@ -71,7 +71,7 @@ def test_provisional_summary_cannot_claim_decisive_evidence(model, changes):
 @pytest.mark.parametrize("model", MODELS)
 def test_nonfactual_input_is_explicitly_not_applicable(model):
     result = model.model_validate(payload(model, status="not_applicable"))
-    assert result.scoring.version == "evidence-v3"
+    assert result.scoring.version == "evidence-v4"
     assert result.scoring.status == "not_applicable"
     assert result.misinformation_risk_score is None
 
@@ -87,7 +87,7 @@ def test_completed_result_checkability_must_match_score_status(checkable, status
 @pytest.mark.parametrize("model", MODELS)
 def test_conflicting_evidence_at_fifty_remains_distinct_from_provisional_fifty(model):
     value = payload(model)
-    value.update(concern_label="Needs Caution", assessment_outcome="conflicting")
+    value.update(concern_label="Needs Caution", assessment_outcome="conflicting", misinformation_risk_score=50)
     value["scoring"].update(status="evidence_based", evidence_strength="Strong",
         supporting_strength=.94, contradicting_strength=.94,
         supporting_origins=1, contradicting_origins=1)
@@ -122,3 +122,13 @@ def test_legacy_summary_default_does_not_silently_upgrade_version():
     summary = ScoringSummary(evidence_strength="Insufficient", reasons=["Legacy result."])
     assert summary.version == "evidence-v2"
     assert summary.status is None
+
+
+@pytest.mark.parametrize("model", MODELS)
+def test_legacy_v3_midpoint_remains_readable_without_rewriting_saved_results(model):
+    value = payload(model)
+    value['scoring']['version'] = 'evidence-v3'
+    value['misinformation_risk_score'] = 50
+    result = model.model_validate(value)
+    assert result.misinformation_risk_score == 50
+    assert result.scoring.version == 'evidence-v3'
