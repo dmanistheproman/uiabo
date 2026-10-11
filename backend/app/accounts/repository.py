@@ -25,6 +25,20 @@ class AccountRepository(Protocol):
     ) -> UserProfile:
         """Create or refresh the authenticated user's own profile."""
 
+    def search_profiles(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+    ) -> list[UserProfile]:
+        """Search account profiles."""
+
+    def update_account_status(
+        self,
+        uid: str,
+        account_status: AccountStatus,
+    ) -> UserProfile | None:
+        """Update an account's status."""
+
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
@@ -58,12 +72,26 @@ def _profile_view(
     now: datetime | None = None,
 ) -> UserProfile:
     role = profile_data.get("role")
-    if (now is not None and role in {"free", "premium"}
-            and (allowance_data is None or allowance_data["reset_at"] <= now or allowance_data.get("tier") != role)):
-        allowance_data = (_new_premium_allowance if role == "premium" else _new_free_allowance)(profile_data["uid"], now)
+    if (
+        now is not None
+        and role in {"free", "premium"}
+        and (
+            allowance_data is None
+            or allowance_data["reset_at"] <= now
+            or allowance_data.get("tier") != role
+        )
+    ):
+        allowance_data = (
+            _new_premium_allowance
+            if role == "premium"
+            else _new_free_allowance
+        )(profile_data["uid"], now)
+
     allowance = None
+
     if allowance_data is not None:
         allowance = UsageAllowance.model_validate(allowance_data)
+
     return UserProfile.model_validate(
         {
             **profile_data,
@@ -72,13 +100,39 @@ def _profile_view(
     )
 
 
-def _new_premium_allowance(uid: str, now: datetime) -> dict[str, Any]:
+def _new_premium_allowance(
+    uid: str,
+    now: datetime,
+) -> dict[str, Any]:
     """Calendar-month allowance for a server-granted premium role."""
-    start = now.astimezone(timezone(timedelta(hours=8))).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    end = (start.replace(year=start.year + 1, month=1) if start.month == 12 else start.replace(month=start.month + 1))
-    return {"user_id": uid, "tier": "premium", "period_type": "monthly",
-        "period_start": start, "period_end": end, "submission_limit": 60,
-        "successful_submissions": 0, "remaining_submissions": 60, "reset_at": end, "updated_at": now}
+    start = now.astimezone(
+        timezone(timedelta(hours=8))
+    ).replace(
+        day=1,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+    end = (
+        start.replace(year=start.year + 1, month=1)
+        if start.month == 12
+        else start.replace(month=start.month + 1)
+    )
+
+    return {
+        "user_id": uid,
+        "tier": "premium",
+        "period_type": "monthly",
+        "period_start": start,
+        "period_end": end,
+        "submission_limit": 60,
+        "successful_submissions": 0,
+        "remaining_submissions": 60,
+        "reset_at": end,
+        "updated_at": now,
+    }
 
 
 def _updated_profile_data(
@@ -89,20 +143,38 @@ def _updated_profile_data(
 ) -> dict[str, Any]:
     if existing is None:
         role = "free"
-        status = "active" if user.email_verified else "pending_verification"
+        status = (
+            "active"
+            if user.email_verified
+            else "pending_verification"
+        )
         created_at = now
         profile = {}
         storage_used_bytes = 0
         storage_quota_bytes = 0
     else:
         role = existing.get("role", "free")
-        status = existing.get("account_status", "pending_verification")
-        if status == "pending_verification" and user.email_verified:
+        status = existing.get(
+            "account_status",
+            "pending_verification",
+        )
+
+        if (
+            status == "pending_verification"
+            and user.email_verified
+        ):
             status = "active"
+
         created_at = existing.get("created_at", now)
         profile = existing.get("profile", {})
-        storage_used_bytes = existing.get("storage_used_bytes", 0)
-        storage_quota_bytes = existing.get("storage_quota_bytes", 0)
+        storage_used_bytes = existing.get(
+            "storage_used_bytes",
+            0,
+        )
+        storage_quota_bytes = existing.get(
+            "storage_quota_bytes",
+            0,
+        )
 
     return {
         "uid": user.uid,
@@ -117,7 +189,11 @@ def _updated_profile_data(
         "last_login_at": (
             now
             if user.email_verified
-            else existing.get("last_login_at") if existing is not None else None
+            else (
+                existing.get("last_login_at")
+                if existing is not None
+                else None
+            )
         ),
         "created_at": created_at,
         "updated_at": now,
@@ -136,19 +212,38 @@ class FirestoreAccountRepository:
         self._client = client or get_firestore_client()
         self._clock = clock
 
-    def get_profile(self, uid: str) -> UserProfile | None:
+    def get_profile(
+        self,
+        uid: str,
+    ) -> UserProfile | None:
         profile_snapshot = (
-            self._client.collection(USERS_COLLECTION).document(uid).get()
+            self._client
+            .collection(USERS_COLLECTION)
+            .document(uid)
+            .get()
         )
+
         if not profile_snapshot.exists:
             return None
+
         allowance_snapshot = (
-            self._client.collection(ALLOWANCES_COLLECTION).document(uid).get()
+            self._client
+            .collection(ALLOWANCES_COLLECTION)
+            .document(uid)
+            .get()
         )
+
         allowance_data = (
-            allowance_snapshot.to_dict() if allowance_snapshot.exists else None
+            allowance_snapshot.to_dict()
+            if allowance_snapshot.exists
+            else None
         )
-        return _profile_view(profile_snapshot.to_dict(), allowance_data, self._clock())
+
+        return _profile_view(
+            profile_snapshot.to_dict(),
+            allowance_data,
+            self._clock(),
+        )
 
     def ensure_free_profile(
         self,
@@ -156,31 +251,182 @@ class FirestoreAccountRepository:
         name: str,
     ) -> UserProfile:
         now = self._clock()
-        user_reference = self._client.collection(USERS_COLLECTION).document(
-            user.uid
-        )
-        allowance_reference = self._client.collection(
-            ALLOWANCES_COLLECTION
-        ).document(user.uid)
-        existing_snapshot = user_reference.get()
-        existing = (
-            existing_snapshot.to_dict() if existing_snapshot.exists else None
-        )
-        allowance_snapshot = allowance_reference.get()
-        allowance = (
-            allowance_snapshot.to_dict() if allowance_snapshot.exists else None
+
+        user_reference = (
+            self._client
+            .collection(USERS_COLLECTION)
+            .document(user.uid)
         )
 
-        profile_data = _updated_profile_data(existing, user, name, now)
-        if allowance is None and profile_data["role"] == "free":
-            allowance = _new_free_allowance(user.uid, now)
+        allowance_reference = (
+            self._client
+            .collection(ALLOWANCES_COLLECTION)
+            .document(user.uid)
+        )
+
+        existing_snapshot = user_reference.get()
+
+        existing = (
+            existing_snapshot.to_dict()
+            if existing_snapshot.exists
+            else None
+        )
+
+        allowance_snapshot = allowance_reference.get()
+
+        allowance = (
+            allowance_snapshot.to_dict()
+            if allowance_snapshot.exists
+            else None
+        )
+
+        profile_data = _updated_profile_data(
+            existing,
+            user,
+            name,
+            now,
+        )
+
+        if (
+            allowance is None
+            and profile_data["role"] == "free"
+        ):
+            allowance = _new_free_allowance(
+                user.uid,
+                now,
+            )
 
         batch = self._client.batch()
-        batch.set(user_reference, profile_data, merge=True)
-        if not allowance_snapshot.exists and allowance is not None:
-            batch.set(allowance_reference, allowance)
+
+        batch.set(
+            user_reference,
+            profile_data,
+            merge=True,
+        )
+
+        if (
+            not allowance_snapshot.exists
+            and allowance is not None
+        ):
+            batch.set(
+                allowance_reference,
+                allowance,
+            )
+
         batch.commit()
-        return _profile_view(profile_data, allowance, now)
+
+        return _profile_view(
+            profile_data,
+            allowance,
+            now,
+        )
+
+    def search_profiles(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+    ) -> list[UserProfile]:
+        normalised_query = (
+            query or ""
+        ).strip().lower()
+
+        results: list[UserProfile] = []
+
+        for snapshot in (
+            self._client
+            .collection(USERS_COLLECTION)
+            .stream()
+        ):
+            profile_data = snapshot.to_dict()
+
+            if not profile_data:
+                continue
+
+            if normalised_query:
+                searchable_values = [
+                    str(
+                        profile_data.get(
+                            "uid",
+                            "",
+                        )
+                    ),
+                    str(
+                        profile_data.get(
+                            "name",
+                            "",
+                        )
+                    ),
+                    str(
+                        profile_data.get(
+                            "email",
+                            "",
+                        )
+                    ),
+                ]
+
+                if not any(
+                    normalised_query
+                    in value.lower()
+                    for value in searchable_values
+                ):
+                    continue
+
+            uid = profile_data.get("uid")
+
+            allowance_data = None
+
+            if isinstance(uid, str) and uid:
+                allowance_snapshot = (
+                    self._client
+                    .collection(
+                        ALLOWANCES_COLLECTION
+                    )
+                    .document(uid)
+                    .get()
+                )
+
+                if allowance_snapshot.exists:
+                    allowance_data = (
+                        allowance_snapshot.to_dict()
+                    )
+
+            results.append(
+                _profile_view(
+                    profile_data,
+                    allowance_data,
+                    self._clock(),
+                )
+            )
+
+            if len(results) >= limit:
+                break
+
+        return results
+
+    def update_account_status(
+        self,
+        uid: str,
+        account_status: AccountStatus,
+    ) -> UserProfile | None:
+        user_reference = (
+            self._client
+            .collection(USERS_COLLECTION)
+            .document(uid)
+        )
+
+        snapshot = user_reference.get()
+
+        if not snapshot.exists:
+            return None
+
+        user_reference.update(
+            {
+                "account_status": account_status,
+                "updated_at": self._clock(),
+            }
+        )
+
+        return self.get_profile(uid)
 
 
 class InMemoryAccountRepository:
@@ -192,14 +438,29 @@ class InMemoryAccountRepository:
         clock: Callable[[], datetime] = _utc_now,
     ) -> None:
         self._clock = clock
-        self.profiles: dict[str, dict[str, Any]] = {}
-        self.allowances: dict[str, dict[str, Any]] = {}
+        self.profiles: dict[
+            str,
+            dict[str, Any],
+        ] = {}
+        self.allowances: dict[
+            str,
+            dict[str, Any],
+        ] = {}
 
-    def get_profile(self, uid: str) -> UserProfile | None:
+    def get_profile(
+        self,
+        uid: str,
+    ) -> UserProfile | None:
         profile = self.profiles.get(uid)
+
         if profile is None:
             return None
-        return _profile_view(profile, self.allowances.get(uid), self._clock())
+
+        return _profile_view(
+            profile,
+            self.allowances.get(uid),
+            self._clock(),
+        )
 
     def ensure_free_profile(
         self,
@@ -207,16 +468,105 @@ class InMemoryAccountRepository:
         name: str,
     ) -> UserProfile:
         now = self._clock()
+
         profile = _updated_profile_data(
             self.profiles.get(user.uid),
             user,
             name,
             now,
         )
+
         self.profiles[user.uid] = profile
-        if user.uid not in self.allowances and profile["role"] == "free":
-            self.allowances[user.uid] = _new_free_allowance(user.uid, now)
-        return _profile_view(profile, self.allowances.get(user.uid), now)
+
+        if (
+            user.uid not in self.allowances
+            and profile["role"] == "free"
+        ):
+            self.allowances[user.uid] = (
+                _new_free_allowance(
+                    user.uid,
+                    now,
+                )
+            )
+
+        return _profile_view(
+            profile,
+            self.allowances.get(user.uid),
+            now,
+        )
+
+    def search_profiles(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+    ) -> list[UserProfile]:
+        normalised_query = (
+            query or ""
+        ).strip().lower()
+
+        results: list[UserProfile] = []
+
+        for uid, profile in self.profiles.items():
+            if normalised_query:
+                searchable_values = [
+                    uid,
+                    str(
+                        profile.get(
+                            "name",
+                            "",
+                        )
+                    ),
+                    str(
+                        profile.get(
+                            "email",
+                            "",
+                        )
+                    ),
+                ]
+
+                if not any(
+                    normalised_query
+                    in value.lower()
+                    for value in searchable_values
+                ):
+                    continue
+
+            results.append(
+                _profile_view(
+                    profile,
+                    self.allowances.get(uid),
+                    self._clock(),
+                )
+            )
+
+            if len(results) >= limit:
+                break
+
+        return results
+
+    def update_account_status(
+        self,
+        uid: str,
+        account_status: AccountStatus,
+    ) -> UserProfile | None:
+        profile = self.profiles.get(uid)
+
+        if profile is None:
+            return None
+
+        profile["account_status"] = (
+            account_status
+        )
+
+        profile["updated_at"] = (
+            self._clock()
+        )
+
+        return _profile_view(
+            profile,
+            self.allowances.get(uid),
+            self._clock(),
+        )
 
 
 @lru_cache
