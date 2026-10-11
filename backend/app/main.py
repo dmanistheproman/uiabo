@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from app.routers.account import router as account_router
 from app.routers.analysis import router as analysis_router
 from app.routers.link_safety import router as link_safety_router
+from app.routers.admin import router as admin_router
 
 
 app = FastAPI(
