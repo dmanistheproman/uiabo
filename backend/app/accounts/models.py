@@ -51,6 +51,9 @@ class UserProfile(AccountModel):
 class ProfileUpdateRequest(AccountModel):
     name: str = Field(min_length=1, max_length=80)
 
+class AdminStatusUpdateRequest(AccountModel):
+    account_status: Literal["active", "suspended"]
+
     @field_validator("name")
     @classmethod
     def normalise_name(cls, value: str) -> str:
