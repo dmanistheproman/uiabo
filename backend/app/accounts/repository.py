@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any, Protocol
 
-from app.accounts.models import UsageAllowance, UserProfile
+from app.accounts.models import AccountStatus, UsageAllowance, UserProfile
 from app.auth.models import AuthenticatedUser
 from app.firebase import get_firestore_client
 
