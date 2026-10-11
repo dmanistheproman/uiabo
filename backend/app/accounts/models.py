@@ -55,26 +55,16 @@ class UserProfile(AccountModel):
 
 
 class ProfileUpdateRequest(AccountModel):
-    name: str = Field(
-        min_length=1,
-        max_length=80,
-    )
+    name: str = Field(min_length=1, max_length=80)
 
     @field_validator("name")
     @classmethod
     def normalise_name(cls, value: str) -> str:
         normalised = " ".join(value.split())
-
         if not normalised:
-            raise ValueError(
-                "Name cannot be empty."
-            )
-
+            raise ValueError("Name cannot be empty.")
         return normalised
 
 
 class AdminStatusUpdateRequest(AccountModel):
-    account_status: Literal[
-        "active",
-        "suspended",
-    ]
+    account_status: Literal["active", "suspended"]
