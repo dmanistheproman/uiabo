@@ -1,9 +1,10 @@
-"""Seed deterministic demo data for the data-engineer portal.
+"""Seed deterministic demo data for the data-engineer and system-administrator portals.
 
-Creates (or reuses) a demo data-engineer account and writes clearly-marked
+Creates (or reuses) demo operational accounts and writes clearly-marked
 demo documents to Firestore: incorrect-result reports with their assessment
-records, analysis pipeline runs and data-ingestion runs. Re-running updates
-timestamps but never duplicates, and --clean removes everything it created.
+records, analysis pipeline runs, data-ingestion runs, user feedback and a
+suspended demo user. Re-running updates timestamps but never duplicates,
+and --clean removes everything it created.
 
 Usage (from backend/ with the virtual environment active):
 
@@ -12,7 +13,7 @@ Usage (from backend/ with the virtual environment active):
     python -m scripts.seed_portal_demo --email me@x.com   # use your account
 
 The script only touches documents whose ids start with the demo_ prefix
-(plus the one Firebase Auth account it creates).
+(plus the Firebase Auth accounts it creates).
 """
 
 import argparse
@@ -26,12 +27,16 @@ from app.pipeline.evidence_retrieval.sources import SOURCES
 
 DEMO_EMAIL = "demo.engineer@uiabo.test"
 DEMO_PASSWORD = "EngineerDemo2026"
+ADMIN_EMAIL = "demo.admin@uiabo.test"
+ADMIN_PASSWORD = "AdminDemo2026"
 MOBILE_EMAIL = "demo.mobile@uiabo.test"
 MOBILE_PASSWORD = "MobileDemo2026"
 PREMIUM_EMAIL = "demo.premium@uiabo.test"
 PREMIUM_PASSWORD = "PremiumDemo2026"
 PLAIN_EMAIL = "demo.plain@uiabo.test"
 PLAIN_PASSWORD = "PlainDemo2026"
+SUSPENDED_EMAIL = "demo.suspended@uiabo.test"
+SUSPENDED_PASSWORD = "SuspendedDemo2026"
 FREE_USER_A = "demo_free_user_a"
 FREE_USER_B = "demo_free_user_b"
 REPORTED_BY = {FREE_USER_A: None, FREE_USER_B: None}
@@ -51,6 +56,7 @@ RESULT_FAILED = hex32("demo_result_failed")
 RUN_IDS = [f"demo_run_{index:02d}" for index in range(1, 11)]
 REPORT_IDS = ["demo_report_open", "demo_report_reviewing", "demo_report_resolved", "demo_report_dismissed"]
 INGESTION_IDS = ["demo_ing_forecast_ok", "demo_ing_forecast_fail", "demo_ing_catalogue_old"]
+FEEDBACK_IDS = ["demo_feedback_submitted", "demo_feedback_rating", "demo_feedback_reviewed"]
 
 
 def mask(uid: str, prefix: str) -> str:
@@ -295,28 +301,14 @@ def demo_ingestion_runs():
 
 
 def ensure_demo_engineer(db, email, password):
-    try:
-        user = firebase_auth.create_user(
-            email=email, password=password, email_verified=True,
-            display_name="Demo Data Engineer")
-        created = True
-    except firebase_auth.EmailAlreadyExistsError:
-        user = firebase_auth.get_user_by_email(email)
-        created = False
-    now = datetime.now(timezone.utc)
-    db.collection("users").document(user.uid).set({
-        "uid": user.uid, "name": "Demo Data Engineer", "email": user.email,
-        "email_verified": True, "role": "data_engineer", "account_status": "active",
-        "profile": {}, "storage_used_bytes": 0, "storage_quota_bytes": 0,
-        "last_login_at": None, "created_at": now, "updated_at": now,
-    }, merge=True)
-    return user, created
+    return _ensure_demo_operational(db, email, password, "Demo Data Engineer", "data_engineer")
 
 
-def ensure_demo_free_user(db, email, password, name, role="free"):
-    """A user account for app testing; free resets daily, premium is monthly."""
-    from app.accounts.repository import _new_free_allowance, _new_premium_allowance
+def ensure_demo_admin(db, email, password):
+    return _ensure_demo_operational(db, email, password, "Demo System Admin", "system_admin")
 
+
+def _ensure_demo_operational(db, email, password, name, role):
     try:
         user = firebase_auth.create_user(
             email=email, password=password, email_verified=True,
@@ -332,6 +324,28 @@ def ensure_demo_free_user(db, email, password, name, role="free"):
         "profile": {}, "storage_used_bytes": 0, "storage_quota_bytes": 0,
         "last_login_at": None, "created_at": now, "updated_at": now,
     }, merge=True)
+    return user, created
+
+
+def ensure_demo_free_user(db, email, password, name, role="free", status="active"):
+    """A user account for app testing; free resets daily, premium is monthly."""
+    from app.accounts.repository import _new_free_allowance, _new_premium_allowance
+
+    try:
+        user = firebase_auth.create_user(
+            email=email, password=password, email_verified=True,
+            display_name=name)
+        created = True
+    except firebase_auth.EmailAlreadyExistsError:
+        user = firebase_auth.get_user_by_email(email)
+        created = False
+    now = datetime.now(timezone.utc)
+    db.collection("users").document(user.uid).set({
+        "uid": user.uid, "name": name, "email": user.email,
+        "email_verified": True, "role": role, "account_status": status,
+        "profile": {}, "storage_used_bytes": 0, "storage_quota_bytes": 0,
+        "last_login_at": None, "created_at": now, "updated_at": now,
+    }, merge=True)
     allowance_ref = db.collection("usage_allowances").document(user.uid)
     if not allowance_ref.get().exists:
         allowance = (_new_premium_allowance if role == "premium"
@@ -340,12 +354,55 @@ def ensure_demo_free_user(db, email, password, name, role="free"):
     return user, created
 
 
+def demo_feedback():
+    """Feedback records as a System Administrator would receive them."""
+    admin_mask = mask("demo-admin", "de")
+    return [
+        {
+            "feedback_id": FEEDBACK_IDS[0],
+            "user_id": FREE_USER_A,
+            "category": "general_feedback",
+            "rating": None,
+            "comments": "The explanation section is really helpful, but the app opens slowly on my older phone.",
+            "status": "submitted",
+            "created_at": days_ago(6),
+            "reviewed_at": None,
+            "reviewed_by": None,
+        },
+        {
+            "feedback_id": FEEDBACK_IDS[1],
+            "user_id": FREE_USER_B,
+            "category": "service_review",
+            "rating": 5,
+            "comments": "The check flagged a scammy website link my friend sent me. Glad it warned me.",
+            "status": "submitted",
+            "created_at": days_ago(2),
+            "reviewed_at": None,
+            "reviewed_by": None,
+        },
+        {
+            "feedback_id": FEEDBACK_IDS[2],
+            "user_id": FREE_USER_A,
+            "category": "service_review",
+            "rating": 4,
+            "comments": "Would like to check links in other languages one day.",
+            "status": "reviewed",
+            "created_at": days_ago(9),
+            "reviewed_at": days_ago(7),
+            "reviewed_by": admin_mask,
+        },
+    ]
+
+
 def write_all(db, email, password):
     user, created = ensure_demo_engineer(db, email, password)
+    admin, admin_created = ensure_demo_admin(db, ADMIN_EMAIL, ADMIN_PASSWORD)
     mobile, mobile_created = ensure_demo_free_user(db, MOBILE_EMAIL, MOBILE_PASSWORD, "Demo Mobile User")
     premium, premium_created = ensure_demo_free_user(
         db, PREMIUM_EMAIL, PREMIUM_PASSWORD, "Demo Premium User", role="premium")
     plain, plain_created = ensure_demo_free_user(db, PLAIN_EMAIL, PLAIN_PASSWORD, "Demo Free User")
+    suspended, suspended_created = ensure_demo_free_user(
+        db, SUSPENDED_EMAIL, SUSPENDED_PASSWORD, "Demo Suspended User", status="suspended")
     writes = []
     for result in demo_results():
         writes.append(("analysis_results", result["result_id"], result))
@@ -356,9 +413,11 @@ def write_all(db, email, password):
         writes.append(("pipeline_runs", run["run_id"], run))
     for run in demo_ingestion_runs():
         writes.append(("ingestion_runs", run["run_id"], run))
+    for record in demo_feedback():
+        writes.append(("feedback", record["feedback_id"], record))
     for collection, document_id, payload in writes:
         db.collection(collection).document(document_id).set(payload)
-    return user, created, writes, mobile_created or premium_created or plain_created
+    return user, created, writes, admin_created, mobile_created or premium_created or plain_created or suspended_created
 
 
 def clean(db, email):
@@ -367,13 +426,14 @@ def clean(db, email):
         ("result_reports", REPORT_IDS),
         ("pipeline_runs", [*RUN_IDS, "demo_run_link"]),
         ("ingestion_runs", INGESTION_IDS),
+        ("feedback", FEEDBACK_IDS),
         ("analysis_results", [RESULT_WEATHER, RESULT_POLICY, RESULT_NEI, RESULT_FAILED,
                               hex32("demo_result_hawker")]),
     ):
         for document_id in ids:
             db.collection(collection).document(document_id).delete()
             removed += 1
-    for demo_email in (email, MOBILE_EMAIL, PREMIUM_EMAIL, PLAIN_EMAIL):
+    for demo_email in (email, ADMIN_EMAIL, MOBILE_EMAIL, PREMIUM_EMAIL, PLAIN_EMAIL, SUSPENDED_EMAIL):
         try:
             user = firebase_auth.get_user_by_email(demo_email)
             firebase_auth.delete_user(user.uid)
@@ -400,19 +460,23 @@ def main() -> int:
         print(f"Removed {removed} demo documents and the demo auth account ({args.email}).")
         return 0
 
-    user, created, writes, free_created = write_all(db, args.email, args.password)
+    user, created, writes, admin_created, free_created = write_all(db, args.email, args.password)
     print(f"Demo engineer account {'created' if created else 'reused'}: {args.email}")
     if created:
         print(f"  password: {args.password}")
     else:
         print("  password unchanged (set at first creation; use Forgot password if needed).")
+    print(f"Demo admin account {'created' if admin_created else 'reused'}: {ADMIN_EMAIL}"
+          + (f" (password: {ADMIN_PASSWORD})" if admin_created else ""))
     print(f"App accounts {'created' if free_created else 'reused'}: "
-          f"{MOBILE_EMAIL} (free), {PREMIUM_EMAIL} (premium), {PLAIN_EMAIL} (free)")
+          f"{MOBILE_EMAIL} (free), {PREMIUM_EMAIL} (premium), {PLAIN_EMAIL} (free), "
+          f"{SUSPENDED_EMAIL} (suspended)")
     print(f"Wrote {len(writes)} demo documents:")
     print(f"  result_reports : {len(REPORT_IDS)} reports across all four statuses")
     print(f"  pipeline_runs  : {len(RUN_IDS)} text runs (incl. 1 failed) + 1 link-safety run")
     print(f"  ingestion_runs : 3 runs (fresh success, failure with follow-up, stale success)")
     print(f"  analysis_results: 4 records backing the reports")
+    print(f"  feedback       : {len(FEEDBACK_IDS)} records (2 awaiting review, 1 reviewed)")
     print("\nOpen the portal (http://localhost:5174), log in with the demo account,")
     print("or test the app side: the demo results belong to synthetic users, so report")
     print("submission from the app creates brand-new reports.")
