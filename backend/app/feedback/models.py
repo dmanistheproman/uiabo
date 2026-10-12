@@ -50,6 +50,23 @@ class FeedbackRecord(FeedbackModel):
     reviewed_by: str | None = None
 
 
+class FeedbackSubmissionRequest(FeedbackModel):
+    """Request used by an app user to submit feedback."""
+
+    category: FeedbackCategory
+
+    rating: int | None = Field(
+        default=None,
+        ge=1,
+        le=5,
+    )
+
+    comments: str | None = Field(
+        default=None,
+        max_length=1000,
+    )
+
+
 class FeedbackReviewRequest(FeedbackModel):
     """Request used by a System Administrator to review feedback."""
 

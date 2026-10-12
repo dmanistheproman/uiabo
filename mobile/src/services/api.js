@@ -81,4 +81,10 @@ export function reportResult(user, resultId, reason, detail) {
   });
 }
 
+export function submitFeedback(user, category, rating, comments) {
+  return accountRequest('/account/feedback', user, {
+    method: 'POST', body: JSON.stringify({ category, rating, comments }),
+  });
+}
+
 export { API_URL };

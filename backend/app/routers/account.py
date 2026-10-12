@@ -1,6 +1,8 @@
 """Protected account endpoints for the Android application."""
 
+from datetime import datetime, timezone
 from typing import Annotated
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -11,6 +13,14 @@ from app.accounts.repository import (
 )
 from app.auth.dependencies import get_current_user, get_verified_user
 from app.auth.models import AuthenticatedUser
+from app.feedback.models import (
+    FeedbackRecord,
+    FeedbackSubmissionRequest,
+)
+from app.feedback.repository import (
+    FeedbackRepository,
+    get_feedback_repository,
+)
 
 
 router = APIRouter(prefix="/account", tags=["Account"])
@@ -98,3 +108,83 @@ def get_my_profile(
         )
     _check_account_status(profile)
     return profile
+
+
+def _empty_feedback() -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail={
+            "error_code": "FEEDBACK_EMPTY",
+            "message": "Add a rating or a comment before sending feedback.",
+        },
+    )
+
+
+@router.post(
+    "/feedback",
+    response_model=FeedbackRecord,
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit feedback for administrator review",
+)
+def submit_feedback(
+    request: FeedbackSubmissionRequest,
+    user: Annotated[AuthenticatedUser, Depends(get_verified_user)],
+    accounts: Annotated[
+        AccountRepository,
+        Depends(get_account_repository),
+    ],
+    feedback: Annotated[
+        FeedbackRepository,
+        Depends(get_feedback_repository),
+    ],
+) -> FeedbackRecord:
+    """Store feedback from a verified, active account."""
+    if request.rating is None and not (request.comments or "").strip():
+        raise _empty_feedback()
+
+    try:
+        profile = accounts.get_profile(user.uid)
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error_code": "ACCOUNT_SERVICE_UNAVAILABLE",
+                "message": "Your profile is temporarily unavailable. Please retry.",
+            },
+        ) from error
+
+    if profile is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error_code": "PROFILE_NOT_FOUND",
+                "message": "Finish setting up your profile to continue.",
+            },
+        )
+    _check_account_status(profile)
+
+    comments = (request.comments or "").strip() or None
+    record = FeedbackRecord(
+        feedback_id=f"fb_{uuid4().hex[:16]}",
+        user_id=user.uid,
+        category=request.category,
+        rating=request.rating,
+        comments=comments,
+        status="submitted",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    try:
+        feedback.save_feedback(record)
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error_code": "FEEDBACK_SERVICE_UNAVAILABLE",
+                "message": (
+                    "Feedback services are temporarily unavailable."
+                ),
+            },
+        ) from error
+
+    return record
