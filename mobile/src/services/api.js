@@ -1,9 +1,13 @@
+import { File } from 'expo-file-system';
+
 const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000').replace(/\/$/, '');
 
 async function accountRequest(path, user, options = {}) {
   const token = await user.getIdToken(true);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeout || 20000);
+  const isFormData = options.body instanceof FormData;
+  
   let response;
   try {
     response = await fetch(`${API_URL}${path}`, {
@@ -11,7 +15,10 @@ async function accountRequest(path, user, options = {}) {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+
+        // Do not set Content-Type for FormData
+        // fetch will set the multipart boundary automatically
+        ...(isFormData ? {} : {'Content-Type': 'application/json'}),
         ...options.headers,
       },
     });
@@ -73,6 +80,24 @@ export function checkLink(user, url, requestKey) {
 
 export function getResult(user, resultId) {
   return accountRequest(`/analysis/results/${encodeURIComponent(resultId)}`, user);
+}
+
+export function checkDeepfakeAI_Image(user, image, requestKey) {
+  const file = new File(image.uri);
+
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append(
+    'filename',
+    image.fileName || file.name || 'image',
+  );
+
+  return accountRequest('/analysis/deepfakeAI', user, {
+    method: 'POST',
+    body: formData,
+    timeout: 240000,
+    headers: { 'Idempotency-Key': requestKey },
+  });
 }
 
 export { API_URL };
