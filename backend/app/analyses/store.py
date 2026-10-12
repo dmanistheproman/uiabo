@@ -15,7 +15,7 @@ from app.accounts.repository import _new_free_allowance, _new_premium_allowance
 from app.firebase import get_firestore_client
 from app.pipeline.shared.models import FailedAnalysisRecord, TextAnalysisResult
 from app.link_safety.models import FailedLinkSafetyRecord, LinkSafetyResult
-
+from app.deepfakeAI_analysis.models import DeepfakeAI_AnalysisResult, FailedDeepfakeAI_AnalysisRecord
 
 LEASE_SECONDS = 300
 
@@ -47,24 +47,52 @@ def current_allowance(uid, profile, allowance, now):
 
 def public_record(record):
     completed = record.get("processing_status") == "completed"
-    if record.get("input_type") == "link_safety":
-        model = LinkSafetyResult if completed else FailedLinkSafetyRecord
-        return model.model_validate({key: record[key] for key in model.model_fields if key in record}).model_dump(mode="json")
-    else:
-        fields = TextAnalysisResult.model_fields if completed else FailedAnalysisRecord.model_fields
-    return {key: record[key] for key in fields if key in record}
+    input_type = record.get("input_type", "text")
 
+    if input_type == "link_safety":
+        model = LinkSafetyResult if completed else FailedLinkSafetyRecord
+        return model.model_validate({
+            key: record[key]
+            for key in model.model_fields
+            if key in record
+        }).model_dump(mode="json")
+
+    if input_type == "deepfake_ai":
+        model = (
+            DeepfakeAI_AnalysisResult
+            if completed
+            else FailedDeepfakeAI_AnalysisRecord
+        )
+        return model.model_validate({
+            key: record[key]
+            for key in model.model_fields
+            if key in record
+        }).model_dump(mode="json")
+
+    fields = (
+        TextAnalysisResult.model_fields
+        if completed
+        else FailedAnalysisRecord.model_fields
+    )
+    return {
+        key: record[key]
+        for key in fields
+        if key in record
+    }
 
 class AnalysisStore:
     """Shared policy; concrete stores provide atomic run() and history queries."""
 
     def __init__(self, clock=None):
-        self.clock = clock or (lambda: datetime.now(timezone.utc))
+        self.clock = clock or (lambda: datetime.now(timezone.utc))     
 
-    def reserve(self, uid, request_key, text, input_type="text"):
+    
+    def reserve(self, uid, request_key, text: str | bytes, input_type="text"):
         now = self.clock()
         result_id = sha256(f"{uid}:{request_key}".encode()).hexdigest()[:32]
-        fingerprint = sha256(text.encode()).hexdigest()
+
+        content_bytes = text.encode("utf-8") if isinstance(text, str) else text
+        fingerprint = sha256(content_bytes).hexdigest()
         token = str(uuid4())
         def operation(tx):
             profile = active_profile(tx.get("users", uid))
