@@ -6,7 +6,13 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-AccountRole = Literal["free", "premium", "system_admin", "data_engineer"]
+AccountRole = Literal[
+    "free",
+    "premium",
+    "system_admin",
+    "data_engineer",
+]
+
 AccountStatus = Literal[
     "pending_verification",
     "active",
@@ -58,3 +64,7 @@ class ProfileUpdateRequest(AccountModel):
         if not normalised:
             raise ValueError("Name cannot be empty.")
         return normalised
+
+
+class AdminStatusUpdateRequest(AccountModel):
+    account_status: Literal["active", "suspended"]
