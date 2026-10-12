@@ -49,3 +49,12 @@ urllib3==2.7.0
 uvicorn==0.52.1
 lingua-language-detector==2.2.0
 python-dotenv==1.2.3
+ollama
+torch
+torchvision
+transformers
+accelerate
+huggingface_hub
+pillow
+timm==1.0.24
+google-genai
