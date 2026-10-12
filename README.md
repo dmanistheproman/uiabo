@@ -39,6 +39,8 @@ Completed so far:
 - Atomic Firestore result saving and allowance charging, with idempotent request retries
 - User-reported incorrect results: app submission endpoint and audited reports
 - Data-engineer portal: role-gated login, report investigation, pipeline monitoring
+- System-administrator portal: user search, account details, suspend/restore access, feedback review
+- App feedback: submission form and endpoint feeding the administrator's review queue
 - Analysis run timing capture and data-ingestion jobs (forecast snapshot, source catalogue)
 
 Not yet implemented:
@@ -47,7 +49,7 @@ Not yet implemented:
 - Broader source-catalogue review and coverage evaluation
 - Calibrated risk/uncertainty scores and semantic evidence assessment
 - Evaluation of explanation and citation accuracy
-- Premium payments and the system-administrator portal
+- Premium payments
 
 ## Project structure
 
@@ -57,9 +59,10 @@ uiabo/
 |   |-- app/
 |   |   |-- accounts/       # User profiles and free usage allowances
 |   |   |-- auth/           # Firebase token verification
+|   |   |-- feedback/       # User feedback records and admin review
 |   |   |-- ingestion/      # Data-ingestion jobs and run records
 |   |   |-- pipeline/       # Sprint 1 components and shared interfaces
-|   |   |-- portal/         # Data-engineer role gate, reports and monitoring
+|   |   |-- portal/         # Operational role gate, reports and monitoring
 |   |   |-- routers/        # API routes
 |   |   |-- services/       # Compatibility service layer
 |   |   |-- firebase.py     # Firestore client
@@ -70,7 +73,7 @@ uiabo/
 |   `-- requirements.txt
 |-- evaluation/              # Datasets, scoring rules and reports
 |-- mobile/                  # Expo/React Native Android application
-|-- portal/                  # Data-engineer web portal (Vite + React)
+|-- portal/                  # Operational web portal: data engineer + system admin (Vite + React)
 |-- submission/              # UIABO source documents and preliminary PTD/PUM
 |-- sprint_1_samples/        # Shared JSON interfaces for each member
 `-- README.md

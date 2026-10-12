@@ -299,7 +299,7 @@ The data-engineer web portal (report investigation, pipeline monitoring) runs fr
    npm.cmd run dev
    ```
 
-3. Open <http://localhost:5174>. The easiest start is the seed script — from `backend` run `.\.venv\Scripts\python.exe -m scripts.seed_portal_demo`, which creates a ready-to-use data-engineer login (`demo.engineer@uiabo.test` / `EngineerDemo2026`) **and** demo reports, pipeline runs and ingestion runs. To use your own account instead: register and verify an email (mobile app), then run `.\.venv\Scripts\python.exe -m scripts.create_operational_account --email <address> --role data_engineer`, then log in.
+3. Open <http://localhost:5174>. The easiest start is the seed script — from `backend` run `.\.venv\Scripts\python.exe -m scripts.seed_portal_demo`, which creates ready-to-use logins — data engineer (`demo.engineer@uiabo.test` / `EngineerDemo2026`) and system administrator (`demo.admin@uiabo.test` / `AdminDemo2026`) — **and** demo reports, pipeline runs, ingestion runs and user feedback (plus a suspended demo account for testing restore). To use your own account instead: register and verify an email (mobile app), then run `.\.venv\Scripts\python.exe -m scripts.create_operational_account --email <address> --role data_engineer` (or `--role system_admin`), then log in.
 
 Full instructions, the demo walkthrough and troubleshooting are in [portal/README.md](portal/README.md); API and Firestore details are in [backend/app/portal/README.md](backend/app/portal/README.md).
 
