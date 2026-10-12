@@ -92,3 +92,25 @@ export const addFollowUp = (user, runId, note) =>
   request(`/portal/ingestion-runs/${encodeURIComponent(runId)}/follow-up`, user, {
     method: 'POST', body: JSON.stringify({ note }),
   });
+
+export const searchUsers = (user, params) =>
+  request(`/admin/users${qs(params)}`, user);
+
+export const getUser = (user, uid) =>
+  request(`/admin/users/${encodeURIComponent(uid)}`, user);
+
+export const updateUserStatus = (user, uid, account_status) =>
+  request(`/admin/users/${encodeURIComponent(uid)}/status`, user, {
+    method: 'PATCH', body: JSON.stringify({ account_status }),
+  });
+
+export const listFeedback = (user, params) =>
+  request(`/admin/feedback${qs(params)}`, user);
+
+export const getFeedback = (user, feedbackId) =>
+  request(`/admin/feedback/${encodeURIComponent(feedbackId)}`, user);
+
+export const reviewFeedback = (user, feedbackId) =>
+  request(`/admin/feedback/${encodeURIComponent(feedbackId)}/review`, user, {
+    method: 'PATCH', body: JSON.stringify({ status: 'reviewed' }),
+  });

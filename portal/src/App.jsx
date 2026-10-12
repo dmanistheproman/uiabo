@@ -6,6 +6,12 @@ import { LoginScreen, VerifyScreen } from './screens/AuthScreens';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { DashboardScreen, MonitoringScreen } from './screens/MonitoringScreens';
 import { ReportDetailScreen, ReportsScreen } from './screens/ReportScreens';
+import { FeedbackScreen, UsersScreen } from './screens/AdminScreens';
+
+const PORTAL_ROLES = {
+  data_engineer: 'Data-Engineer Portal',
+  system_admin: 'System-Administrator Portal',
+};
 
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // UC-37 S1: auto-logout after 30 idle minutes.
 
@@ -52,7 +58,7 @@ function useIdleLogout(onIdle) {
   }, [onIdle]);
 }
 
-function AuthGate({ children }) {
+function AuthGate() {
   const { firebaseUser, initialising, refreshProfile, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -101,17 +107,13 @@ function AuthGate({ children }) {
     );
   }
 
-  if (profile?.role === 'data_engineer') return children;
+  if (PORTAL_ROLES[profile?.role]) return <PortalShell role={profile.role} />;
 
   return (
     <div className="auth-wrap">
       <div className="card auth-card">
         <h1>Access denied</h1>
-        <p className="muted">
-          {profile?.role === 'system_admin'
-            ? 'This is the data-engineer portal. Use the system-administrator portal for account management.'
-            : 'This portal is only for authorised operational accounts.'}
-        </p>
+        <p className="muted">This portal is only for authorised operational accounts.</p>
         <p>Current role: <Badge tone="grey">{profile?.role?.replace('_', ' ') || 'unknown'}</Badge></p>
         <Button onClick={logout}>Log out</Button>
       </div>
@@ -119,24 +121,30 @@ function AuthGate({ children }) {
   );
 }
 
-function PortalShell() {
+function PortalShell({ role }) {
   const { firebaseUser, logout } = useAuth();
-  const [tab, setTab] = useState('dashboard');
+  const [tab, setTab] = useState(role === 'system_admin' ? 'users' : 'dashboard');
   const [reportId, setReportId] = useState(null);
 
-  const tabs = [
-    ['dashboard', 'Dashboard'],
-    ['reports', 'Reports'],
-    ['monitoring', 'Pipeline monitoring'],
-    ['profile', 'Profile'],
-  ];
+  const tabs = role === 'system_admin'
+    ? [
+        ['users', 'Find users'],
+        ['feedback', 'User feedback'],
+        ['profile', 'Profile'],
+      ]
+    : [
+        ['dashboard', 'Dashboard'],
+        ['reports', 'Reports'],
+        ['monitoring', 'Pipeline monitoring'],
+        ['profile', 'Profile'],
+      ];
 
   return (
     <div className="shell">
       <header className="topbar">
         <div className="brand">
           <span className="brand-name">UIABO</span>
-          <span className="brand-role">Data-Engineer Portal</span>
+          <span className="brand-role">{PORTAL_ROLES[role]}</span>
         </div>
         <nav className="tabs" aria-label="Portal sections">
           {tabs.map(([key, label]) => (
@@ -156,20 +164,30 @@ function PortalShell() {
         </div>
       </header>
       <main className="content">
-        {tab === 'dashboard' && (
-          <DashboardScreen
-            onOpenReports={() => { setReportId(null); setTab('reports'); }}
-            onOpenMonitoring={() => setTab('monitoring')}
-          />
+        {role === 'system_admin' ? (
+          <>
+            {tab === 'users' && <UsersScreen />}
+            {tab === 'feedback' && <FeedbackScreen />}
+            {tab === 'profile' && <ProfileScreen />}
+          </>
+        ) : (
+          <>
+            {tab === 'dashboard' && (
+              <DashboardScreen
+                onOpenReports={() => { setReportId(null); setTab('reports'); }}
+                onOpenMonitoring={() => setTab('monitoring')}
+              />
+            )}
+            {tab === 'reports' && !reportId && (
+              <ReportsScreen onOpenReport={(id) => { setReportId(id); window.scrollTo(0, 0); }} />
+            )}
+            {tab === 'reports' && reportId && (
+              <ReportDetailScreen reportId={reportId} onBack={() => setReportId(null)} />
+            )}
+            {tab === 'monitoring' && <MonitoringScreen />}
+            {tab === 'profile' && <ProfileScreen />}
+          </>
         )}
-        {tab === 'reports' && !reportId && (
-          <ReportsScreen onOpenReport={(id) => { setReportId(id); window.scrollTo(0, 0); }} />
-        )}
-        {tab === 'reports' && reportId && (
-          <ReportDetailScreen reportId={reportId} onBack={() => setReportId(null)} />
-        )}
-        {tab === 'monitoring' && <MonitoringScreen />}
-        {tab === 'profile' && <ProfileScreen />}
       </main>
       <footer className="footer small muted">
         Monitoring records contain no user content. User data is only shown in an investigation and is logged.
@@ -182,9 +200,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ErrorBoundary>
-        <AuthGate>
-          <PortalShell />
-        </AuthGate>
+        <AuthGate />
       </ErrorBoundary>
     </AuthProvider>
   );

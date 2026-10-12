@@ -1,4 +1,10 @@
-# UIABO Operational Portal (data engineer)
+# UIABO Operational Portal (data engineer + system administrator)
+
+One portal, two operational roles. The login screen is shared; after sign-in
+the role decides which pages appear — data engineers get report
+investigation and pipeline monitoring, system administrators get user
+management and feedback review. Each role only ever sees and can only call
+its own pages and APIs (enforced again server-side on every route).
 
 Web portal for the **data engineer** role: investigate reported incorrect
 results, monitor the analysis pipeline and data-ingestion jobs, and manage the
@@ -17,6 +23,8 @@ denies non-data-engineer accounts.
 | Dashboard | UC-41: report totals, trends, label/pipeline breakdowns, analysis health, ingestion health |
 | Reports → Report detail | UC-42: investigation view with the user's reason, the generated assessment, evidence and an audited status/note update |
 | Pipeline monitoring | UC-43: analysis runs (per-stage timings, failures) and data-ingestion runs (forecast snapshot + source catalogue), clearly separated, with manual re-run and follow-up notes |
+| Find users (admin) | Search accounts by name/email, open account details with allowance, suspend or restore access with confirmation |
+| User feedback (admin) | List feedback with status filters, read ratings and comments, mark feedback as reviewed (records who and when) |
 | Profile | UC-39, UC-40: view/update name, password-reset email, log out with confirmation |
 | Idle auto-logout | UC-37 S1: session ends after 30 minutes of inactivity |
 
@@ -41,20 +49,22 @@ denies non-data-engineer accounts.
    cd portal && npm run dev
    ```
 
-   Open <http://localhost:5174>. Vite proxies `/analysis`, `/account` and
-   `/portal` to the backend, so no CORS changes are needed.
+   Open <http://localhost:5174>. Vite proxies `/analysis`, `/account`,
+   `/portal` and `/admin` to the backend, so no CORS changes are needed.
 
-## Provision a data-engineer account
+## Provision an operational account
 
-Accounts are created by a system administrator. Two ways:
+Accounts are created from Firebase Auth + a Firestore role. Two ways:
 
 **Seed script (fastest, also loads demo data):**
 
 ```bash
 cd ../backend
 python -m scripts.seed_portal_demo
-# Creates demo.engineer@uiabo.test (password EngineerDemo2026), role data_engineer,
-# plus demo reports, pipeline runs and ingestion runs. --clean removes it all.
+# Creates demo.engineer@uiabo.test (EngineerDemo2026, data_engineer),
+# demo.admin@uiabo.test (AdminDemo2026, system_admin), app-side demo users
+# (incl. a suspended one) plus demo reports, runs, and feedback.
+# --clean removes it all.
 ```
 
 **Manual (for your own account):**
@@ -65,7 +75,7 @@ python -m scripts.seed_portal_demo
 
    ```bash
    python -m scripts.create_operational_account \
-     --email engineer@example.com --role data_engineer
+     --email engineer@example.com --role data_engineer   # or --role system_admin
    ```
 
 3. Log in to the portal with that account.
@@ -101,14 +111,35 @@ failure with a follow-up and a stale catalogue refresh).
    refresh*. Record a follow-up on any run.
 7. **Logout**: Profile → Log out (with confirmation).
 
+### Administrator walkthrough (same seed data)
+
+1. Log in with `demo.admin@uiabo.test` (`AdminDemo2026`) — the portal opens
+   on *Find users*, and the Reports/Monitoring tabs are not shown.
+2. **Search (UC-36)**: search by name or leave empty → accounts list;
+   open `Demo Suspended User` → account details with allowance.
+3. **Restore access**: *Restore access* → status becomes active with
+   confirmation. Suspend it again the same way to keep the demo state.
+4. **Feedback review**: *User feedback* → two items awaiting review →
+   open one → rating stars and comments → *Mark as reviewed* (records
+   reviewer and time).
+5. **Denied pages**: as admin, the app-side data-engineer APIs stay
+   forbidden (`/portal/*` returns 403) and vice versa — the UI hides the
+   other role's pages and the backend enforces it.
+6. Log out from Profile.
+
+App users submit the feedback the admin reviews: in the app, Profile →
+*Send feedback* (category, 1–5 rating, comments) → the record appears in
+the admin's *User feedback* list as *submitted*.
+
 ## Tests
 
-Backend tests cover the role gate, report lifecycle, monitoring and denied
-access for every route:
+Backend tests cover the role gate, report lifecycle, monitoring, the admin
+routes and denied access for every route (both directions — a data engineer
+cannot call `/admin`, an administrator cannot call `/portal`):
 
 ```bash
 cd ../backend
-.venv/bin/python -m pytest tests/portal -q
+.venv/bin/python -m pytest tests/portal tests/accounts/test_admin_routes.py tests/feedback -q
 ```
 
 The frontend has no automated tests yet; the walkthrough above is the

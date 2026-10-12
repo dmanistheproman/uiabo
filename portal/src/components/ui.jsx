@@ -9,6 +9,8 @@ const STATUS_TONES = {
   completed: 'green', failed: 'red',
   running: 'blue', succeeded: 'green', incomplete: 'amber',
   healthy: 'green', stale: 'amber', failing: 'red', never_run: 'grey',
+  active: 'green', suspended: 'red', deactivated: 'grey', pending_verification: 'amber',
+  submitted: 'blue', reviewed: 'green',
 };
 
 export function StatusBadge({ value }) {
