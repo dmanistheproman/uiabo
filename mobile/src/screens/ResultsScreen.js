@@ -49,9 +49,54 @@ export default function ResultsScreen({ onResult, onNavigate }) {
       {items.length > 0 && <View style={styles.list}>{items.map((item, index) => <Pressable key={item.result_id} disabled={!!opening} accessibilityRole="button"
         accessibilityLabel={`Open result: ${item.submitted_url || item.extracted_claim || item.original_text}`}
         onPress={() => open(item)} style={[styles.row, index > 0 && styles.divider]}>
-        <View style={styles.icon}><Text style={styles.letters}>{item.input_type === 'link_safety' ? 'URL' : 'Aa'}</Text></View>
-        <View style={{ flex: 1, gap: 7 }}><Text numberOfLines={2} style={styles.claim}>{item.submitted_url || item.extracted_claim || item.original_text}</Text><Text style={styles.date}>Text · {new Date(item.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</Text>
-          <ConcernBadge label={assessmentLabel(item)} concern={item.processing_status === 'failed' ? 'Failed' : item.input_type === 'link_safety' ? (item.safety_status === 'threat_detected' ? 'High Concern' : 'Not Enough Information') : item.concern_label} /></View>
+        <View style={styles.icon}><Text style={styles.letters}>{item.input_type === 'deepfake_ai' ? 'IMG' : item.input_type === 'link_safety' ? 'URL' : 'Aa'}</Text></View>
+        <View style={{ flex: 1, gap: 7 }}><Text numberOfLines={2} style={styles.claim}>{item.input_type === 'deepfake_ai' ? `Deepfake / AI image check${item.label ? ` — Predicted: ${item.label}` : ''}` : item.submitted_url || item.extracted_claim || item.original_text}</Text>
+        <Text style={styles.date}>
+          {item.input_type === 'deepfake_ai'
+            ? 'Image'
+            : item.input_type === 'link_safety'
+            ? 'Link'
+            : 'Text'}
+          {' · '}
+          {new Date(item.created_at).toLocaleString([], {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </Text>
+          {item.input_type === 'deepfake_ai' ? (
+            <ConcernBadge
+              label={
+                item.processing_status === 'failed'
+                ? 'Failed'
+                : item.label || 'Result available'
+              }
+              concern={
+                item.processing_status === 'failed'
+                ? 'Failed'
+                : item.label === 'Real'
+                  ? 'Low Concern'
+                    : item.label === 'Fake'
+                      ? 'High Concern'
+                      : 'Not Enough Information'
+              }
+            />
+          ) : (
+            <ConcernBadge
+              label={assessmentLabel(item)}
+              concern={
+                item.processing_status === 'failed'
+                  ? 'Failed'
+                  : item.input_type === 'link_safety'
+                    ? (item.safety_status === 'threat_detected'
+                      ? 'High Concern'
+                      : 'Not Enough Information')
+                    : item.concern_label
+                }
+              />
+            )}
+          </View>
         {opening === item.result_id ? <ActivityIndicator color={colours.blue} /> : <Feather name="chevron-right" color="#78909F" size={18} />}
       </Pressable>)}</View>}
       {!!cursor && <Button loading={busy} secondary onPress={() => load(true)}>Load more results</Button>}

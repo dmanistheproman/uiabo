@@ -12,7 +12,7 @@ const features = [
   { icon: 'IMG', label: 'Image + caption', colour: '#FFF3D7', ink: '#946100', locked: true },
   { icon: 'OCR', label: 'Read image text', colour: '#FFF3D7', ink: '#946100', page: 'ocr', premiumOnly: true },
   { icon: 'CTX', label: 'Check image\ncontext', colour: '#EEE9F9', ink: '#7952AE', locked: true },
-  { icon: 'AI', label: 'Check AI image', colour: '#EEE9F9', ink: '#7952AE', locked: true },
+  { icon: 'AI', label: 'Deepfake / AI\nimage check', colour: '#EEE9F9', ink: '#7952AE', page: 'deepfakeAI', premiumOnly: true },
 ];
 
 export default function HomeScreen({ onNavigate }) {
