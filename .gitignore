@@ -11,10 +11,14 @@ __pycache__/
 .env
 .env.*
 !mobile/.env.example
+!portal/.env.example
 firebase-secrets/
 *service-account*.json
 *.pem
 *.key
+
+# Pipeline runtime cache (contains an embedded repo; never commit)
+backend/.cache/
 
 # Local document working files and archived comparison samples
 ~$*

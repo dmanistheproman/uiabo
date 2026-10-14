@@ -10,6 +10,7 @@ from app.pipeline.evidence_assessment.semantic import configured_assessor
 from app.pipeline.evidence_retrieval.service import configured_retriever
 from app.pipeline.input_preparation.service import prepare_text
 from app.pipeline.orchestration.repository import FirestoreResultRepository
+from app.pipeline.orchestration.run_recorder import get_run_store
 from app.pipeline.orchestration.service import PipelineOrchestrator
 
 
@@ -25,4 +26,5 @@ def get_pipeline_orchestrator() -> PipelineOrchestrator:
         assess_evidence=assessor,
         pipeline_version=version + ":" + retrieval_version,
         repository=FirestoreResultRepository(),
+        run_recorder=get_run_store().record,
     )

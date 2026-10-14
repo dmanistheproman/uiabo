@@ -36,6 +36,12 @@ class FeedbackRepository(Protocol):
     ) -> FeedbackRecord | None:
         """Return one feedback record or None when it does not exist."""
 
+    def save_feedback(
+        self,
+        record: FeedbackRecord,
+    ) -> None:
+        """Store a newly submitted feedback record."""
+
     def mark_reviewed(
         self,
         feedback_id: str,
@@ -116,6 +122,14 @@ class FirestoreFeedbackRepository:
             return None
 
         return FeedbackRecord.model_validate(data)
+
+    def save_feedback(
+        self,
+        record: FeedbackRecord,
+    ) -> None:
+        self._client.collection(FEEDBACK_COLLECTION).document(
+            record.feedback_id
+        ).set(record.model_dump(mode="json"))
 
     def mark_reviewed(
         self,
@@ -200,6 +214,14 @@ class InMemoryFeedbackRepository:
             return None
 
         return FeedbackRecord.model_validate(data)
+
+    def save_feedback(
+        self,
+        record: FeedbackRecord,
+    ) -> None:
+        self.feedback[record.feedback_id] = record.model_dump(
+            mode="json"
+        )
 
     def mark_reviewed(
         self,

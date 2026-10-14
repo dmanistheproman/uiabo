@@ -1,10 +1,62 @@
 import { useState } from 'react';
-import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
+import { useAuth } from '../auth/AuthContext';
+import { reportResult } from '../services/api';
 import { scoreDescription, isProvisionalScore, comparisonAspects, comparisonFindings, changeVerificationLabel } from '../utils/assessment';
 import { resultPresentation, plainSourceStance, datePresentation } from '../utils/resultPresentation';
+
+const REPORT_REASONS = [
+  { value: 'wrong_label', label: 'The concern label is wrong' },
+  { value: 'wrong_score', label: 'The risk score is wrong' },
+  { value: 'wrong_evidence', label: 'The evidence or sources are wrong' },
+  { value: 'other', label: 'Something else' },
+];
+
+function ReportSection({ result }) {
+  const { firebaseUser } = useAuth();
+  const [reason, setReason] = useState(null);
+  const [detail, setDetail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function submit() {
+    if (!reason || detail.trim().length === 0) {
+      Alert.alert('Add a little more', 'Choose a reason and describe what looks wrong.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await reportResult(firebaseUser, result.result_id, reason, detail.trim());
+      setDone(true);
+    } catch (error) {
+      Alert.alert('Could not send report', error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <Details title="Report a problem with this result">
+    {done ? <Text style={styles.copy}>Thank you. Our team will review this result and may use it to improve UIABO.</Text> : <>
+      <Text style={styles.copy}>What looks wrong?</Text>
+      {REPORT_REASONS.map(option => (
+        <Pressable key={option.value} accessibilityRole="radio"
+          accessibilityLabel={option.label} accessibilityState={{ checked: reason === option.value }}
+          onPress={() => setReason(option.value)}
+          style={({ pressed }) => [styles.option, reason === option.value && styles.optionSelected, pressed && styles.pressed]}>
+          <Feather name={reason === option.value ? 'check-circle' : 'circle'} size={22} color="#174E72" accessible={false} />
+          <Text style={styles.optionText}>{option.label}</Text>
+        </Pressable>
+      ))}
+      <TextInput accessibilityLabel="Describe what is wrong" multiline textAlignVertical="top"
+        editable={!busy} maxLength={2000} placeholder="Tell us what looks wrong…"
+        placeholderTextColor="#7D909E" style={styles.reportInput} value={detail} onChangeText={setDetail} />
+      <Button secondary loading={busy} onPress={submit}>Send report</Button>
+    </>}
+  </Details>;
+}
 
 function Details({ title, children }) {
   const [open, setOpen] = useState(false);
@@ -166,6 +218,7 @@ export default function ResultScreen({ result, onNavigate }) {
           <Text style={styles.copy}>{scoreDescription(result)}</Text>
           <Text style={styles.copy}>Use the explanation and sources to decide what to do. A number alone cannot tell you whether to trust a message.</Text>
         </Details>
+        <ReportSection result={result} />
         <Text style={styles.secondary}>Automated checks can make mistakes. Read the sources before you share.</Text>
         <Button secondary onPress={share}>Share this result</Button>
       </>}
@@ -192,6 +245,10 @@ const styles = StyleSheet.create({
   toggle: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
   flexText: { flex: 1, flexShrink: 1 },
   pressed: { opacity: 0.7 },
+  option: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: '#CCDCE5', borderRadius: 12, paddingVertical: 10 },
+  optionSelected: { borderColor: '#24628D', borderWidth: 2 },
+  optionText: { color: '#243E50', fontSize: 17, lineHeight: 26, flex: 1, flexShrink: 1 },
+  reportInput: { backgroundColor: 'white', minHeight: 120, borderColor: '#B8CDD9', borderWidth: 1, borderRadius: 14, padding: 15, color: '#173447', fontSize: 16, lineHeight: 24 },
   detailBody: { gap: 16 },
   section: { borderTopWidth: 1, borderTopColor: '#D5E1E8', paddingTop: 18, gap: 14 },
   quote: { color: '#243E50', fontSize: 18, lineHeight: 28, borderLeftWidth: 3, borderLeftColor: '#427494', paddingLeft: 14 },

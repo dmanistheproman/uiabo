@@ -14,6 +14,9 @@ from app.pipeline.orchestration.repository import InMemoryResultRepository
 from app.pipeline.orchestration.service import PipelineOrchestrator
 from app.pipeline.shared.errors import PipelineError
 from app.pipeline.shared.models import FailedAnalysisRecord
+from app.portal.models import ReportCreated, ResultReportRequest
+from app.portal.repository import ReportRepository, get_report_repository
+from app.portal.service import build_report_document
 from app.schemas import TextAnalysisRequest, TextAnalysisResult
 
 
@@ -83,6 +86,32 @@ def get_result(user: User, store: Store,
                result_id: Annotated[str, Path(pattern=r"^[a-f0-9]{32}$")]):
     try:
         return store.get_owned(user.uid, result_id)
+    except HTTPException:
+        raise
+    except Exception:
+        raise unavailable() from None
+
+
+@router.post("/results/{result_id}/report", status_code=201, response_model=ReportCreated)
+def report_result(request: ResultReportRequest, user: User, store: Store,
+                  reports: Annotated[ReportRepository, Depends(get_report_repository)],
+                  result_id: Annotated[str, Path(pattern=r"^[a-f0-9]{32}$")]):
+    """Report a completed check as an incorrect result (feeds the DE portal)."""
+    try:
+        record = store.get_owned(user.uid, result_id)
+        if record.get("processing_status") != "completed" or "concern_label" not in record:
+            raise HTTPException(422, detail={"error_code": "RESULT_NOT_REPORTABLE",
+                "message": "Only completed text checks can be reported as incorrect."})
+        if reports.find_active_report(result_id, user.uid):
+            raise HTTPException(409, detail={"error_code": "ALREADY_REPORTED",
+                "message": "An investigation is already in progress for this result."})
+        document = build_report_document(
+            user_id=user.uid, result_id=result_id, reason=request.reason,
+            detail=request.detail, record=record,
+            now=datetime.now(timezone.utc))
+        created = reports.create_report(document)
+        return ReportCreated(report_id=created["report_id"],
+                             status=created["status"], created_at=created["created_at"])
     except HTTPException:
         raise
     except Exception:
