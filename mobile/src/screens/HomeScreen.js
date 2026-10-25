@@ -11,7 +11,7 @@ const features = [
   { icon: 'URL', label: 'Check link\nsafety', colour: '#E2F4F0', ink: '#008980', page: 'link' },
   { icon: 'IMG', label: 'Image + caption', colour: '#FFF3D7', ink: '#946100', locked: true },
   { icon: 'OCR', label: 'Read image text', colour: '#FFF3D7', ink: '#946100', page: 'ocr', premiumOnly: true },
-  { icon: 'CTX', label: 'Check image\ncontext', colour: '#EEE9F9', ink: '#7952AE', locked: true },
+  { icon: 'CTX', label: 'Check image\ncontext', colour: '#EEE9F9', ink: '#7952AE', page: 'imageContext' },
   { icon: 'AI', label: 'Deepfake / AI\nimage check', colour: '#EEE9F9', ink: '#7952AE', page: 'deepfakeAI', premiumOnly: true },
 ];
 
