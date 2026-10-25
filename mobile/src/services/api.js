@@ -100,4 +100,25 @@ export function checkDeepfakeAI_Image(user, image, requestKey) {
   });
 }
 
+export function checkImageContext(user, image, requestKey) {
+  const file = new File(image.uri);
+
+  const formData = new FormData();
+
+  formData.append('image', file);
+  formData.append(
+    'filename',
+    image.fileName || file.name || 'image',
+  );
+
+  return accountRequest('/analysis/image-context', user, {
+    method: 'POST',
+    body: formData,
+    timeout: 240000,
+    headers: {
+      'Idempotency-Key': requestKey,
+    },
+  });
+}
+
 export { API_URL };
