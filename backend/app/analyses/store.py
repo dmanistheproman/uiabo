@@ -16,6 +16,8 @@ from app.firebase import get_firestore_client
 from app.pipeline.shared.models import FailedAnalysisRecord, TextAnalysisResult
 from app.link_safety.models import FailedLinkSafetyRecord, LinkSafetyResult
 from app.deepfakeAI_analysis.models import DeepfakeAI_AnalysisResult, FailedDeepfakeAI_AnalysisRecord
+from app.image_context_analysis.models import ImageContextAnalysisResult, FailedImageContextAnalysisRecord
+
 
 LEASE_SECONDS = 300
 
@@ -69,6 +71,19 @@ def public_record(record):
             if key in record
         }).model_dump(mode="json")
 
+    if input_type == "image_context":
+        model = (
+            ImageContextAnalysisResult
+            if completed
+            else FailedImageContextAnalysisRecord
+        )
+
+        return model.model_validate({
+            key: record[key]
+            for key in model.model_fields
+            if key in record
+        }).model_dump(mode="json")
+
     fields = (
         TextAnalysisResult.model_fields
         if completed
@@ -115,7 +130,7 @@ class AnalysisStore:
             return {"result_id": result_id, "token": token, "fingerprint": fingerprint, "input_type": input_type}
         return self.run(operation)
 
-    def finish(self, uid, reservation, record):
+    def finish(self, uid, reservation, record, charge_allowance=None):
         now = self.clock()
         payload = record.model_dump(mode="json")
         payload.update(result_id=reservation["result_id"], user_id=uid, input_type=reservation.get("input_type", "text"),
@@ -130,7 +145,13 @@ class AnalysisStore:
                 return public_record(existing)
             if not lock or lock.get("token") != reservation["token"]:
                 reject(409, "ANALYSIS_EXPIRED", "This check expired. Please try again.")
-            if record.processing_status == "completed":
+            should_charge = (
+                record.processing_status == "completed"
+                if charge_allowance is None
+                else charge_allowance
+            )
+
+            if should_charge:
                 allowance = current_allowance(uid, profile, allowance, now)
                 if allowance["remaining_submissions"] <= 0:
                     reject(429, "ALLOWANCE_EXHAUSTED", "Your allowance has been used. Please wait until it resets.")
