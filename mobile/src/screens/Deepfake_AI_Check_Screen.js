@@ -270,6 +270,11 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
             </Button>
           </>
         )}
+        
+        <View style={styles.info}><Text style={styles.label}>How your image is checked</Text>
+          <Text style={styles.copy}>The image is passed into a machine learning model trained specifically to detect AI images. The output score is then passed to Gemini API (Gemini 3.5 Flash Lite) to perform a secondary analysis and reasoning, to provide an explanation for the result. The results are saved privately in your result history. Do not submit images containing sensitive information.</Text>
+          <Text style={styles.copy}>This checks for AI generated images or AI deepfakes. To fact-check an image's caption, try Check Image Context.</Text>
+        </View>
 
         <Button
           disabled={!selectedImage || analysing}
@@ -392,4 +397,6 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 20,
   },
+
+  info: { backgroundColor: '#E5F3FA', borderLeftWidth: 3, borderLeftColor: '#1778A3', padding: 16, borderRadius: 14, gap: 10 },
 });
