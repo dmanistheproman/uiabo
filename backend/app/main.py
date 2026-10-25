@@ -4,6 +4,8 @@ from app.routers.account import router as account_router
 from app.routers.analysis import router as analysis_router
 from app.routers.link_safety import router as link_safety_router
 from app.routers.deepfakeAI_analysis import router as deepfakeAI_analysis_router
+from app.routers.image_context_analysis import router as image_context_analysis_router
+
 
 app = FastAPI(
     title="uiabo API",
@@ -15,6 +17,7 @@ app.include_router(analysis_router)
 app.include_router(link_safety_router)
 app.include_router(account_router)
 app.include_router(deepfakeAI_analysis_router)
+app.include_router(image_context_analysis_router)
 
 @app.get("/")
 def root():
