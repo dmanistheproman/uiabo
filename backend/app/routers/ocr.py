@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
-from app.ocr.service import MAX_BODY_BYTES, OcrError, OcrRequest, OcrResult, OcrService, get_ocr_service
+from app.ocr.service import MAX_BODY_BYTES, OcrError, OcrRequest, OcrResult, OcrProvider, get_ocr_service
 from app.routers.analysis import Store, User, unavailable
 
 
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/analysis", tags=["OCR"])
 
 @router.post("/ocr", response_model=OcrResult)
 async def read_image(request: Request, user: User, store: Store,
-                     service: Annotated[OcrService, Depends(get_ocr_service)]):
+                     service: Annotated[OcrProvider, Depends(get_ocr_service)]):
     try:
         await run_in_threadpool(store.require_premium, user.uid)
     except HTTPException:

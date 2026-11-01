@@ -1,1 +1,1 @@
-"""Image-to-text preparation using the separately hosted Unlimited-OCR model."""
+"""Image-to-text preparation with selectable Google Vision or Unlimited-OCR."""

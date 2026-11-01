@@ -7,6 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 import re
 from threading import BoundedSemaphore
+from typing import Protocol
 import warnings
 
 from dotenv import load_dotenv
@@ -39,6 +40,10 @@ class OcrResult(BaseModel):
     extracted_at: datetime
     warnings: list[str] = Field(default_factory=list)
     max_check_characters: int = 5000
+
+
+class OcrProvider(Protocol):
+    def extract(self, encoded: str) -> OcrResult: ...
 
 
 def prepare_image(encoded):
@@ -154,4 +159,12 @@ class OcrService:
 @lru_cache
 def get_ocr_service():
     load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
+    provider = os.getenv("OCR_PROVIDER", "unlimited").strip().lower()
+    if provider == "google_vision":
+        from app.ocr.google_vision import GoogleVisionOcrService
+        return GoogleVisionOcrService()
+    if provider != "unlimited":
+        from fastapi import HTTPException
+        raise HTTPException(503, detail={"error_code": "OCR_CONFIGURATION_ERROR",
+            "message": "Image text reading is not configured correctly. Please contact the team."})
     return OcrService(os.getenv("OCR_BASE_URL", "http://127.0.0.1:8001"))
