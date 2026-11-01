@@ -15,6 +15,8 @@ from app.accounts.repository import _new_free_allowance, _new_premium_allowance
 from app.firebase import get_firestore_client
 from app.pipeline.shared.models import FailedAnalysisRecord, TextAnalysisResult
 from app.link_safety.models import FailedLinkSafetyRecord, LinkSafetyResult
+from app.deepfakeAI_analysis.models import DeepfakeAI_AnalysisResult, FailedDeepfakeAI_AnalysisRecord
+from app.image_context_analysis.models import ImageContextAnalysisResult, FailedImageContextAnalysisRecord
 
 
 LEASE_SECONDS = 300
@@ -47,13 +49,51 @@ def current_allowance(uid, profile, allowance, now):
 
 def public_record(record):
     completed = record.get("processing_status") == "completed"
-    if record.get("input_type") == "link_safety":
-        model = LinkSafetyResult if completed else FailedLinkSafetyRecord
-        return model.model_validate({key: record[key] for key in model.model_fields if key in record}).model_dump(mode="json")
-    else:
-        fields = TextAnalysisResult.model_fields if completed else FailedAnalysisRecord.model_fields
-    return {key: record[key] for key in fields if key in record}
+    input_type = record.get("input_type", "text")
 
+    if input_type == "link_safety":
+        model = LinkSafetyResult if completed else FailedLinkSafetyRecord
+        return model.model_validate({
+            key: record[key]
+            for key in model.model_fields
+            if key in record
+        }).model_dump(mode="json")
+
+    if input_type == "deepfake_ai":
+        model = (
+            DeepfakeAI_AnalysisResult
+            if completed
+            else FailedDeepfakeAI_AnalysisRecord
+        )
+        return model.model_validate({
+            key: record[key]
+            for key in model.model_fields
+            if key in record
+        }).model_dump(mode="json")
+
+    if input_type == "image_context":
+        model = (
+            ImageContextAnalysisResult
+            if completed
+            else FailedImageContextAnalysisRecord
+        )
+
+        return model.model_validate({
+            key: record[key]
+            for key in model.model_fields
+            if key in record
+        }).model_dump(mode="json")
+
+    fields = (
+        TextAnalysisResult.model_fields
+        if completed
+        else FailedAnalysisRecord.model_fields
+    )
+    return {
+        key: record[key]
+        for key in fields
+        if key in record
+    }
 
 class AnalysisStore:
     """Shared policy; concrete stores provide atomic run() and history queries."""
@@ -68,10 +108,12 @@ class AnalysisStore:
                 reject(403, "PREMIUM_REQUIRED", "Read image text is available to Premium accounts.")
         self.run(operation)
 
-    def reserve(self, uid, request_key, text, input_type="text"):
+    def reserve(self, uid, request_key, text: str | bytes, input_type="text"):
         now = self.clock()
         result_id = sha256(f"{uid}:{request_key}".encode()).hexdigest()[:32]
-        fingerprint = sha256(text.encode()).hexdigest()
+
+        content_bytes = text.encode("utf-8") if isinstance(text, str) else text
+        fingerprint = sha256(content_bytes).hexdigest()
         token = str(uuid4())
         def operation(tx):
             profile = active_profile(tx.get("users", uid))
@@ -94,7 +136,7 @@ class AnalysisStore:
             return {"result_id": result_id, "token": token, "fingerprint": fingerprint, "input_type": input_type}
         return self.run(operation)
 
-    def finish(self, uid, reservation, record):
+    def finish(self, uid, reservation, record, charge_allowance=None):
         now = self.clock()
         payload = record.model_dump(mode="json")
         payload.update(result_id=reservation["result_id"], user_id=uid, input_type=reservation.get("input_type", "text"),
@@ -109,7 +151,13 @@ class AnalysisStore:
                 return public_record(existing)
             if not lock or lock.get("token") != reservation["token"]:
                 reject(409, "ANALYSIS_EXPIRED", "This check expired. Please try again.")
-            if record.processing_status == "completed":
+            should_charge = (
+                record.processing_status == "completed"
+                if charge_allowance is None
+                else charge_allowance
+            )
+
+            if should_charge:
                 allowance = current_allowance(uid, profile, allowance, now)
                 if allowance["remaining_submissions"] <= 0:
                     reject(429, "ALLOWANCE_EXHAUSTED", "Your allowance has been used. Please wait until it resets.")

@@ -7,6 +7,8 @@ from app.routers.analysis import router as analysis_router
 from app.routers.link_safety import router as link_safety_router
 from app.routers.ocr import router as ocr_router
 from app.routers.portal import router as portal_router
+from app.routers.deepfakeAI_analysis import router as deepfakeAI_analysis_router
+from app.routers.image_context_analysis import router as image_context_analysis_router
 
 
 app = FastAPI(
@@ -32,6 +34,8 @@ app.include_router(account_router)
 app.include_router(admin_router)
 app.include_router(portal_router)
 
+app.include_router(deepfakeAI_analysis_router)
+app.include_router(image_context_analysis_router)
 
 @app.get("/")
 def root():

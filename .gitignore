@@ -31,3 +31,8 @@ submission/**/FYP-26-S2-XX*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Operational portal build output and downloaded detector weights
+portal/node_modules/
+portal/dist/
+backend/app/deepfakeAI_analysis/models/
