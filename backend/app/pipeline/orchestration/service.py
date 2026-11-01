@@ -5,6 +5,7 @@ Each teammate component is injected as a callable and validated against the
 shared Pydantic contract before its output is used.
 """
 
+import time
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any, TypeVar
@@ -61,6 +62,7 @@ class PipelineOrchestrator:
         id_factory: Callable[[], str] | None = None,
         clock: Callable[[], datetime] | None = None,
         pipeline_version: str = PIPELINE_VERSION,
+        run_recorder: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         self._prepare_input = prepare_input
         self._analyze_claim = analyze_claim
@@ -70,13 +72,15 @@ class PipelineOrchestrator:
         self._id_factory = id_factory or (lambda: str(uuid4()))
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._pipeline_version = pipeline_version
+        self._run_recorder = run_recorder
 
     def with_repository(self, repository: ResultRepository) -> "PipelineOrchestrator":
         """Give one authenticated request its own persistence boundary."""
         return PipelineOrchestrator(
             prepare_input=self._prepare_input, analyze_claim=self._analyze_claim,
             retrieve_evidence=self._retrieve_evidence, assess_evidence=self._assess_evidence,
-            repository=repository, clock=self._clock, pipeline_version=self._pipeline_version)
+            repository=repository, clock=self._clock, pipeline_version=self._pipeline_version,
+            run_recorder=self._run_recorder)
 
     def analyze(self, text: str) -> TextAnalysisResult:
         """Run the complete text pipeline and save a completed result.
@@ -88,11 +92,12 @@ class PipelineOrchestrator:
         """
         result_id = self._id_factory()
         created_at = self._clock()
+        stage_timings: dict[str, int] = {}
         prepared: PreparedText | None = None
         warnings: list[str] = []
 
         try:
-            prepared = self._run_input_preparation(text)
+            prepared = self._run_input_preparation(text, stage_timings)
             warnings.extend(prepared.warnings)
 
             claim = self._run_component(
@@ -100,6 +105,7 @@ class PipelineOrchestrator:
                 component=self._analyze_claim,
                 model=ClaimAnalysis,
                 args=(prepared,),
+                timings=stage_timings,
             )
             # Own this assumption on the server; do not accept an LLM-invented
             # date or rewrite the quoted claim. Use one clock for the whole run.
@@ -117,6 +123,7 @@ class PipelineOrchestrator:
                     component=self._retrieve_evidence,
                     model=RetrievalResult,
                     args=(claim,),
+                    timings=stage_timings,
                 )
                 warnings.extend(retrieval.warnings)
 
@@ -145,6 +152,7 @@ class PipelineOrchestrator:
                         component=self._assess_evidence,
                         model=AssessmentResult,
                         args=(claim, retrieval),
+                        timings=stage_timings,
                     )
 
             if (claim.claim_context and claim.claim_context.claim_type == "weather_forecast"
@@ -167,9 +175,32 @@ class PipelineOrchestrator:
             )
 
             self._repository.save_result(result)
+            self._record_run_best_effort({
+                "run_id": result_id,
+                "input_type": "text",
+                "status": "completed",
+                "created_at": created_at,
+                "finished_at": self._clock(),
+                "duration_ms": self._elapsed_ms(created_at),
+                "stage_timings_ms": stage_timings,
+                "pipeline_version": self._pipeline_version,
+            })
             return result
 
         except PipelineError as error:
+            self._record_run_best_effort({
+                "run_id": result_id,
+                "input_type": "text",
+                "status": "failed",
+                "created_at": created_at,
+                "finished_at": self._clock(),
+                "duration_ms": self._elapsed_ms(created_at),
+                "stage_timings_ms": stage_timings,
+                "failure_stage": error.stage,
+                "error_code": error.error_code,
+                "message": error.message,
+                "pipeline_version": self._pipeline_version,
+            })
             if prepared is not None:
                 self._record_failure_best_effort(
                     result_id=result_id,
@@ -180,7 +211,20 @@ class PipelineOrchestrator:
                 )
             raise
 
-    def _run_input_preparation(self, text: str) -> PreparedText:
+    def _elapsed_ms(self, started_at: datetime) -> int:
+        return max(0, int((self._clock() - started_at).total_seconds() * 1000))
+
+    def _record_run_best_effort(self, run: dict[str, Any]) -> None:
+        """Monitoring never breaks a check; recording failures are swallowed."""
+        if self._run_recorder is None:
+            return
+        try:
+            self._run_recorder(run)
+        except Exception:
+            return
+
+    def _run_input_preparation(self, text: str, timings: dict[str, int] | None = None) -> PreparedText:
+        started = time.perf_counter()
         try:
             raw_result = self._prepare_input(text)
         except PipelineError:
@@ -201,11 +245,14 @@ class PipelineOrchestrator:
                 stage="input_preparation",
             ) from error
 
-        return _validate_component_output(
+        prepared = _validate_component_output(
             PreparedText,
             raw_result,
             stage="input_preparation",
         )
+        if timings is not None:
+            timings["input_preparation"] = int((time.perf_counter() - started) * 1000)
+        return prepared
 
     def _run_component(
         self,
@@ -214,7 +261,9 @@ class PipelineOrchestrator:
         component: Callable[..., Any],
         model: type[T],
         args: tuple[Any, ...],
+        timings: dict[str, int] | None = None,
     ) -> T:
+        started = time.perf_counter()
         try:
             raw_result = component(*args)
         except PipelineError:
@@ -226,7 +275,10 @@ class PipelineOrchestrator:
                 stage=stage,
             ) from error
 
-        return _validate_component_output(model, raw_result, stage=stage)
+        validated = _validate_component_output(model, raw_result, stage=stage)
+        if timings is not None:
+            timings[stage] = int((time.perf_counter() - started) * 1000)
+        return validated
 
     def _record_failure_best_effort(
         self,

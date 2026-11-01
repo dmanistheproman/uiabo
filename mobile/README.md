@@ -71,10 +71,11 @@ Scan the QR code using Expo Go on Android, or press `a` to open an Android emula
 9. Confirm that the home screen shows the user's name, plan and server-provided allowance. Free users receive one completed check per day; premium users receive 60 per calendar month. Both reset at midnight Singapore time.
 10. Open **Check text**, enter a short English claim, and submit. Verify progress, a result with uncertainty and citations, and a reduced allowance.
 11. Open **Results**, refresh and reopen the saved result. Verify that an interrupted request can be recovered without charging twice when the same request key is retried.
-12. Verify the Firestore `analysis_results` document contains the authenticated `user_id`, `input_type`, evidence snapshot and timestamps. Failed checks should leave the allowance unchanged.
-13. Open **Profile**, change the name, save it, and verify the `users` Firestore document changed.
-14. Sign out and sign in again.
-15. Use **Forgot password?** to test the reset-email flow.
+12. Open the saved completed result and expand **Report a problem with this result**. Choose a reason, describe the issue and send. A second report for the same result is rejected while an investigation is open. Data engineers see the report in the portal (see `../portal/README.md`).
+13. Verify the Firestore `analysis_results` document contains the authenticated `user_id`, `input_type`, evidence snapshot and timestamps. Failed checks should leave the allowance unchanged.
+14. Open **Profile**, change the name, save it, and verify the `users` Firestore document changed.
+15. Sign out and sign in again.
+16. Use **Forgot password?** to test the reset-email flow.
 
 ## Main files
 
