@@ -1,3 +1,4 @@
+from app.analyses.images import SavedImage
 from datetime import datetime
 from typing import Literal
 
@@ -27,6 +28,7 @@ class ImageContextEvidenceLink(ImageContextModel):
         "context",
     ]
     summary: str
+    quote: str | None = None
 
 
 class ImageContextAnalysisResult(ImageContextModel):
@@ -34,6 +36,7 @@ class ImageContextAnalysisResult(ImageContextModel):
 
     input_type: Literal["image_context"] = "image_context"
     processing_status: Literal["completed"] = "completed"
+    saved_image: SavedImage | None = None
 
     concern_label: ConcernLabel
     explanation: str

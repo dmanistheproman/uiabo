@@ -249,14 +249,14 @@ def test_submitted_feedback_reaches_admin_review(
         email_verified=True,
     )
 
-    account_repository.ensure_free_profile(
+    account_repository.ensure_staff_profile(
         admin_identity,
         "System Admin",
     )
 
     account_repository.profiles[
         "admin-123"
-    ]["role"] = "system_admin"
+    ]["operational_roles"] = ["system_admin"]
 
     account_repository.profiles[
         "admin-123"

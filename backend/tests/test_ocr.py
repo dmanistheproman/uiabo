@@ -192,7 +192,7 @@ def test_reviewed_text_saved_once_with_ocr_source(context):
     fixture = json.loads((Path(__file__).parent / "fixtures/sprint_1/text_analysis_result.json").read_text())
     class Pipeline:
         calls = 0
-        def with_repository(self, repository): return self
+        def with_repository(self, repository, **kwargs): return self
         def analyze(self, text):
             self.calls += 1
             return TextAnalysisResult.model_validate({**fixture, "original_text": text})
@@ -218,7 +218,7 @@ def test_ocr_fact_check_requires_premium_and_failure_does_not_charge(context):
     from app.pipeline.shared.errors import PipelineComponentError
     client, store, _, _ = context
     class BrokenPipeline:
-        def with_repository(self, repository): return self
+        def with_repository(self, repository, **kwargs): return self
         def analyze(self, text): raise PipelineComponentError("Unavailable", error_code="SEARCH_FAILED", stage="evidence_retrieval")
     app.dependency_overrides[get_pipeline_orchestrator] = lambda: BrokenPipeline()
     response = client.post("/analysis/text", json={"text": TEXT, "input_source": "ocr"})

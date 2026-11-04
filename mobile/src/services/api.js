@@ -3,15 +3,16 @@ import { File } from 'expo-file-system';
 const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000').replace(/\/$/, '');
 
 async function accountRequest(path, user, options = {}) {
+  const { timeout: timeoutMs = 20000, timeoutMessage, responseType = 'json', ...fetchOptions } = options;
   const token = await user.getIdToken(true);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeout || 20000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const isFormData = options.body instanceof FormData;
 
   let response;
   try {
     response = await fetch(`${API_URL}${path}`, {
-      ...options,
+      ...fetchOptions,
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -22,9 +23,12 @@ async function accountRequest(path, user, options = {}) {
         ...options.headers,
       },
     });
+    // Use the same authenticated transport for private image bytes. Keep the
+    // timeout active until the body arrives, and parse API errors below.
+    if (response.ok && responseType === 'blob') return await response.blob();
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error(path === '/analysis/ocr' ? 'Reading the image took too long. No check was used. Try a clearer crop or retry shortly.' : 'The request is taking longer than expected. Open Results before retrying; your check may have finished.');
+      throw new Error(timeoutMessage || (path === '/analysis/ocr' ? 'Reading the image took too long. No check was used. Try a clearer crop or retry shortly.' : 'The request is taking longer than expected. Open Results before retrying; your check may have finished.'));
     }
     throw new Error(
       'Cannot reach UIABO. Check your connection and try again.',
@@ -57,6 +61,16 @@ export function ensureProfile(user, name) {
 
 export function getProfile(user) {
   return accountRequest('/account/me', user);
+}
+
+export function getDemoPaymentOffer(user) {
+  return accountRequest('/account/demo-payment', user);
+}
+
+export function completeDemoPayment(user) {
+  return accountRequest('/account/demo-payment', user, {
+    method: 'POST', body: JSON.stringify({ confirm_demo: true }),
+  });
 }
 
 export function checkText(user, text, requestKey, inputSource = 'text') {
@@ -118,12 +132,13 @@ export function checkDeepfakeAI_Image(user, image, requestKey) {
   });
 }
 
-export function checkImageContext(user, image, requestKey) {
+export function checkImageContext(user, image, requestKey, caption = '') {
   const file = new File(image.uri);
 
   const formData = new FormData();
 
   formData.append('image', file);
+  if (caption.trim()) formData.append('caption', caption.trim());
   formData.append(
     'filename',
     image.fileName || file.name || 'image',
@@ -140,3 +155,47 @@ export function checkImageContext(user, image, requestKey) {
 }
 
 export { API_URL };
+
+
+export function deleteSavedImage(user, resultId) {
+  return accountRequest(`/analysis/results/${encodeURIComponent(resultId)}/image`, user, {
+    method: 'DELETE', timeout: 45000,
+  });
+}
+
+export async function savedImageSource(user, resultId) {
+  // Expo Go's native image loader can omit Authorization even with an array
+  // source. Fetch privately through our normal API connection, then display
+  // the bytes in memory. Never put tokens in URLs or create public image links.
+  const blob = await accountRequest(`/analysis/results/${encodeURIComponent(resultId)}/image`, user, {
+    responseType: 'blob', timeout: 45000,
+    timeoutMessage: 'Loading the saved image took too long. Please reload it.',
+    headers: { Accept: 'image/jpeg, image/png' },
+  });
+  try {
+    if (!['image/jpeg', 'image/png'].includes(blob.type) || !blob.size || blob.size > 10 * 1024 * 1024) {
+      throw new Error('The server did not return a supported saved image. Please reload it.');
+    }
+    const uri = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const failed = () => reject(new Error('The saved image could not be read. Please reload it.'));
+      reader.onerror = failed;
+      reader.onabort = failed;
+      reader.onload = () => typeof reader.result === 'string' && reader.result.startsWith(`data:${blob.type};base64,`)
+        ? resolve(reader.result) : failed();
+      reader.readAsDataURL(blob);
+    });
+    return { uri };
+  } finally {
+    // React Native blobs own native memory; browsers have no close method.
+    blob.close?.();
+  }
+}
+
+
+export function requestAccountDeletion(user) {
+  return accountRequest('/account/me', user, {
+    method: 'DELETE', timeout: 30000,
+    timeoutMessage: 'We could not confirm whether deletion was requested. Retry to confirm; your account may already be unavailable.',
+  });
+}

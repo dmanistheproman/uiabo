@@ -1,4 +1,8 @@
 const definition = 'Higher means the evidence supports the claim. Lower means the evidence contradicts it. This is an evidence indicator, not a percentage probability of truth. Even 0 or 100 is not a guarantee.';
+import { controlLabel } from './controlInterpretations.js';
+import { verificationDetails } from './verificationDetails.js';
+import { webResearchDetails } from './webResearch.js';
+
 const unresolved = ['insufficient_evidence', 'unsupported'];
 const labels = {
   supported: 'Evidence suggests this is true',
@@ -7,7 +11,8 @@ const labels = {
   insufficient_evidence: 'Not enough evidence',
   unsupported: 'Not enough evidence',
   not_checkable: 'Not a factual claim',
-  highly_unlikely: 'Highly unlikely based on climate records',
+  highly_unlikely: 'Likely misinformation',
+  likely_misinformation: 'Likely misinformation',
 };
 
 export function isProvisionalScore(result) {
@@ -19,6 +24,12 @@ export function isProvisionalScore(result) {
 // Read old records without changing their stored risk fields. Never infer a
 // credibility score from a bare legacy number or a provisional midpoint.
 export function credibilityRating(result) {
+  const research = webResearchDetails(result);
+  if (research) return { status: 'research_only', score: null, label: research.title,
+    explanation: 'This assessment reflects the cited information available at the time of the check. It is not a guarantee.' };
+  const conditionalLabel = controlLabel(result);
+  if (conditionalLabel) return { status: 'insufficient_evidence', score: null, label: conditionalLabel,
+    explanation: 'No single score is assigned because management and ownership are different claims. Read the finding for each meaning.' };
   const outcome = result.assessment_outcome;
   const summary = result.scoring;
   const unscored = (status, explanation) => ({ status, score: null,
@@ -31,6 +42,9 @@ export function credibilityRating(result) {
   }
   if (outcome === 'highly_unlikely' || summary?.status === 'plausibility_based') {
     return unscored('plausibility_only', 'Climate records make this prediction implausible, but do not measure its probability or prove future weather impossible. No factual credibility score is assigned.');
+  }
+  if (outcome === 'likely_misinformation' && summary?.status === 'inference_based' && result.inference_context) {
+    return unscored('inference_only', 'This is a limited inference from the official baseline. No numerical probability is assigned.');
   }
   if (unresolved.includes(outcome) || result.concern_label === 'Not Enough Information'
       || ['provisional', 'not_applicable'].includes(summary?.status)) {
@@ -56,7 +70,8 @@ export function credibilityRating(result) {
     && summary.status === 'evidence_based'
     && result.component_assessment?.version === 'components-v1'
     && result.component_assessment.finding === 'material_contradiction';
-  const label = outcome === 'conflicting' ? labels.conflicting
+  const label = result.forecast_context?.risk_basis === 'forecast_comparison'
+    ? (stored?.label || 'Likely misinformation') : outcome === 'conflicting' ? labels.conflicting
     : materialContradiction ? 'Likely misinformation'
     : s >= 0.9 ? 'Strong evidence this is true'
       : c >= 0.9 ? 'Strong evidence this is false'
@@ -68,6 +83,8 @@ export function credibilityRating(result) {
 }
 
 export function componentDetails(result) {
+  const verification = verificationDetails(result);
+  if (verification !== null) return verification;
   const assessment = result.component_assessment;
   if (result.processing_status === 'failed' || assessment?.version !== 'components-v1'
       || !Array.isArray(assessment.components)) return [];
@@ -89,7 +106,7 @@ export function componentDetails(result) {
         status: { supporting: 'Supports this part', contradicting: 'Weighs against this part',
           unresolved: 'Does not settle this part' }[stance],
         explanation: finding.explanation || 'We could not establish this part from the available evidence.',
-        limitation: !finding.scope_matched
+        limitation: !finding.scope_matched && finding.scope_status !== 'established' && !finding.reason_codes?.length
           ? 'We could not confirm that the evidence matches the circumstances of this part of the message.' : '',
       };
     }).filter(finding => {
@@ -128,7 +145,7 @@ export function assessmentLabel(result) {
       'Needs Caution': 'conflicting', 'Not Enough Information': 'insufficient_evidence' }[result.concern_label];
     return labels[previousOutcome] || 'Not enough evidence';
   }
-  if (result.assessment_outcome === 'contradicted' && result.forecast_context?.risk_basis === 'forecast_comparison') return 'Conflicts with current forecast';
+  if (result.assessment_outcome === 'contradicted' && result.forecast_context?.risk_basis === 'forecast_comparison') return 'Likely misinformation';
   return credibilityRating(result).label;
 }
 
@@ -144,8 +161,9 @@ export function scoreDescription(result) {
 }
 
 export function credibilityDetails(result) {
+  if (webResearchDetails(result)) return scoreDescription(result);
   const score = credibilityScore(result);
-  return `${score == null ? 'Credibility: Not rated.' : `Credibility score: ${score}/100.`} ${scoreDescription(result)}`;
+  return `${score == null ? 'Credibility: Not rated.' : `Credibility score: ${score}/100.`} ${scoreDescription(result).replace(/^Not rated:\s*/i, '')}`;
 }
 
 export const comparisonAspects = {

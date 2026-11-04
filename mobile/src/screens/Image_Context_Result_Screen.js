@@ -1,9 +1,13 @@
+import { colours, typography } from '../theme';
+import ReportResultPanel from '../components/ReportResultPanel';
+import SavedResultImage from '../components/SavedResultImage';
 
 import React from 'react';
 
 import {
   Alert,
   Linking,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -16,29 +20,29 @@ import Button from '../components/Button';
 
 const concernStyles = {
   'Low Concern': {
-    color: '#197551',
-    backgroundColor: '#E4F4EC',
+    color: colours.success,
+    backgroundColor: colours.successBackground,
     icon: 'check-circle',
     message:
       'The available evidence does not indicate a strong concern, but this does not guarantee that the post is accurate.',
   },
   'Needs Caution': {
-    color: '#896306',
-    backgroundColor: '#FFF4D2',
+    color: colours.warning,
+    backgroundColor: colours.warningBackground,
     icon: 'alert-triangle',
     message:
       'Some aspects of this post may need further verification. Review the explanation and sources before drawing a conclusion.',
   },
   'High Concern': {
-    color: '#AA2825',
-    backgroundColor: '#FBE9E7',
+    color: colours.danger,
+    backgroundColor: colours.dangerBackground,
     icon: 'alert-circle',
     message:
       'The available evidence raises significant concerns about the post. Review the explanation and supporting sources.',
   },
   'Not Enough Information': {
-    color: '#285B7D',
-    backgroundColor: '#E5F3FA',
+    color: colours.blueDark,
+    backgroundColor: colours.infoBackground,
     icon: 'help-circle',
     message:
       'There was not enough usable information to assess the post reliably. This does not mean the post is necessarily true or false.',
@@ -118,14 +122,16 @@ function EvidenceCard({ item, index }) {
       )}
 
       {!!item?.url && (
-        <Text
+        <Pressable
           accessibilityRole="link"
+          accessibilityLabel={`Open source: ${item.title || 'Source website'}`}
           accessibilityHint="Opens the source in your browser"
           onPress={openSource}
-          style={styles.link}
+          style={({ pressed }) => [styles.link, pressed && styles.pressed]}
         >
-          Open source <Feather name="external-link" size={13} />
-        </Text>
+          <Text style={styles.linkText}>Open source</Text>
+          <Feather name="external-link" size={22} color={colours.blueDark} accessible={false} />
+        </Pressable>
       )}
     </View>
   );
@@ -152,9 +158,9 @@ export default function Image_Context_Result_Screen({
   const displayLabel = isFailed ? 'Analysis failed' : label;
 
   const icon = isFailed ? 'x-circle' : appearance.icon;
-  const color = isFailed ? '#AA2825' : appearance.color;
+  const color = isFailed ? colours.danger : appearance.color;
   const summaryBackground = isFailed
-    ? '#FBE9E7'
+    ? colours.dangerBackground
     : appearance.backgroundColor;
 
   const message = isFailed
@@ -170,6 +176,7 @@ export default function Image_Context_Result_Screen({
       />
 
       <PageBody>
+        <SavedResultImage result={result} />
         <View
           style={[
             styles.summary,
@@ -207,11 +214,11 @@ export default function Image_Context_Result_Screen({
 
         <View style={styles.card}>
           <Text accessibilityRole="header" style={styles.heading}>
-            Extracted caption
+            Caption we checked
           </Text>
 
           <Text style={caption ? styles.bodyText : styles.placeholder}>
-            {caption || 'No caption could be extracted from this image.'}
+            {caption || 'No caption was available for this image.'}
           </Text>
         </View>
 
@@ -265,135 +272,31 @@ export default function Image_Context_Result_Screen({
         <Button onPress={() => onNavigate('imageContext')}>
           Check another image
         </Button>
+        <ReportResultPanel result={result} />
       </PageBody>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  summary: {
-    alignItems: 'center',
-    borderRadius: 18,
-    borderWidth: 1,
-    padding: 20,
-    gap: 14,
-  },
-
-  title: {
-    fontWeight: '800',
-    fontSize: 27,
-    lineHeight: 35,
-    textAlign: 'center',
-  },
-
-  summaryCopy: {
-    color: '#243E50',
-    fontSize: 16,
-    lineHeight: 25,
-    textAlign: 'center',
-  },
-
-  card: {
-    borderRadius: 16,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#CCDCE5',
-    padding: 16,
-    gap: 12,
-  },
-
-  heading: {
-    color: '#173447',
-    fontWeight: '700',
-    fontSize: 21,
-    lineHeight: 29,
-  },
-
-  filename: {
-    color: '#243E50',
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-    overflow: 'hidden',
-  },
-
-  bodyText: {
-    color: '#243E50',
-    fontSize: 16,
-    lineHeight: 25,
-  },
-
-  secondary: {
-    color: '#465D6B',
-    fontSize: 14,
-    lineHeight: 22,
-  },
-
-  placeholder: {
-    color: '#71818B',
-    fontSize: 16,
-    lineHeight: 25,
-    fontStyle: 'italic',
-  },
-
-  evidenceList: {
-    gap: 12,
-  },
-
-  evidenceCard: {
-    borderWidth: 1,
-    borderColor: '#D5E1E8',
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
-  },
-
-  sourceHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-  },
-
-  sourceNumber: {
-    width: 25,
-    height: 25,
-    borderRadius: 13,
-    backgroundColor: '#E5F3FA',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  sourceNumberText: {
-    color: '#174968',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-
-  relationship: {
-    color: '#526F83',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  sourceTitle: {
-    color: '#173447',
-    fontSize: 16,
-    lineHeight: 23,
-    fontWeight: '700',
-  },
-
-  link: {
-    color: '#285B7D',
-    fontSize: 14,
-    lineHeight: 22,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-  },
-
-  disclaimer: {
-    color: '#465D6B',
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
+  summary: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 16 },
+  title: { ...typography.title },
+  summaryCopy: { ...typography.body, color: colours.text },
+  card: { borderRadius: 16, backgroundColor: colours.white, borderWidth: 1, borderColor: colours.divider, padding: 18, gap: 16 },
+  heading: { ...typography.heading, color: colours.ink },
+  filename: { ...typography.secondary, color: colours.text },
+  bodyText: { ...typography.body, color: colours.text },
+  secondary: { ...typography.secondary, color: colours.muted },
+  placeholder: { ...typography.secondary, color: colours.muted },
+  evidenceList: { gap: 16 },
+  evidenceCard: { borderWidth: 1, borderColor: colours.divider, borderRadius: 12, padding: 14, gap: 14 },
+  sourceHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sourceNumber: { minWidth: 36, minHeight: 36, padding: 6, borderRadius: 18, backgroundColor: colours.infoBackground, alignItems: 'center', justifyContent: 'center' },
+  sourceNumberText: { ...typography.small, color: colours.blueDark, fontWeight: '700' },
+  relationship: { ...typography.secondary, color: colours.muted, fontWeight: '600', flex: 1, flexShrink: 1 },
+  sourceTitle: { ...typography.label, color: colours.ink },
+  link: { minHeight: 56, borderWidth: 2, borderColor: colours.blue, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  linkText: { ...typography.label, color: colours.blueDark, textDecorationLine: 'underline', flex: 1, flexShrink: 1 },
+  pressed: { backgroundColor: colours.infoBackground },
+  disclaimer: { ...typography.secondary, color: colours.muted },
 });

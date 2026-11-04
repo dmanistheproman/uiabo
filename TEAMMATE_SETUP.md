@@ -67,6 +67,8 @@ Ask the project owner for:
 
 All provider registration and documentation links are in [API_SERVICES.md](API_SERVICES.md).
 
+The optional [Gemini PDF evidence reader](GEMINI_PDF_SETUP.md) reuses the backend's Gemini key. Enable it with `PDF_READER_ENABLED=true` in the project-root `.env` and install the updated backend requirements.
+
 ### Firebase setup
 
 Use the same Firebase project on the mobile app and backend. If the team project already exists, use it instead of creating a second project.

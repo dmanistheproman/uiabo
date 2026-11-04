@@ -51,6 +51,25 @@ def test_corporate_relationships_are_distinct(text, relationship):
     assert build_claim_context(text, NOW).relationship == relationship
 
 
+@pytest.mark.parametrize('text,relationship', [
+    ('Singapore airline is controlled by Singapore government', 'ambiguous_control'),
+    ('Singapore airline is controlled by Singapore government through voting rights', 'ownership'),
+    ('SIA is controlled by the government in its day-to-day operations', 'management'),
+    ('SIA is managed by the government', 'management'),
+    ('SIA is funded by the government', 'funding'),
+    ('The government controls inflation', 'general'),
+])
+def test_ownership_control_and_operational_management_remain_distinct(text, relationship):
+    context = build_claim_context(text, NOW)
+    assert context.relationship == relationship
+    if relationship == 'ambiguous_control':
+        assert any('without choosing one' in a for a in context.assumptions)
+        assert not any("Interpreted 'control' as ownership" in a for a in context.assumptions)
+    if relationship == 'ownership':
+        assert any('ownership or voting control' in a for a in context.assumptions)
+        assert any('Singapore Airlines' in a for a in context.assumptions)
+
+
 def test_weather_claim_keeps_possible_modality_and_exact_quantities_without_rewriting():
     text = 'Singapore could reach 52°C this weekend due to a record-breaking heatwave.'
     result = build_claim_context(text, NOW)
@@ -105,6 +124,16 @@ def test_explicit_may_date_does_not_create_possible_modality():
 
 @pytest.mark.parametrize('text,location', [
     ('Singapore will reach 32 C tomorrow.', 'Singapore'),
+    ('Singapore next week will reach 50 degree celcius', 'Singapore'),
+    ('Singapore next week will hit 50 degree celcius', 'Singapore'),
+    ('Singapore tomorrow will reach 50 C.', 'Singapore'),
+    ('Singapore this Saturday will reach 50 C.', 'Singapore'),
+    ('Kuala Lumpur next week will reach 32 C.', 'Kuala Lumpur'),
+    ('New York tomorrow will reach 32 C.', 'New York'),
+    ('It next week will reach 50 C.', None),
+    ('The oven next week will reach 50 C.', None),
+    ('Singapore and Malaysia next week will reach 50 C.', None),
+    ('Singapore next week will reach 50 C in Malaysia.', None),
     ('New York could reach 32 C tomorrow.', 'New York'),
     ('Temperatures in singapore may reach 32 C tomorrow.', 'singapore'),
     ('Temperatures in Kuala Lumpur may reach 32 C tomorrow.', 'Kuala Lumpur'),

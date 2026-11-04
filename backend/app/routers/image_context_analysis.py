@@ -1,7 +1,10 @@
 """Authenticated Check Image Context analysis."""
 
+from starlette.concurrency import run_in_threadpool
+from app.analyses.image_execution import run_image_work
+from app.analyses.images import MAX_IMAGE_BYTES, decode_image, finish_with_image
+
 from datetime import datetime, timezone
-from io import BytesIO
 from typing import Annotated
 from uuid import uuid4
 
@@ -14,7 +17,6 @@ from fastapi import (
     HTTPException,
     UploadFile,
 )
-from PIL import Image
 
 from app.auth.dependencies import get_verified_user
 from app.auth.models import AuthenticatedUser
@@ -36,7 +38,7 @@ User = Annotated[
     Depends(get_verified_user),
 ]
 
-PIPELINE_VERSION = "image-context-v1"
+PIPELINE_VERSION = "image-context-v2"
 
 
 @router.post("/image-context")
@@ -44,11 +46,15 @@ async def analyse_image_context_post(
     user: User,
     image: UploadFile = File(...),
     filename: str | None = Form(None),
+    caption: str | None = Form(None, max_length=5000),
     idempotency_key: str | None = Header(
         default=None,
-        alias="Idempotency-Key",
+        alias="Idempotency-Key", max_length=64, pattern=r"^[a-zA-Z0-9-]+$",
     ),
 ):
+    store = get_analysis_store()
+    await run_in_threadpool(store.require_premium, user.uid)
+
     # Validate the uploaded file type.
     allowed_types = {
         "image/jpeg",
@@ -65,7 +71,7 @@ async def analyse_image_context_post(
             },
         )
 
-    image_data = await image.read()
+    image_data = await image.read(MAX_IMAGE_BYTES + 1)
 
     if not image_data:
         raise HTTPException(
@@ -77,19 +83,7 @@ async def analyse_image_context_post(
         )
 
     # Open the image once and keep it available for both Gemini calls.
-    try:
-        with Image.open(BytesIO(image_data)) as opened_image:
-            opened_image.load()
-            pil_image = opened_image.copy()
-
-    except Exception:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error_code": "INVALID_IMAGE",
-                "message": "The uploaded file is not a valid image.",
-            },
-        ) from None
+    pil_image, stored_content_type = await run_in_threadpool(decode_image, image_data)
 
     image_filename = (
         filename
@@ -97,18 +91,16 @@ async def analyse_image_context_post(
         or "image"
     )
 
-    store = get_analysis_store()
-
     request_key = (
         idempotency_key.strip()
         if idempotency_key and idempotency_key.strip()
         else str(uuid4())
     )
 
-    reservation = store.reserve(
+    reservation = await run_in_threadpool(store.reserve,
         user.uid,
         request_key,
-        image_data,
+        image_data + b"\0caption:" + (caption or "").strip().encode("utf-8"),
         input_type="image_context",
     )
 
@@ -130,25 +122,17 @@ async def analyse_image_context_post(
 
         return existing
 
-    caption_extraction_succeeded = False
     try:
-        # Stage 1: extract the full caption and main factual claim.
-        extraction = extract_caption(pil_image)
+        def assess():
+            extraction = ({"extracted_caption": caption.strip(), "main_claim": caption.strip()}
+                          if caption and caption.strip() else extract_caption(pil_image))
+            analysis = analyse_image_context(
+                image=pil_image, extracted_caption=extraction["extracted_caption"],
+                main_claim=extraction["main_claim"], image_filename=image_filename)
+            return extraction, analysis
 
+        extraction, analysis = await run_image_work(assess)
         extracted_caption = extraction["extracted_caption"]
-        main_claim = extraction["main_claim"]
-
-        caption_extraction_succeeded = True
-
-        # Stage 2: search for evidence and analyse the image/caption.
-        # The service handles empty claims and unavailable Tavily
-        # evidence by returning "Not enough information".
-        analysis = analyse_image_context(
-            image=pil_image,
-            extracted_caption=extracted_caption,
-            main_claim=main_claim,
-            image_filename=image_filename,
-        )
 
         record = ImageContextAnalysisResult(
             result_id=reservation["result_id"],
@@ -167,7 +151,7 @@ async def analyse_image_context_post(
             created_at=datetime.now(timezone.utc),
         )
 
-    except Exception:
+    except Exception as error:
         failed_record = FailedImageContextAnalysisRecord(
             result_id=reservation["result_id"],
             error_code="IMAGE_CONTEXT_ANALYSIS_FAILED",
@@ -178,15 +162,20 @@ async def analyse_image_context_post(
         )
 
         try:
-            store.finish(
+            await run_in_threadpool(store.finish,
                 user.uid,
                 reservation,
                 failed_record,
-                charge_allowance=caption_extraction_succeeded,
+                charge_allowance=False,
             )
         except Exception:
-            store.release(user.uid, reservation)
+            try:
+                await run_in_threadpool(store.release, user.uid, reservation)
+            except Exception:
+                pass  # The bounded reservation expires if storage is unavailable.
 
+        if isinstance(error, HTTPException):
+            raise error
         raise HTTPException(
             status_code=503,
             detail={
@@ -196,12 +185,11 @@ async def analyse_image_context_post(
         ) from None
 
     try:
-        return store.finish(
-            user.uid,
-            reservation,
-            record,
-        )
+        return await run_in_threadpool(finish_with_image, store, user.uid, reservation, record, image_data, stored_content_type)
 
     except Exception:
-        store.release(user.uid, reservation)
+        try:
+            await run_in_threadpool(store.release, user.uid, reservation)
+        except Exception:
+            pass
         raise

@@ -32,10 +32,12 @@ async def google_search(client: httpx.AsyncClient, query: str, key: str) -> list
     return claims[:5]
 
 
-async def tavily_extract(client: httpx.AsyncClient, urls: list[str], key: str, *, format: str = "text") -> dict:
+async def tavily_extract(client: httpx.AsyncClient, urls: list[str], key: str, *, format: str = "text", depth: str = "basic") -> dict:
+    if depth not in {'basic', 'advanced'}:
+        raise ValueError('Invalid extraction depth')
     data = await request_json(client, "POST", "https://api.tavily.com/extract",
         headers={"Authorization": f"Bearer {key}"},
-        json={"urls": urls, "extract_depth": "basic", "format": format, "timeout": 15})
+        json={"urls": urls, "extract_depth": depth, "format": format, "timeout": 15})
     if not isinstance(data.get("results"), list) or not isinstance(data.get("failed_results", []), list):
         raise ValueError("Invalid extraction response")
     return data

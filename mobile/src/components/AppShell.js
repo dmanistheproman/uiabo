@@ -1,42 +1,58 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 export function PageHeader({ title, onBack, badge, children }) {
+  const { width, fontScale } = useWindowDimensions();
+  const stacked = fontScale > 1.3 || width < 360;
+  const titleElement = !!title && <Text accessibilityRole="header" style={[styles.title, stacked && styles.stackedTitle]}>{title}</Text>;
   return <View style={styles.header}>
+    <View style={styles.headerRow}>
     {onBack ? <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={onBack} style={styles.headerButton}>
-      <Feather name="chevron-left" size={22} color={colours.blueDark} />
-    </Pressable> : <Text style={styles.brand}>uiabo<Text style={{ color: '#008B89' }}>.</Text></Text>}
-    {!!title && <Text style={styles.title}>{title}</Text>}
-    {children || (badge ? <Text style={styles.badge}>{badge}</Text> : <View style={{ width: 40 }} />)}
+      <Feather name="chevron-left" size={28} color={colours.blueDark} />
+    </Pressable> : <Text style={styles.brand}>uiabo<Text style={{ color: colours.teal }}>.</Text></Text>}
+    {!stacked && titleElement}
+    {children || (badge ? <Text style={styles.badge}>{badge}</Text> : <View style={{ width: 56 }} />)}
+    </View>
+    {stacked && titleElement}
   </View>;
 }
 
 export function BottomTabs({ active, onNavigate, disabled = false }) {
-  return <View style={styles.tabs}>
+  const { fontScale, width } = useWindowDimensions();
+  const wrapTabs = fontScale > 1.3 || width < 360;
+  return <View style={[styles.tabs, wrapTabs && styles.wrappedTabs]}>
     {[['home', 'Home', 'home'], ['results', 'Results', 'list'], ['help', 'Help', 'help-circle'], ['profile', 'Profile', 'user']].map(([page, label, icon]) => (
       <Pressable key={page} accessibilityRole="tab" accessibilityState={{ selected: active === page, disabled }}
-        accessibilityLabel={label} disabled={disabled} onPress={() => onNavigate(page)} style={styles.tab}>
-        <Feather name={icon} size={20} color={active === page ? '#008B89' : '#63788A'} />
-        <Text style={[styles.tabLabel, active === page && { color: '#008B89', fontWeight: '700' }]}>{label}</Text>
+        accessibilityLabel={label} disabled={disabled} onPress={() => onNavigate(page)}
+        style={({ pressed }) => [styles.tab, wrapTabs && styles.wrappedTab, active === page && styles.selectedTab, pressed && styles.pressedTab]}>
+        <Feather name={icon} size={24} color={active === page ? colours.teal : colours.muted} />
+        <Text style={[styles.tabLabel, active === page && styles.selectedLabel]}>{label}</Text>
       </Pressable>
     ))}
   </View>;
 }
 
-export function PageBody({ children, ...props }) {
-  return <ScrollView {...props} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.body}>{children}</ScrollView>;
+export function PageBody({ children, contentContainerStyle, ...props }) {
+  return <ScrollView {...props} keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.body, contentContainerStyle]}>{children}</ScrollView>;
 }
 
 const styles = StyleSheet.create({
-  header: { minHeight: 66, paddingHorizontal: 22, gap: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', borderBottomColor: '#DCE5EB', borderBottomWidth: 1 },
-  headerButton: { width: 42, height: 42, borderWidth: 1, borderColor: '#DCE5EB', borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  brand: { fontSize: 28, color: '#103A53', fontWeight: '900', letterSpacing: -1.6 },
-  title: { color: colours.ink, fontSize: 20, fontWeight: '700', flex: 1, textAlign: 'center' },
-  badge: { backgroundColor: '#E5F3FA', color: colours.blueDark, fontWeight: '700', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, fontSize: 12 },
-  tabs: { flexDirection: 'row', backgroundColor: 'white', borderTopColor: '#DCE5EB', borderTopWidth: 1, paddingVertical: 9 },
-  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 46 },
-  tabLabel: { fontSize: 11, color: '#63788A' },
-  body: { padding: 22, gap: 16, paddingBottom: 28 },
+  header: { paddingHorizontal: 18, paddingVertical: 10, gap: 10, backgroundColor: colours.white, borderBottomColor: colours.divider, borderBottomWidth: 1 },
+  headerRow: { minHeight: 56, gap: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerButton: { width: 56, height: 56, borderWidth: 2, borderColor: colours.border, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  brand: { ...typography.title, color: colours.blueDark, fontWeight: '800', flexShrink: 1 },
+  title: { ...typography.heading, color: colours.ink, flex: 1, textAlign: 'center' },
+  stackedTitle: { flex: 0, textAlign: 'left' },
+  badge: { ...typography.small, backgroundColor: colours.infoBackground, color: colours.blueDark, fontWeight: '700', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16, flexShrink: 1 },
+  tabs: { flexDirection: 'row', backgroundColor: colours.white, borderTopColor: colours.divider, borderTopWidth: 1, padding: 6, gap: 2 },
+  wrappedTabs: { flexWrap: 'wrap' },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, minHeight: 64, paddingVertical: 8, paddingHorizontal: 2, borderTopWidth: 3, borderTopColor: 'transparent', borderRadius: 8 },
+  wrappedTab: { flex: 0, flexBasis: '49%', flexGrow: 1, flexDirection: 'row', gap: 8 },
+  selectedTab: { backgroundColor: colours.infoBackground, borderTopColor: colours.teal },
+  pressedTab: { backgroundColor: colours.infoBackground },
+  tabLabel: { ...typography.tab, color: colours.muted, textAlign: 'center', flexShrink: 1 },
+  selectedLabel: { color: colours.teal, fontWeight: '700' },
+  body: { padding: 20, gap: 20, paddingBottom: 32 },
 });

@@ -87,6 +87,40 @@ def test_supported_language_can_continue() -> None:
     assert result.detected_language == "en"
 
 
+@pytest.mark.parametrize('text', [
+    'Singapore next week will hit 50 degree celcius',
+    'Singapore will hit 50 degrees celcius next week',
+])
+def test_temperature_typo_retries_detection_without_rewriting_claim(text):
+    from app.pipeline.input_preparation.service import prepare_text
+    result = validate_english(text)
+    assert result.supported and result.detected_language == 'en'
+    prepared = prepare_text(text)
+    assert prepared.original_text == prepared.normalised_text == text
+
+
+@pytest.mark.parametrize('text', [
+    'Singapore suhu 50 darjah celcius minggu depan',
+    'Singapore akan mencapai 50 derajat celcius minggu depan',
+    '50 celcius',
+    'CPF retirement age 75',
+])
+def test_typo_retry_does_not_admit_other_languages_or_ambiguous_fragments(text):
+    assert not validate_english(text).supported
+
+
+def test_typo_retry_keeps_custom_confidence_requirements():
+    assert not validate_english('Singapore next week will hit 50 degree celcius',
+                                minimum_margin=.2).supported
+
+
+def test_language_probe_only_repairs_numeric_units():
+    from app.pipeline.input_preparation.language_validation import _language_probe
+    assert _language_probe('50 degree celcius') == '50 degree Celsius'
+    assert _language_probe('122 degrees farenheit') == '122 degrees Fahrenheit'
+    assert _language_probe('A company called Celcius') == 'A company called Celcius'
+
+
 def test_validation_does_not_modify_the_input() -> None:
     text = "  The policy is NOT cancelled.  "
 

@@ -1,5 +1,7 @@
 # uiabo
 
+**2 November local update:** [Reliability fixes and connected app functions](RELIABILITY_UPDATES.md). Some older milestone descriptions below predate these changes.
+
 **New teammate? Start with the [complete Windows setup guide](TEAMMATE_SETUP.md).** It covers current configuration, Firebase, backend, Expo/emulator, optional OCR and troubleshooting. API links are in [API_SERVICES.md](API_SERVICES.md).
 
 uiabo is a Final Year Project that aims to help users assess text and online content for possible misinformation. The planned system will return a concern label, misinformation risk score, uncertainty level, plain-language explanation, and supporting evidence with citations.
@@ -49,7 +51,7 @@ Not yet implemented:
 - Broader source-catalogue review and coverage evaluation
 - Calibrated risk/uncertainty scores and semantic evidence assessment
 - Evaluation of explanation and citation accuracy
-- Premium payments
+- Real Premium payments (a zero-charge demo checkout is available; see `DEMO_PREMIUM_SETUP.md`)
 
 ## Project structure
 
@@ -129,6 +131,37 @@ See the [assessment implementation notes](backend/app/pipeline/evidence_assessme
 and [provisional evaluation guide](evaluation/datasets/STANCE_LABELLING_GUIDE.md).
 The app shows the quotation and source-specific explanation; numerical risk
 indicators remain prototype rules, not calibrated probabilities.
+
+### General claim verification and targeted recovery
+
+With `EVIDENCE_PIPELINE_V3=1`, the backend now enables structured verification
+by default. It uses the existing Ollama key to preserve the submitted wording,
+split material assertions, and generate evidence questions. Retrieval follows
+those questions; the verifier joins exact quotations across sources and checks
+entity, date, population and measurement separately. A material contradiction
+can establish a result while an alleged cause remains unresolved.
+
+The verifier uses Ollama for structured explanations and quotations. JEV remains
+available for claim analysis and the earlier per-source assessment route. Gemini
+continues to read eligible bounded PDFs when `PDF_READER_ENABLED=true`.
+
+An unresolved result can trigger one follow-up round: at most two search queries
+and three new pages, with a 35-second deadline. The stage preserves useful earlier
+evidence and can reselect sections from already-read pages. It starts only while
+the app request has enough time for reassessment. Provider failures remain
+distinct from a successful search that found no further evidence.
+
+Results save `verification_plan`, per-assertion `verification` findings and a
+bounded `retrieval_trace` in the owner's existing assessment record. The mobile
+result page shows the findings under **Why this result?**. Existing saved results
+keep their earlier explanations and are not automatically rerun.
+
+Set `EVIDENCE_VERIFICATION_ENABLED=false` and restart the backend to use the
+earlier assessment route for comparison. The pipeline version records whether
+verification is enabled. No new API key is needed. The [verification regression
+guide](evaluation/verification/README.md) explains offline fixture validation and
+optional live tests with fictional source packs; these are separate from the
+team's real-claim accuracy evaluation.
 
 ## Run the API
 

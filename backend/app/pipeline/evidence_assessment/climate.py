@@ -10,12 +10,26 @@ from app.pipeline.shared.climate import (
 from app.pipeline.shared.models import AssessmentResult, PlausibilityContext, ScoringSummary
 from . import forecast
 from .scoring import SCORING_VERSION
+from app.pipeline.shared.interpretation import input_intent
+
+
+def simple_temperature_proposition(claim):
+    """A question asks about the event; it does not assert the answer is yes."""
+    text = claim.extracted_claim or ""
+    if forecast._definite_prediction(claim):
+        return True
+    return bool(claim.claim_context and claim.claim_context.input_intent == "question"
+        and input_intent(text) == "question"
+        and re.match(r"^(?:could|will|can|might)\b", text, re.I)
+        and not re.search(r"\b(?:not|never|if|unless|would)\b|n['’]t\b", text, re.I)
+        and forecast._simple_temperature_report(claim))
 
 
 def apply_plausibility(claim, retrieval, result):
     if (not claim.checkable or not eligible(claim.claim_context, claim.date_context)
+            or (result.forecast_context and result.forecast_context.status in {"supported_by_forecast", "mixed"})
             or result.assessment_outcome not in {"unsupported", "insufficient_evidence"}
-            or not forecast._definite_prediction(claim)
+            or not simple_temperature_proposition(claim)
             or forecast.CAUSAL.search(claim.extracted_claim)
             or forecast.OTHER_CLAUSES.search(claim.extracted_claim)
             or forecast.QUANTIFIED_TEMPERATURE.search(claim.extracted_claim)
@@ -38,11 +52,11 @@ def apply_plausibility(claim, retrieval, result):
         gap = round(quantity[0] - data.maximum_c, 3)
         if gap < MIN_RECORD_GAP_C:
             continue
-        explanation = (f"The prediction is highly unlikely based on Singapore's climate records: "
+        explanation = (f"Likely misinformation: the proposed temperature is highly unlikely based on Singapore's climate records. "
             f"{quantity[0]:g} degrees Celsius is {gap:g} degrees above MSS's all-stations "
             f"historical maximum of {data.maximum_c:g} degrees Celsius "
             f"(table updated {data.updated_at.isoformat()}). "
-            "This is a climate plausibility warning, not proof that a future event cannot happen.")
+            "This assessment uses historical extremes, not proof that a future event cannot happen.")
         payload = result.model_dump()
         payload.update(assessment_outcome="highly_unlikely", concern_label="High Concern",
             misinformation_risk_score=OUTLIER_RISK, uncertainty="High",

@@ -40,6 +40,16 @@ def test_format_pool_state_is_identical_regardless_of_provider():
     assert state.endswith("CLAIM: Claim.\n\nSOURCE s0:\nPage text.\n\nSOURCE s1:\nOther page.")
 
 
+def test_control_interpretation_preserves_claim_and_warns_against_invalid_ownership_inferences():
+    text = 'Singapore airline is controlled by Singapore government through voting rights'
+    state = pool.format_pool_state(text, [('s0', 'A special share has limited veto rights.')])
+    assert 'relationship=ownership' in state
+    assert 'CLAIM: ' + text in state
+    assert 'not ownership by the Singapore government' in state
+    assert 'limited veto alone does not prove' in state
+    assert 'Independent day-to-day management does not contradict ownership control' in state
+
+
 def test_parse_sources_validates_schema():
     parsed = pool._parse_sources({"sources": {"s0": source_entry()}})
     assert parsed["s0"] == {"verdict": "supporting", "confidence": 0.9,
@@ -97,11 +107,10 @@ def test_to_assessed_applies_settles_gate():
     assert assessed[1].quality_score == 0.45
 
 
-def test_to_assessed_missing_source_defaults_neutral():
+def test_to_assessed_missing_source_is_contract_failure():
     retrieval = RetrievalResult(retrieval_status="completed", evidence=[evidence("a")])
-    assessed = pool.to_assessed(retrieval, {}, 0.5)
-    assert assessed[0].stance == "neutral"
-    assert assessed[0].quality_score == 0.45
+    with pytest.raises(ValueError, match='exactly one verdict'):
+        pool.to_assessed(retrieval, {}, 0.5)
 
 
 def test_settles_threshold_per_provider():

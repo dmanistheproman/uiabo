@@ -27,7 +27,7 @@ def authenticated_analysis(signed_analysis):
 
 
 class SuccessfulPipeline:
-    def with_repository(self, repository):
+    def with_repository(self, repository, **kwargs):
         return self
     def analyze(self, text: str) -> TextAnalysisResult:
         del text
@@ -36,7 +36,7 @@ class SuccessfulPipeline:
 
 
 class UnavailablePipeline:
-    def with_repository(self, repository):
+    def with_repository(self, repository, **kwargs):
         return self
     def analyze(self, text: str) -> TextAnalysisResult:
         del text

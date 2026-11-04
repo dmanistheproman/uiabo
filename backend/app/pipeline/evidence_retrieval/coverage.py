@@ -16,7 +16,9 @@ def missing_coverage(items, context=None, date_context=None):
                and item.provenance.applicability == "established" for item in items):
         gaps.append("Find evidence covering the original claim's conditions, not only its general topic.")
     if context:
-        if context.location:
+        if context.jurisdiction:
+            gaps.append('Match the claim jurisdiction: ' + context.jurisdiction + ' (' + context.jurisdiction_basis + ').')
+        elif context.location:
             gaps.append("Prioritise the named location: " + context.location)
         else:
             gaps.append("The location is not established; do not invent one.")

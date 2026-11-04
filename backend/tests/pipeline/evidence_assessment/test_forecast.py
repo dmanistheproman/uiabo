@@ -64,6 +64,23 @@ def test_lower_forecast_does_not_prove_possible_future_temperature_false(monkeyp
     assert result.assessed_evidence[0].evidence_quote == evidence().passage
 
 
+@pytest.mark.parametrize('with_api_forecast', [False, True])
+def test_pool_cannot_turn_an_ordinary_outlook_into_conclusive_refutation(monkeypatch, with_api_forecast):
+    from app.pipeline.evidence_assessment import pool
+    async def verdicts(*args):
+        return {'s0': {'verdict': 'contradicting', 'confidence': .99,
+                       'settles': .99, 'quality': 4}}, 'jev'
+    monkeypatch.setattr(pool, '_pool_verdicts', verdicts)
+    web = evidence('web').model_copy(update={
+        'forecast': None, 'url': 'https://www.weather.gov.sg/outlook',
+        'passage': 'The maximum temperature is forecast to range between 32 and 34 C.'})
+    items = [evidence(), web] if with_api_forecast else [web]
+    result = pool.assess_pool_evidence(claim(), RetrievalResult(retrieval_status='completed', evidence=items))
+    assert result.assessment_outcome in {'unsupported', 'insufficient_evidence'}
+    assert result.misinformation_risk_score is None
+    assert all(item.stance == 'neutral' for item in result.assessed_evidence)
+
+
 @pytest.mark.parametrize("value,expected", [(35, None), (36, 80), (40, 88), (50, 95)])
 def test_definite_prediction_risk_increases_with_matching_forecast_gap(value, expected):
     data = claim(f"Temperatures in Singapore will reach {value} C this weekend.",

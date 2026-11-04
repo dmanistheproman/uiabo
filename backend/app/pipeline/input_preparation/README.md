@@ -36,6 +36,12 @@ Detection needs at least 4 alphabetic characters, a minimum confidence of
 0.10 and a margin of 0.05 over the runner-up. Lingua's scores are relative,
 not calibrated probabilities, so the margin is the stronger signal.
 
+If English already leads with the minimum score but misses the margin, numeric
+temperature-unit typos (`celcius`, `farenheit`, `farenhite`) get one local
+detection-only spelling retry. The corrected probe must pass the same thresholds.
+The original and normalised claim text remain unchanged. This does not bypass
+the gate for other languages or ambiguous fragments.
+
 Only text that passes the gate reaches claim analysis, so every
 `PreparedText.language` is `"en"` and the shared interface is unchanged.
 

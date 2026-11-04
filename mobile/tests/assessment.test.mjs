@@ -103,14 +103,14 @@ test('climate warning is not converted from arbitrary risk85 into credibility15'
   const result = { assessment_outcome: 'highly_unlikely', misinformation_risk_score: 85,
     scoring: { status: 'plausibility_based' } };
   assert.equal(credibilityScore(result), null);
-  assert.match(assessmentLabel(result), /Highly unlikely/);
+  assert.equal(assessmentLabel(result), 'Likely misinformation');
   assert.match(scoreDescription(result), /do not measure its probability/);
   assert.doesNotMatch(credibilityDetails(result), /15|85|\/100/);
 });
 
 test('forecast comparisons preserve their basis instead of proving future weather', () => {
   const result = { ...rated(0, .94), forecast_context: { risk_basis: 'forecast_comparison' } };
-  assert.equal(assessmentLabel(result), 'Conflicts with current forecast');
+  assert.equal(assessmentLabel(result), 'Likely misinformation');
   assert.match(scoreDescription(result), /not a probability of future weather/);
 });
 

@@ -97,6 +97,15 @@ def infer_date_context(text, now=None):
         if end < start:
             return None
         return _context(text[iso[0].start():iso[-1].end()], start, end, as_of, "explicit_date")
+    if not named:
+        years = list(re.finditer(r'\b(?:from|starting|effective|beginning|in|during|by)\s+((?:19|20|21)\d{2})(?![\d/-])\b', text, re.I))
+        if len(years) == 1 and len(re.findall(r'\b(?:19|20|21)\d{2}\b', text)) == 1:
+            match = years[0]
+            year = int(match[1])
+            start, end = date(year, 1, 1), date(year, 12, 31)
+            return DateContext(claim_text=match.group(), month=1, day=None, year=year,
+                as_of=as_of, basis='explicit_date', display_date=str(year),
+                is_future=start > as_of, start_date=start, end_date=end)
     ranges = [match for pattern in (NAMED_RANGE, MONTH_FIRST_RANGE) for match in pattern.finditer(text)]
     if ranges:
         if len(ranges) != 1 or len(named) != 1:
@@ -189,6 +198,12 @@ def future_scope_limitation(context, passage, *, explicit_denial=False):
     # The caller must independently validate the denial, quotation and scope.
     # A denial of the alleged change need not repeat its month/year verbatim.
     if context is None or not context.is_future or explicit_denial:
+        return None
+    # A year-only claim has no January condition. Let the semantic scope check
+    # assess passages explicitly covering that year (including year ranges).
+    # This only removes the automatic time downgrade; it does not assign a stance.
+    if (context.basis == 'explicit_date' and context.display_date == str(context.year)
+            and re.search(rf'\b{context.year}\b', passage)):
         return None
     month = calendar.month_name[context.month]
     period = (rf"\b(?:{DAY}\s+)?{month}(?:\s+{DAY})?,?\s+{context.year}\b"

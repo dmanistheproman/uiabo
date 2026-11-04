@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 
 from app.accounts.models import UserProfile
 from app.accounts.repository import (
@@ -42,6 +42,7 @@ def get_system_admin(
         AccountRepository,
         Depends(get_account_repository),
     ],
+    request: Request = None,
 ) -> UserProfile:
     """Require an active System Administrator account."""
 
@@ -62,7 +63,9 @@ def get_system_admin(
     if profile.account_status != "active":
         raise _account_unavailable()
 
-    if profile.role != "system_admin":
+    if profile.account_type != "staff" or "system_admin" not in profile.operational_roles:
         raise _admin_access_required()
 
+    if request is not None:
+        request.state.operational_role = "system_admin"
     return profile

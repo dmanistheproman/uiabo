@@ -4,7 +4,7 @@ import test from 'node:test';
 test('climate plausibility finding is not hidden by an unavailable forecast', () => {
   const view = resultPresentation({ assessment_outcome: 'highly_unlikely',
     forecast_context: { status: 'unresolved' } });
-  assert.equal(view.title, 'This prediction is highly unlikely');
+  assert.equal(view.title, 'Likely misinformation');
   assert.match(view.meaning, /do not prove/);
   assert.equal(view.color, '#963128');
 });
@@ -13,7 +13,7 @@ import { resultPresentation, plainSourceStance, datePresentation } from '../src/
 test('forecast-based high risk explains the prediction without claiming impossibility', () => {
   const result = resultPresentation({ assessment_outcome: 'contradicted',
     forecast_context: { status: 'not_supported_by_forecast', risk_basis: 'forecast_comparison' } });
-  assert.equal(result.title, 'This prediction conflicts with the forecast');
+  assert.equal(result.title, 'Likely misinformation');
   assert.match(result.meaning, /not a guarantee/);
   assert.doesNotMatch(result.title, /false|impossible/);
 });

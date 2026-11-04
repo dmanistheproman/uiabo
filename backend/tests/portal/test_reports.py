@@ -82,6 +82,119 @@ def test_user_can_report_completed_result(env):
     assert stored["snapshot"]["concern_label"] == "misleading"
 
 
+def test_report_investigation_preserves_research_findings_and_native_sources(env):
+    from app.pipeline.evidence_assessment.research_result import build_research_result
+    from app.pipeline.shared.models import PreparedText
+    from app.pipeline.shared.web_research import ResearchAssessment
+
+    client, store, reports, accounts, identity = env
+    seed_user(store)
+    claim = 'The museum is free to enter.'
+    research = ResearchAssessment(
+        verdict='false', summary='The museum publishes an admission charge.',
+        findings=[dict(claim=claim, status='contradicted', source_ids=['c1'],
+                       explanation='Its admission page lists a ticket price.', basis='direct')],
+        sources=[dict(id='c1', title='Museum admission', url='https://example.gov.sg/admission')],
+        limitations=['Ticket prices can change.'], recommended_action='Check the admission page.',
+        as_of=FIXED_TIME.date(), model='test-model')
+    result = build_research_result(
+        prepared=PreparedText(original_text=claim, normalised_text=claim, language='en'),
+        research=research, result_id=RESULT_ID, created_at=FIXED_TIME,
+        pipeline_version='openai-web-v1:test-model:reasoning-medium:credibility-v2')
+    record = {**result.model_dump(mode='json'), 'user_id': 'app-user', 'input_type': 'text'}
+    store.documents['analysis_results', RESULT_ID] = record
+    reports.results[RESULT_ID] = record
+    created = submit_report(client)
+    assert created.status_code == 201
+    report_id = created.json()['report_id']
+    # Research details retain the same staff-only investigation boundary.
+    assert client.get(f'/portal/reports/{report_id}').status_code == 403
+    as_de(identity)
+    seed_de(accounts)
+    response = client.get(f'/portal/reports/{report_id}')
+    assert response.status_code == 200
+    assessment = response.json()['assessment']
+    assert assessment['research_assessment'] == record['research_assessment']
+    assert assessment['credibility']['label'] == 'Strong evidence this is false'
+    assert assessment['credibility']['score'] is None
+    assert assessment['evidence'] == []
+    assert 'user_id' not in assessment
+
+
+def seed_media(store, kind):
+    record = {'result_id': RESULT_ID, 'user_id': 'app-user', 'input_type': kind,
+              'processing_status': 'completed', 'created_at': FIXED_TIME, 'pipeline_version': 'image-test-v1'}
+    if kind == 'deepfake_ai':
+        record.update(label='Fake', confidence=.92, real_probability=.08, fake_probability=.92,
+                      explanation={'reasoning': 'Visual reasoning', 'visual_evidence': ['Artifact'], 'limitations': 'Not proof'})
+    elif kind == 'image_context':
+        record.update(concern_label='High Concern', explanation='The caption mismatches the event.', extracted_caption='Example caption',
+                      evidence_links=[{'title': 'Source', 'url': 'https://example.org', 'relationship': 'contradicts', 'summary': 'Different event', 'quote': 'Exact quote'}])
+    else:
+        record.update(submitted_url='https://example.org/test', checked_url='https://example.org/test',
+                      safety_status='threat_detected', threat_types=['MALWARE'], checked_at=FIXED_TIME,
+                      explanation='Known threat', recommended_action='Do not open', pipeline_version='link-safety-v1')
+    store.documents['analysis_results', RESULT_ID] = record
+    return record
+
+
+@pytest.mark.parametrize('kind,expected', [('deepfake_ai', 'Fake'), ('image_context', 'High Concern'), ('link_safety', 'Threat detected')])
+def test_media_reports_can_be_created_read_and_investigated(env, kind, expected):
+    client, store, reports, accounts, identity = env
+    seed_user(store)
+    record = seed_media(store, kind)
+    response = submit_report(client)
+    assert response.status_code == 201
+    report_id = response.json()['report_id']
+    assert submit_report(client).status_code == 409
+    reports.results[RESULT_ID] = record
+    as_de(identity); seed_de(accounts)
+    body = client.get(f'/portal/reports/{report_id}').json()
+    assert body['report']['snapshot']['concern_label'] == expected
+    assert body['report']['snapshot']['misinformation_risk_score'] is None
+    assert body['assessment']['input_type'] == kind
+    assert 'user_id' not in body['assessment'] and 'saved_image' not in body['assessment']
+    field = {'deepfake_ai': 'confidence', 'image_context': 'evidence_links', 'link_safety': 'threat_types'}[kind]
+    assert body['assessment'][field] == record[field]
+    assert client.patch(f'/portal/reports/{report_id}', json={'status': 'reviewing', 'note': 'Investigating'}).status_code == 200
+    assert client.get('/portal/reports/summary').json()['by_input_type'][kind] == 1
+
+
+@pytest.mark.parametrize('kind', ['deepfake_ai', 'image_context', 'link_safety'])
+def test_media_reports_reject_other_owners(env, kind):
+    client, store, *_ = env
+    seed_user(store)
+    record = seed_media(store, kind)
+    record['user_id'] = 'other-user'
+    assert submit_report(client).status_code == 404
+
+
+def test_report_image_is_private_and_requires_engineer_access(env, monkeypatch):
+    from types import SimpleNamespace
+    from app.routers import portal
+    client, store, reports, accounts, identity = env
+    seed_user(store)
+    record = seed_media(store, 'deepfake_ai')
+    record['saved_image'] = {'object_path': 'private/path', 'generation': 1, 'size_bytes': 3, 'content_type': 'image/png'}
+    report_id = submit_report(client).json()['report_id']
+    reports.results[RESULT_ID] = record
+    reads = []
+    def read(uid, result_id, attachment):
+        reads.append((uid, result_id)); return b'PNG'
+    monkeypatch.setattr(portal, 'get_image_storage', lambda: SimpleNamespace(read=read))
+    assert client.get(f'/portal/reports/{report_id}/image').status_code == 403
+    as_de(identity); seed_de(accounts)
+    response = client.get(f'/portal/reports/{report_id}/image')
+    assert response.content == b'PNG' and response.headers['cache-control'] == 'private, no-store'
+    assert reads == [('app-user', RESULT_ID)]
+    record['user_id'] = 'someone-else'
+    assert client.get(f'/portal/reports/{report_id}/image').status_code == 404
+    assert client.get(f'/portal/reports/{report_id}').json()['result_missing'] is True
+    assert len(reads) == 1
+    record['user_id'] = 'app-user'; record['saved_image'] = None
+    assert client.get(f'/portal/reports/{report_id}/image').status_code == 404
+
+
 def test_duplicate_active_report_is_rejected(env):
     client, store, reports, accounts, identity = env
     seed_user(store)

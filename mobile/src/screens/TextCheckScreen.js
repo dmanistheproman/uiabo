@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 import { checkText } from '../services/api';
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 export default function TextCheckScreen({ onNavigate, onResult, setWorking, initialDraft = null }) {
   const { firebaseUser, profile, refreshProfile } = useAuth();
@@ -17,6 +17,7 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
   async function submit() {
     if (sending.current) return;
     if (!text.trim()) return setError('Paste a message to check.');
+    if (text.length > 5000) return setError('Shorten the text to 5,000 characters before checking.');
     sending.current = true;
     setBusy(true); setWorking(true); setError(''); Keyboard.dismiss();
     requestKey.current ||= `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
@@ -37,12 +38,12 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
   return <View style={{ flex: 1 }}>
     <PageHeader title="Check text" onBack={() => !busy && onNavigate('home')} badge={remaining == null ? '— left' : `${remaining} left`} />
     <PageBody>
-        <View><Text style={styles.eyebrow}>TEXT ANALYSIS</Text><Text style={styles.title}>Paste the message to check</Text><Text style={styles.copy}>Use short English text for the clearest result.</Text></View>
+        <View><Text style={styles.title}>Paste the message to check</Text><Text style={styles.copy}>Use short English text for the clearest result.</Text></View>
         {!!initialDraft?.correctYear && <View style={styles.info}><Text style={styles.label}>Correct the year</Text><Text style={styles.copy}>Add the intended year next to the date in your message, then check it again. This creates a new saved result and uses your allowance if the check completes.</Text></View>}
         {!!initialDraft?.correctDate && !initialDraft?.correctYear && <View style={styles.info}><Text style={styles.label}>Correct the dates</Text><Text style={styles.copy}>Replace words such as "this weekend" with the exact dates and year you mean, then check again. A completed check creates a new saved result and uses your allowance.</Text></View>}
         <View><Text style={styles.label}>Message or caption</Text>
           <TextInput accessibilityLabel="Message or caption" multiline textAlignVertical="top" editable={!busy} maxLength={5000}
-            placeholder="Paste a message, claim or caption…" placeholderTextColor="#7D909E" style={styles.input} value={text}
+            placeholder="Paste a message, claim or caption…" placeholderTextColor={colours.muted} style={styles.input} value={text}
             onChangeText={value => { setText(value); setError(''); requestKey.current = null; }} />
           <View style={styles.caption}><Text style={styles.hint}>Do not include passwords or private information.</Text><Text style={styles.hint}>{text.length.toLocaleString()} / 5,000</Text></View>
         </View>
@@ -60,14 +61,13 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
 }
 
 const styles = StyleSheet.create({
-  eyebrow: { color: '#008B89', fontWeight: '800', fontSize: 12, letterSpacing: 1, marginBottom: 8 },
-  title: { color: '#173447', fontSize: 25, fontWeight: '800', marginBottom: 5 },
-  copy: { color: '#526F83', lineHeight: 21, fontSize: 14 },
-  label: { color: '#173447', fontWeight: '700', fontSize: 14, marginBottom: 7 },
-  input: { backgroundColor: 'white', minHeight: 180, borderColor: '#B8CDD9', borderWidth: 1, borderRadius: 14, padding: 15, color: '#173447', fontSize: 16, lineHeight: 24 },
-  caption: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 9, gap: 14 },
-  hint: { color: '#617D90', fontSize: 11, lineHeight: 17, flexShrink: 1 },
-  info: { backgroundColor: '#E5F3FA', borderLeftWidth: 3, borderLeftColor: '#1778A3', padding: 16, borderRadius: 14 },
-  error: { color: '#A12020', fontSize: 14, lineHeight: 21 },
+  title: { ...typography.title, color: colours.ink, marginBottom: 8 },
+  copy: { ...typography.body, color: colours.text },
+  label: { ...typography.label, color: colours.ink, marginBottom: 8 },
+  input: { ...typography.body, backgroundColor: colours.white, minHeight: 220, borderColor: colours.border, borderWidth: 2, borderRadius: 14, padding: 16, color: colours.ink },
+  caption: { marginTop: 10, gap: 6 },
+  hint: { ...typography.secondary, color: colours.muted, flexShrink: 1 },
+  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, padding: 18, borderRadius: 14 },
+  error: { ...typography.secondary, color: colours.danger },
   progress: { alignItems: 'center', padding: 12, gap: 12 },
 });

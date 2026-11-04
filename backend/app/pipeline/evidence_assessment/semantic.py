@@ -178,6 +178,8 @@ TYPOGRAPHY = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d
 def source_quote(quote: str, passage: str) -> str:
     """Match typography/whitespace only, then return the ORIGINAL source span."""
     wanted = _normalise(quote).translate(TYPOGRAPHY)
+    if not wanted:
+        raise ValueError('Quotation must contain source text')
     characters, positions = [], []
     for index, character in enumerate(passage):
         mapped = " " if character.isspace() else character.translate(TYPOGRAPHY)

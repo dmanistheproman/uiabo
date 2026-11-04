@@ -15,6 +15,23 @@ def test_query_validation_preserves_amounts_and_discards_bad_alternatives():
     assert planning.validate_queries({"queries": [QUERY, "Thailand entry cash requirements 10000 baht"]}, CLAIM) == [QUERY]
 
 
+def test_discovered_shareholders_reach_the_planner_without_rewriting_the_claim():
+    claim = 'Singapore airline is controlled by Singapore government'
+    sources = ['Current shareholder table: Example Holdings, Temasek Holdings.']
+    def handler(request):
+        body = json.loads(request.content)
+        payload = json.loads(body['messages'][1]['content'])
+        assert payload['claim'] == claim
+        assert payload['discovery_evidence'] == sources
+        return httpx.Response(200, json={'done': True, 'message': {'content': json.dumps(
+            {'queries': ['Example Holdings parent ownership', 'Temasek government sole shareholder']})}})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            return await planning.plan_queries(client, claim, 'test-key',
+                allow_policy_lookup=True, discovery_evidence=sources)
+    assert asyncio.run(run())[0] == 'Example Holdings parent ownership'
+
+
 def test_broader_second_query_can_lookup_policy_without_disputed_values():
     neutral='Thailand official visa exemption financial requirements'
     assert planning.validate_queries({'queries':[QUERY,neutral]},CLAIM,allow_policy_lookup=True)==[QUERY,neutral]

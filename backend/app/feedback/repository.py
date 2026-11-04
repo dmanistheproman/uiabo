@@ -127,9 +127,8 @@ class FirestoreFeedbackRepository:
         self,
         record: FeedbackRecord,
     ) -> None:
-        self._client.collection(FEEDBACK_COLLECTION).document(
-            record.feedback_id
-        ).set(record.model_dump(mode="json"))
+        from app.accounts.owned_writes import write_owned
+        write_owned(self._client, FEEDBACK_COLLECTION, record.feedback_id, record.user_id, record.model_dump(mode="json"))
 
     def mark_reviewed(
         self,

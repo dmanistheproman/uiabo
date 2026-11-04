@@ -21,17 +21,19 @@ app/pipeline/orchestration/run_recorder.py  # pipeline_runs storage
 
 ## Role-gated access
 
-`require_role(*roles)` builds a FastAPI dependency used by every `/portal`
-route. It resolves the Firestore profile for the verified ID token and enforces:
+Staff and app accounts are separate. `account_type` is fixed by the registration
+endpoint: `/portal/me` creates staff profiles without app allowance;
+`/account/me` creates app profiles. Cross-account registration/login is refused.
 
-- the profile role is one of the named roles (`data_engineer`, `system_admin`);
-- `account_status` is `active`;
-- suspended, deleted, unverified, wrong-role and missing profiles are all
-  denied with a generic 403 that does not reveal which check failed.
+`require_role(*roles)` requires an active staff profile, a verified Firebase
+identity and the requested permission in `operational_roles`. A staff account
+can hold both Data Engineer and System Admin permissions. Legacy operational
+primary roles remain supported when `account_type` is absent.
 
-Strict separation: `/portal` routes accept `data_engineer` only. Ordinary
-users cannot reach operational functions, and `PUT /account/me` never changes
-an existing role, so self-promotion is impossible.
+Report/monitoring routes require Data Engineer; `/admin/*` requires System
+Admin. `/portal/session` validates the selected login portal. `/portal/me`
+allows staff registration/profile access before roles are granted, but cannot
+grant permissions. App accounts cannot access operational functions.
 
 ## API endpoints
 
@@ -88,16 +90,17 @@ production deployment would enable.
 
 ## Provisioning test accounts
 
-Operational accounts are created by a system administrator (UC-36
-pre-condition). Until that portal page exists, use:
+Staff register through the portal with a separate email from their app
+account and verify it. An administrator then grants permission through
+**Provision staff**. To bootstrap the first administrator, use:
 
 ```bash
 cd backend
 python -m scripts.create_operational_account --email engineer@example.com --role data_engineer
 ```
 
-The Firebase Auth user must already exist (register once in the app), and the
-email must be verified for portal access.
+The staff Firebase Auth user must already exist (register in the portal), and
+the email must be verified. App accounts cannot be converted to staff.
 
 ## Tests
 

@@ -110,6 +110,7 @@ const RUN_STATUS_FILTERS = ['', 'completed', 'failed'];
 const INGESTION_STATUS_FILTERS = ['', 'running', 'succeeded', 'incomplete', 'failed'];
 
 export function MonitoringScreen() {
+  const [error, setError] = useState(null);
   const { firebaseUser } = useAuth();
   const [days, setDays] = useState(7);
   const [runStatus, setRunStatus] = useState('');
@@ -129,6 +130,7 @@ export function MonitoringScreen() {
 
   const loadRuns = useCallback(async (cursor) => {
     setRunsLoading(true);
+    setError(null);
     try {
       const params = {
         status: runStatus || undefined,
@@ -209,6 +211,7 @@ export function MonitoringScreen() {
 
   return (
     <div className="stack">
+      <ErrorBox error={error} />
       <div className="toolbar">
         <h1>Pipeline monitoring</h1>
         <TimeRange value={days} onChange={setDays} />

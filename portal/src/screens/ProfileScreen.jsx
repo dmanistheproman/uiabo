@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { Badge, Button, ErrorBox, Field, Loading, fmtDateTime } from '../components/ui';
+import { PORTAL_ROLES, portalRoles } from '../utils/portalAccess';
 
 export function ProfileScreen() {
-  const { firebaseUser, refreshProfile, saveName, resetPassword, logout } = useAuth();
+  const { firebaseUser, refreshProfile, saveName, resetPassword, logout, portalRole } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,7 +67,9 @@ export function ProfileScreen() {
         {notice && <p className="notice">{notice}</p>}
         <dl className="definition">
           <div><dt>Email</dt><dd>{firebaseUser?.email}</dd></div>
-          <div><dt>Role</dt><dd><Badge tone="blue">{profile?.role?.replace('_', ' ')}</Badge></dd></div>
+          <div><dt>Account type</dt><dd>Staff portal account</dd></div>
+          <div><dt>Current portal</dt><dd><Badge tone="blue">{PORTAL_ROLES[portalRole]}</Badge></dd></div>
+          <div><dt>Portal access</dt><dd>{portalRoles(profile).map(role => <Badge key={role} tone="blue">{PORTAL_ROLES[role]}</Badge>)}</dd></div>
           <div><dt>Status</dt><dd><Badge tone="green">{profile?.account_status}</Badge></dd></div>
           <div><dt>Email verified</dt><dd>{profile?.email_verified ? 'Yes' : 'No'}</dd></div>
           <div><dt>Last login</dt><dd>{fmtDateTime(profile?.last_login_at)}</dd></div>

@@ -35,8 +35,9 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(set(payload),{'claim','assessed_at','forecast_fixture'})
 
     def test_forecast_conflict_is_distinct_from_false(self):
-        self.assertEqual(compare.outcome({'assessment_outcome':'highly_unlikely','misinformation_risk_score':85}),'unresolved')
-        self.assertEqual(compare.outcome({'assessment_outcome':'contradicted','forecast_context':{'risk_basis':'forecast_comparison'}}),'forecast_conflict')
+        self.assertEqual(compare.outcome({'assessment_outcome':'highly_unlikely','misinformation_risk_score':85}),'likely_misinformation')
+        self.assertEqual(compare.outcome({'assessment_outcome':'contradicted','forecast_context':{'risk_basis':'forecast_comparison'}}),'likely_misinformation')
+        self.assertEqual(compare.outcome({'assessment_outcome':'likely_misinformation'}),'likely_misinformation')
         self.assertEqual(compare.outcome({'assessment_outcome':'contradicted'}),'contradicted')
         self.assertEqual(compare.outcome({'assessment_outcome':'unsupported','misinformation_risk_score':50}),'unresolved')
         with self.assertRaises(ValueError): compare.outcome({'misinformation_risk_score':95})

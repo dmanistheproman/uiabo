@@ -7,6 +7,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.accounts.models import ProfileUpdateRequest, UserProfile
+from app.accounts.roles import require_account_type
 from app.accounts.repository import (
     AccountRepository,
     get_account_repository,
@@ -26,6 +27,28 @@ from app.feedback.repository import (
 router = APIRouter(prefix="/account", tags=["Account"])
 
 
+from app.accounts.demo_payment import DemoPaymentRequest, DemoPaymentResult, demo_offer, complete_demo_payment
+from app.analyses.store import AnalysisStore, get_analysis_store
+
+
+@router.get("/demo-payment")
+def get_demo_offer(user: Annotated[AuthenticatedUser, Depends(get_verified_user)]):
+    return demo_offer()
+
+
+@router.post("/demo-payment", response_model=DemoPaymentResult)
+def pay_demo(body: DemoPaymentRequest,
+             user: Annotated[AuthenticatedUser, Depends(get_verified_user)],
+             store: Annotated[AnalysisStore, Depends(get_analysis_store)]):
+    try:
+        return complete_demo_payment(store, user.uid)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(503, detail={"error_code": "DEMO_PAYMENT_UNAVAILABLE",
+            "message": "We could not confirm your demo upgrade. Refresh your profile or retry; no money was charged."}) from None
+
+
 def _account_unavailable() -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -37,6 +60,7 @@ def _account_unavailable() -> HTTPException:
 
 
 def _check_account_status(profile: UserProfile) -> None:
+    require_account_type(profile.model_dump(), "app")
     if profile.account_status in {"suspended", "deactivated"}:
         raise _account_unavailable()
 
@@ -176,6 +200,8 @@ def submit_feedback(
 
     try:
         feedback.save_feedback(record)
+    except HTTPException:
+        raise
     except Exception as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -188,3 +214,20 @@ def submit_feedback(
         ) from error
 
     return record
+
+
+from app.accounts.deletion import DeletionService, get_deletion_service
+
+
+@router.delete("/me", status_code=202)
+def delete_my_account(
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    deletion: Annotated[DeletionService, Depends(get_deletion_service)],
+):
+    try:
+        return deletion.request(user)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(503, detail={"error_code": "DELETION_UNAVAILABLE",
+            "message": "The deletion request could not be confirmed. Please retry."}) from None

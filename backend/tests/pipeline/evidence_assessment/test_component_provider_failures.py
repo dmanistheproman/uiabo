@@ -1,7 +1,7 @@
 """Exercise the production provider chain without credentials or network calls."""
 
 import asyncio
-from datetime import date
+from datetime import date, datetime, timezone
 import json
 from types import SimpleNamespace
 
@@ -12,6 +12,7 @@ from app.pipeline.evidence_assessment import pool
 from app.pipeline.evidence_assessment import components as component_module
 from app.pipeline.shared.components import decompose_claim
 from app.pipeline.shared.errors import PipelineComponentError
+from app.pipeline.shared.context import build_claim_context
 
 
 def install_transport(monkeypatch, handler, *, keys=("test-jev", "test-oss")):
@@ -86,7 +87,7 @@ def test_no_credentials_returns_retryable_failure_without_making_requests(monkey
 
 def component_inputs():
     text = "The council is closing the bridge because inspectors found severe structural damage."
-    claim = SimpleNamespace(extracted_claim=text, claim_context=SimpleNamespace(as_of=date(2026, 10, 8)))
+    claim = SimpleNamespace(extracted_claim=text, claim_context=build_claim_context(text, datetime(2026, 10, 8, tzinfo=timezone.utc)))
     evidence = [SimpleNamespace(evidence_id="test", publisher="Synthetic authority", published_at=date(2026, 10, 8),
         passage="The published inspection identifies severe structural damage.", provenance=None)]
     return claim, decompose_claim(text), evidence

@@ -1,3 +1,4 @@
+import ReportedAssessment from '../components/ReportedAssessment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import {
@@ -73,7 +74,7 @@ export function ReportsScreen({ onOpenReport }) {
         {reports.length > 0 && (
           <table className="table">
             <thead>
-              <tr><th>Status</th><th>Reason</th><th>Concern label</th><th>Detail</th><th>Reported</th><th>Result</th></tr>
+              <tr><th>Status</th><th>Reason</th><th>Result label</th><th>Detail</th><th>Reported</th><th>Result</th></tr>
             </thead>
             <tbody>
               {reports.map((report) => (
@@ -155,6 +156,7 @@ export function ReportDetailScreen({ reportId, onBack }) {
         <StatusBadge value={report.status} />
       </div>
 
+      <ErrorBox error={error} />
       {resultMissing && (
         <div className="error-box">
           <p>The associated analysis result is missing. Record the finding in the investigation notes.</p>
@@ -173,10 +175,11 @@ export function ReportDetailScreen({ reportId, onBack }) {
           <blockquote className="user-detail">{report.detail}</blockquote>
           <h3>Reported result snapshot</h3>
           <dl className="definition">
-            <div><dt>Concern label</dt><dd>{report.snapshot.concern_label}</dd></div>
-            <div><dt>Claim category</dt><dd>{report.snapshot.claim_category}</dd></div>
-            <div><dt>Risk score</dt><dd>{report.snapshot.misinformation_risk_score ?? '—'}</dd></div>
-            <div><dt>Uncertainty</dt><dd>{report.snapshot.uncertainty}</dd></div>
+            <div><dt>Result label</dt><dd>{report.snapshot.concern_label}</dd></div>
+            {report.snapshot.claim_category && <div><dt>Claim category</dt><dd>{report.snapshot.claim_category}</dd></div>}
+            {report.snapshot.misinformation_risk_score != null && <div><dt>Stored risk score</dt><dd>{report.snapshot.misinformation_risk_score}</dd></div>}
+            {report.snapshot.uncertainty && <div><dt>Uncertainty</dt><dd>{report.snapshot.uncertainty}</dd></div>}
+            {report.snapshot.confidence != null && <div><dt>Model confidence</dt><dd>{(report.snapshot.confidence * 100).toFixed(1)}%</dd></div>}
             <div><dt>Pipeline version</dt><dd className="mono small">{report.snapshot.pipeline_version}</dd></div>
             <div><dt>Result created</dt><dd>{fmtDateTime(report.snapshot.result_created_at)}</dd></div>
           </dl>
@@ -184,35 +187,7 @@ export function ReportDetailScreen({ reportId, onBack }) {
 
         <Card title="Generated assessment" subtitle="What the pipeline produced for this check.">
           {!assessment ? <EmptyState>The assessment record is unavailable.</EmptyState> : (
-            <>
-              <dl className="definition">
-                <div><dt>Claim we checked</dt><dd>{assessment.extracted_claim || assessment.original_text}</dd></div>
-                <div><dt>Concern label</dt><dd>{assessment.concern_label}</dd></div>
-                <div><dt>Risk score</dt><dd>{assessment.misinformation_risk_score ?? '—'}</dd></div>
-                <div><dt>Uncertainty</dt><dd>{assessment.uncertainty}</dd></div>
-              </dl>
-              <h3>Explanation shown to the user</h3>
-              <p>{assessment.explanation}</p>
-              {assessment.warnings?.length > 0 && (
-                <><h3>Warnings</h3><ul>{assessment.warnings.map((warning, index) => <li key={index} className="small">{warning}</li>)}</ul></>
-              )}
-              <h3>Evidence used ({assessment.evidence?.length || 0})</h3>
-              {(assessment.evidence?.length || 0) === 0 ? (
-                <p className="muted small">No evidence was saved with this result.</p>
-              ) : (
-                <ul className="evidence-list">
-                  {assessment.evidence.map((source) => (
-                    <li key={source.evidence_id}>
-                      <strong>{source.publisher}</strong> — {source.title}
-                      <div className="small muted">{source.stance} · {source.source_type}</div>
-                      <blockquote className="quote">{source.evidence_quote || source.passage}</blockquote>
-                      {source.url && <a href={source.url} target="_blank" rel="noreferrer" className="small">Open source</a>}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p className="small muted">Result created {fmtDateTime(assessment.created_at)} · user {assessment.user_mask}</p>
-            </>
+            <ReportedAssessment assessment={assessment} reportId={reportId} user={firebaseUser} />
           )}
         </Card>
       </div>

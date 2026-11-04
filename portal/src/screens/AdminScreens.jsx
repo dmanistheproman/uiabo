@@ -4,13 +4,21 @@ import {
   Badge, Button, Card, EmptyState, ErrorBox, Field, fmtDateTime, Loading, StatusBadge,
 } from '../components/ui';
 import { useAuth } from '../auth/AuthContext';
+import { PORTAL_ROLES, portalRoles } from '../utils/portalAccess';
+import { RoleEditor, FormerStaffConversion } from './StaffScreens';
 import {
   getFeedback, getUser, listFeedback, reviewFeedback, searchUsers, updateUserStatus,
 } from '../services/api';
 
 const ROLE_LABELS = {
-  free: 'Free user', premium: 'Premium user', system_admin: 'System admin', data_engineer: 'Data engineer',
+  free: 'Free user', premium: 'Premium user', system_admin: 'Staff account', data_engineer: 'Staff account', staff: 'Staff account',
 };
+
+function AccountRoles({ user }) {
+  return <span><Badge tone="grey">{ROLE_LABELS[user.role] || user.role}</Badge>
+    {portalRoles(user).map(role => <Badge key={role} tone="blue">{PORTAL_ROLES[role]}</Badge>)}
+  </span>;
+}
 
 const FEEDBACK_CATEGORY_LABELS = {
   general_feedback: 'General feedback',
@@ -22,13 +30,13 @@ function Rating({ value }) {
   return <span aria-label={`Rated ${value} of 5`}>{'★'.repeat(value)}{'☆'.repeat(5 - value)}</span>;
 }
 
-export function UsersScreen() {
+export function UsersScreen({ initialUid = null, onAudit }) {
   const { firebaseUser } = useAuth();
   const [query, setQuery] = useState('');
   const [users, setUsers] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedUid, setSelectedUid] = useState(null);
+  const [selectedUid, setSelectedUid] = useState(initialUid);
 
   const runSearch = useCallback(async (text) => {
     setLoading(true);
@@ -48,6 +56,7 @@ export function UsersScreen() {
     return (
       <UserDetailScreen
         uid={selectedUid}
+        onAudit={onAudit}
         onBack={() => { setSelectedUid(null); runSearch(query); }}
       />
     );
@@ -88,7 +97,7 @@ export function UsersScreen() {
                   onClick={() => { setSelectedUid(user.uid); window.scrollTo(0, 0); }}>
                   <td>{user.name}</td>
                   <td className="muted">{user.email}</td>
-                  <td><Badge tone="grey">{ROLE_LABELS[user.role] || user.role}</Badge></td>
+                  <td><AccountRoles user={user} /></td>
                   <td><StatusBadge value={user.account_status} /></td>
                   <td className="muted small">{user.last_login_at ? fmtDateTime(user.last_login_at) : 'Never'}</td>
                 </tr>
@@ -101,13 +110,14 @@ export function UsersScreen() {
   );
 }
 
-function UserDetailScreen({ uid, onBack }) {
+function UserDetailScreen({ uid, onBack, onAudit }) {
   const { firebaseUser } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState(null);
+  const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -124,11 +134,13 @@ function UserDetailScreen({ uid, onBack }) {
   useEffect(() => { load(); }, [load]);
 
   async function setStatus(account_status, confirmTitle) {
+    const reason = account_status === "suspended" ? window.prompt("Reason for suspension:") : "Access restored";
+    if (account_status === "suspended" && !reason?.trim()) return;
     if (!window.confirm(confirmTitle)) return;
     setBusy(true);
     setActionError(null);
     try {
-      setUser(await updateUserStatus(firebaseUser, uid, account_status));
+      setUser(await updateUserStatus(firebaseUser, uid, account_status, reason));
     } catch (caught) {
       setActionError(caught);
     } finally {
@@ -156,15 +168,21 @@ function UserDetailScreen({ uid, onBack }) {
         <p className="muted">{user.email} · <StatusBadge value={user.account_status} /></p>
       </header>
       <Card title="Account details">
+        {notice && <p className="notice" role="status">{notice}</p>}
         <dl className="definition">
           <div><dt>User ID</dt><dd>{user.uid}</dd></div>
-          <div><dt>Role</dt><dd>{ROLE_LABELS[user.role] || user.role}</dd></div>
+          <div><dt>Account type and portal access</dt><dd><AccountRoles user={user} /></dd></div>
           <div><dt>Email verified</dt><dd>{user.email_verified ? 'Yes' : 'No'}</dd></div>
           <div><dt>Created</dt><dd>{fmtDateTime(user.created_at)}</dd></div>
           <div><dt>Last login</dt><dd>{user.last_login_at ? fmtDateTime(user.last_login_at) : 'Never'}</dd></div>
           <div><dt>Profile updated</dt><dd>{fmtDateTime(user.updated_at)}</dd></div>
         </dl>
       </Card>
+      {user.account_type === 'staff' ? <RoleEditor key={uid} user={user} onSaved={setUser} onReload={load} />
+        : <Card title="App account"><p className="muted">This account is for the UIABO app. To give this person portal access, ask them to register a separate staff account with a different email.</p></Card>}
+      {user.account_type === 'staff' && <FormerStaffConversion key={`convert-${uid}`} user={user}
+        onSaved={updated => { setUser(updated); setActionError(null); setNotice('Converted to a Free app account. The user should sign in to the app with their existing email and password, rather than create another account.'); }} onReload={load} />}
+      {onAudit && <Button secondary onClick={() => onAudit(uid)}>View this account's audit history</Button>}
       {user.allowance && (
         <Card title="Check allowance">
           <dl className="definition">
@@ -184,9 +202,9 @@ function UserDetailScreen({ uid, onBack }) {
         </p>
         <ErrorBox error={actionError} />
         {suspended ? (
-          <Button loading={busy} onClick={() => setStatus('active', `Restore access for ${user.email}?`)}>Restore access</Button>
+          <Button loading={busy} disabled={user.uid === firebaseUser.uid} onClick={() => setStatus('active', `Restore access for ${user.email}?`)}>Restore access</Button>
         ) : (
-          <Button loading={busy} onClick={() => setStatus('suspended', `Suspend ${user.email}? They will no longer be able to submit checks.`)}>Suspend account</Button>
+          <Button loading={busy} disabled={user.uid === firebaseUser.uid || user.account_status === 'deactivated'} onClick={() => setStatus('suspended', `Suspend ${user.email}? They will no longer be able to submit checks.`)}>Suspend account</Button>
         )}
       </Card>
     </div>

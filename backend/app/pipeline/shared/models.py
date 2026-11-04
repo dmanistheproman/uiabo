@@ -10,6 +10,12 @@ from typing import Annotated, Literal
 
 from .credibility import CredibilityRating, build_credibility
 from .component_assessment import ComponentAssessment, validate_component_result
+from .pdf_reading import PdfReading
+from .web_research import ResearchAssessment, VERDICT_PRESENTATION
+from .verification import (
+    VerificationAssessment, VerificationPlan,
+    validate_plan_input, validate_verification_provenance, validate_verification_result,
+)
 
 from pydantic import (
     AnyHttpUrl,
@@ -37,7 +43,7 @@ ConcernLabel = Literal[
 EvidenceStance = Literal["supporting", "contradicting", "neutral"]
 AssessmentOutcome = Literal[
     "supported", "contradicted", "unsupported", "conflicting",
-    "insufficient_evidence", "not_checkable", "highly_unlikely",
+    "insufficient_evidence", "not_checkable", "highly_unlikely", "likely_misinformation",
 ]
 RetrievalStatus = Literal["completed", "no_evidence", "failed"]
 SourceType = Literal[
@@ -104,8 +110,11 @@ class ClaimContext(PipelineModel):
     claim_type: Literal["general", "weather_forecast", "policy_change"] = "general"
     modality: Literal["asserted", "possible"] = "asserted"
     input_intent: Literal["assertion", "question", "hypothetical"] = "assertion"
-    relationship: Literal["general", "management", "ownership", "funding"] = "general"
+    relationship: Literal["general", "management", "ownership", "funding", "ambiguous_control"] = "general"
     location: str | None = Field(default=None, max_length=150)
+    jurisdiction: str | None = Field(default=None, max_length=150)
+    jurisdiction_basis: Literal['explicit', 'named_authority', 'singapore_default', 'unresolved'] = 'unresolved'
+    retrieval_topic: Literal['general', 'policing', 'healthcare_subsidies', 'employment', 'pensions', 'tax', 'public_policy'] = 'general'
     measurement: Literal["air_temperature", "apparent_temperature", "surface_temperature", "unspecified"] = "unspecified"
     quantities: list[ClaimQuantity] = Field(default_factory=list, max_length=12)
     as_of: date
@@ -127,6 +136,12 @@ def _validate_claim_context(text, context, dates):
     text = text or ""
     if context.location and context.location not in text:
         raise ValueError("The interpreted location must come from the claim.")
+    if context.jurisdiction is not None:
+        from .jurisdiction import scope_for, SG_ASSUMPTION
+        if (context.jurisdiction, context.jurisdiction_basis, context.retrieval_topic) != scope_for(text, context.location):
+            raise ValueError('Jurisdiction must follow the stated place or disclosed domestic default.')
+        if context.jurisdiction_basis == 'singapore_default' and SG_ASSUMPTION not in context.assumptions:
+            raise ValueError('The Singapore default must be disclosed.')
     if any(item.text not in text for item in context.quantities):
         raise ValueError("Interpreted quantities must come from the claim.")
     if dates and dates.as_of != context.as_of:
@@ -202,6 +217,7 @@ class ClaimAnalysis(PipelineModel):
     claim_confidence: Confidence
     date_context: DateContext | None = None
     claim_context: ClaimContext | None = None
+    verification_plan: VerificationPlan | None = None
 
     @model_validator(mode="after")
     def validate_checkability(self) -> "ClaimAnalysis":
@@ -232,6 +248,15 @@ class EvidenceProvenance(PipelineModel):
     condition_quotes: list[str] = Field(default_factory=list, max_length=4)
 
 
+class CoverageIssue(PipelineModel):
+    warning: str
+    stage: Literal['search', 'extraction', 'selection', 'discovery', 'other']
+    url: str = ''
+    blocks_inference: bool = True
+    reason: str
+    resolved_by: str | None = None
+
+
 class RetrievalTrace(PipelineModel):
     """Bounded diagnostics for evaluation; no credentials or raw provider errors."""
 
@@ -239,6 +264,7 @@ class RetrievalTrace(PipelineModel):
     extraction_urls: int = 0
     relevance_calls: int = 0
     decisions: list[dict[str, str]] = Field(default_factory=list)
+    coverage_issues: list[CoverageIssue] = Field(default_factory=list)
 
 
 class ClimateRecord(PipelineModel):
@@ -284,6 +310,7 @@ class EvidenceCandidate(PipelineModel):
     # Whole-pool reading (pipeline-v3): the fetched page text the passage was
     # selected from. Optional; never persisted into results.
     full_text: str | None = None
+    pdf_reading: PdfReading | None = None
 
 
 class RetrievalResult(PipelineModel):
@@ -361,7 +388,7 @@ class ScoringSummary(PipelineModel):
 
     # Keep the legacy default when reading saved records without a version.
     version: Literal["evidence-v2", "evidence-v3", "evidence-v4"] = "evidence-v2"
-    status: Literal["provisional", "evidence_based", "not_applicable", "plausibility_based"] | None = None
+    status: Literal["provisional", "evidence_based", "not_applicable", "plausibility_based", "inference_based", "research_based"] | None = None
     evidence_strength: Literal["Insufficient", "Limited", "Moderate", "Strong"]
     supporting_strength: Confidence = 0
     contradicting_strength: Confidence = 0
@@ -370,12 +397,84 @@ class ScoringSummary(PipelineModel):
     reasons: list[str] = Field(min_length=1)
 
 
+class InterpretationCitation(PipelineModel):
+    evidence_id: str = Field(min_length=1)
+    quote: str = Field(min_length=10, max_length=1800)
+
+
+class InterpretationFinding(PipelineModel):
+    outcome: Literal['supporting', 'contradicting', 'unresolved']
+    explanation: str = Field(min_length=1, max_length=2000)
+    citations: list[InterpretationCitation] = Field(default_factory=list, max_length=6)
+
+    @model_validator(mode='after')
+    def require_evidence(self):
+        if self.outcome != 'unresolved' and not self.citations:
+            raise ValueError('An interpretation verdict requires source quotations')
+        return self
+
+
+class ControlInterpretations(PipelineModel):
+    version: Literal['control-meanings-v1'] = 'control-meanings-v1'
+    operations: InterpretationFinding
+    ownership: InterpretationFinding
+
+
+class InferenceContext(PipelineModel):
+    rule: Literal["public-change-v1"] = "public-change-v1"
+    kind: Literal["airport_closure", "passport_rule", "policy_change"]
+    subject: str = Field(min_length=1)
+    evidence_id: str = Field(min_length=1)
+    baseline_quote: str = Field(min_length=10, max_length=1800)
+    explanation: str = Field(min_length=1, max_length=3000)
+    search_queries: list[str] = Field(min_length=2, max_length=2)
+    checked_at: datetime
+    limitations: list[str] = Field(min_length=1, max_length=5)
+
+
 def _validate_scoring_contract(result, *, checkable=None):
     """Preserve legacy snapshots while enforcing the explicit v3 score meaning."""
     summary = result.scoring
     score = result.misinformation_risk_score
     label = result.concern_label
     outcome = result.assessment_outcome
+    research = getattr(result, "research_assessment", None)
+    if research is not None or (summary and summary.status == "research_based"):
+        if research is None:
+            raise ValueError("Research scoring requires its cited research assessment.")
+        expected_outcome, expected_label, expected_strength, _ = VERDICT_PRESENTATION[research.verdict]
+        if (score is not None or not summary or summary.version != "evidence-v4"
+                or summary.status != "research_based" or summary.evidence_strength != expected_strength
+                or outcome != expected_outcome or label != expected_label
+                or summary.supporting_strength or summary.contradicting_strength
+                or summary.supporting_origins or summary.contradicting_origins):
+            raise ValueError("Research findings have a qualitative verdict, not fabricated evidence votes or a numerical score.")
+        if any(getattr(result, field, None) for field in (
+                "verification", "verification_plan", "component_assessment", "policy_context",
+                "forecast_context", "plausibility_context", "inference_context", "control_interpretations",
+                "claim_comparisons", "evidence", "assessed_evidence")):
+            raise ValueError("Direct web research cannot be presented as independently quote-validated evidence or specialist results.")
+        if checkable is not None and checkable != (research.verdict != "not_checkable"):
+            raise ValueError("Research checkability must match its verdict.")
+        if result.explanation != research.summary or result.recommended_action != research.recommended_action:
+            raise ValueError("The public result must preserve the cited research summary and recommended action.")
+        return
+    inference = result.inference_context
+    meanings = result.control_interpretations
+    if meanings and (score is not None or outcome != 'insufficient_evidence'
+            or not summary or summary.version != 'evidence-v4' or summary.status != 'provisional'
+            or result.inference_context or result.component_assessment or result.plausibility_context
+            or result.forecast_context or checkable is False):
+        raise ValueError('Ambiguous control has separate findings, not a whole-claim score')
+    if inference or outcome == "likely_misinformation" or (summary and summary.status == "inference_based"):
+        if (not inference or outcome != "likely_misinformation" or not summary
+                or summary.version != "evidence-v4" or summary.status != "inference_based"
+                or score is not None or label != "High Concern" or summary.evidence_strength != "Limited"
+                or summary.supporting_strength or summary.contradicting_strength
+                or summary.supporting_origins or summary.contradicting_origins
+                or result.plausibility_context or result.component_assessment or checkable is False):
+            raise ValueError("Likely misinformation inference needs grounded context and no invented numerical score")
+        return
     if (result.plausibility_context or outcome == "highly_unlikely") and (
             not summary or summary.version not in {"evidence-v3", "evidence-v4"} or summary.status != "plausibility_based"):
         raise ValueError("Climate plausibility requires an explicit versioned score status")
@@ -439,20 +538,34 @@ class AssessmentResult(PipelineModel):
     assessment_outcome: AssessmentOutcome | None = None
     scoring: ScoringSummary | None = None
     component_assessment: ComponentAssessment | None = None
+    verification: VerificationAssessment | None = None
     policy_context: PolicyContext | None = None
     forecast_context: ForecastContext | None = None
     plausibility_context: PlausibilityContext | None = None
+    inference_context: InferenceContext | None = None
+    control_interpretations: ControlInterpretations | None = None
     claim_comparisons: list[ClaimComparison] = Field(default_factory=list, max_length=37)
 
     @model_validator(mode="after")
     def validate_score_and_label(self) -> "AssessmentResult":
         _validate_scoring_contract(self)
         validate_component_result(self)
+        validate_verification_result(self)
         evidence_ids = [item.evidence_id for item in self.assessed_evidence]
         if len(evidence_ids) != len(set(evidence_ids)):
             raise ValueError("Assessed evidence IDs must be unique.")
+        if self.verification:
+            for finding in self.verification.findings:
+                if any(c.evidence_id not in evidence_ids for c in finding.citations):
+                    raise ValueError("Verification must cite assessed evidence.")
         if self.plausibility_context and self.plausibility_context.evidence_id not in evidence_ids:
             raise ValueError("Plausibility context must cite assessed evidence")
+        if self.inference_context and self.inference_context.evidence_id not in evidence_ids:
+            raise ValueError("Inference context must cite assessed evidence")
+        if self.control_interpretations:
+            for finding in [self.control_interpretations.operations, self.control_interpretations.ownership]:
+                if any(c.evidence_id not in evidence_ids for c in finding.citations):
+                    raise ValueError('Interpretations must cite assessed evidence')
         return self
 
 
@@ -473,13 +586,14 @@ class EvidenceItem(PipelineModel):
     provenance: EvidenceProvenance | None = None
     forecast: ForecastData | None = None
     climate_record: ClimateRecord | None = None
+    pdf_reading: PdfReading | None = None
 
 
 class TextAnalysisResult(PipelineModel):
     """Successful final API response assembled by Donovan."""
 
     result_id: str = Field(min_length=1)
-    input_source: Literal["text", "ocr"] = "text"
+    input_source: Literal["text", "ocr", "webpage"] = "text"
     processing_status: Literal["completed"] = "completed"
     original_text: str
     extracted_claim: str | None = None
@@ -495,10 +609,16 @@ class TextAnalysisResult(PipelineModel):
     assessment_outcome: AssessmentOutcome | None = None
     scoring: ScoringSummary | None = None
     component_assessment: ComponentAssessment | None = None
+    verification_plan: VerificationPlan | None = None
+    verification: VerificationAssessment | None = None
+    retrieval_trace: RetrievalTrace | None = None
     credibility: CredibilityRating | None = None
+    research_assessment: ResearchAssessment | None = None
     policy_context: PolicyContext | None = None
     forecast_context: ForecastContext | None = None
     plausibility_context: PlausibilityContext | None = None
+    inference_context: InferenceContext | None = None
+    control_interpretations: ControlInterpretations | None = None
     claim_context: ClaimContext | None = None
     claim_comparisons: list[ClaimComparison] = Field(default_factory=list, max_length=37)
     date_context: DateContext | None = None
@@ -510,6 +630,11 @@ class TextAnalysisResult(PipelineModel):
     def validate_final_result(self) -> "TextAnalysisResult":
         _validate_claim_context(self.extracted_claim, self.claim_context, self.date_context)
         _validate_scoring_contract(self, checkable=self.checkable)
+        if self.research_assessment is not None:
+            if self.created_at.tzinfo is None or self.research_assessment.as_of != self.created_at.astimezone(timezone(timedelta(hours=8))).date():
+                raise ValueError("Research must use the Singapore submission date.")
+            if self.checkable and self.extracted_claim != self.original_text:
+                raise ValueError("Direct web research must preserve the complete original claim.")
         if self.credibility is not None and self.credibility != build_credibility(self):
             raise ValueError("Credibility rating must match the recorded evidence and outcome.")
         if self.checkable and not self.extracted_claim:
@@ -517,7 +642,44 @@ class TextAnalysisResult(PipelineModel):
                 "A checkable result must include extracted_claim."
             )
         sources = {item.evidence_id: item for item in self.evidence}
+        if self.verification_plan:
+            validate_plan_input(self.verification_plan, self.original_text, self.extracted_claim)
+            if self.claim_context and (
+                self.verification_plan.as_of != self.claim_context.as_of
+                or self.verification_plan.assumptions != self.claim_context.assumptions
+            ):
+                raise ValueError("Verification must preserve the established submission date and disclosed assumptions.")
+        if self.verification:
+            if self.verification_plan is None:
+                raise ValueError("Verification findings require their original plan.")
+            if self.verification.method == "specialist" and not (
+                self.forecast_context or self.plausibility_context or self.inference_context
+                or self.control_interpretations
+                or (self.claim_context and self.claim_context.claim_type == "weather_forecast")
+            ):
+                raise ValueError("Specialist verification requires a recognised structured assessment path.")
+            validate_verification_provenance(self.verification, self.verification_plan, sources)
+            validate_verification_result(self, sources)
+        if self.control_interpretations:
+            from .interpretation import ambiguous_control
+            if not ambiguous_control(self.extracted_claim or ''):
+                raise ValueError('Separate control interpretations require ambiguous wording')
+            for finding in [self.control_interpretations.operations, self.control_interpretations.ownership]:
+                for citation in finding.citations:
+                    source = sources.get(citation.evidence_id)
+                    if not source or citation.quote not in source.passage or source.stance != 'neutral':
+                        raise ValueError('Interpretation quotations must match returned contextual evidence')
         validate_component_result(self, self.extracted_claim or "", sources)
+        if self.inference_context:
+            from .public_changes import public_change_plan, official_for_plan
+            inference = self.inference_context
+            plan = public_change_plan(self.extracted_claim, self.claim_context, self.date_context)
+            source = sources.get(inference.evidence_id)
+            if (not plan or plan['kind'] != inference.kind or plan['subject'] != inference.subject
+                    or inference.search_queries != plan['queries'] or inference.checked_at != self.claim_context.assessed_at
+                    or not source or not official_for_plan(source.url, plan)
+                    or inference.baseline_quote not in source.passage or source.stance != 'neutral'):
+                raise ValueError("Inference must match the interpreted claim and returned official evidence")
         if self.policy_context and any(key not in sources for key in self.policy_context.evidence_ids):
             raise ValueError("Policy context must cite returned evidence")
         if self.forecast_context and any(key not in sources for key in self.forecast_context.evidence_ids):
@@ -548,7 +710,7 @@ class FailedAnalysisRecord(PipelineModel):
     """Internal Firestore record for a pipeline run that failed."""
 
     result_id: str
-    input_source: Literal["text", "ocr"] = "text"
+    input_source: Literal["text", "ocr", "webpage"] = "text"
     processing_status: Literal["failed"] = "failed"
     original_text: str
     failure_stage: str

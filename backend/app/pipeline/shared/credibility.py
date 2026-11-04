@@ -29,7 +29,7 @@ class CredibilityRating(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     version: Literal["credibility-v1", "credibility-v2"] = "credibility-v1"
-    status: Literal["rated", "insufficient_evidence", "not_applicable", "plausibility_only", "legacy_unrated"]
+    status: Literal["rated", "insufficient_evidence", "not_applicable", "plausibility_only", "inference_only", "legacy_unrated", "research_only"]
     score: int | None = Field(default=None, ge=0, le=100, strict=True)
     label: str
     explanation: str
@@ -85,6 +85,16 @@ def build_credibility(result, *, version=None) -> CredibilityRating:
     """Keep persisted v1 ratings stable; new component-aware output uses v2."""
     saved = getattr(result, "credibility", None)
     version = version or (saved.version if saved else VERSION)
+    research = getattr(result, "research_assessment", None)
+    if research is not None:
+        if version != VERSION:
+            raise ValueError("Web research assessments require credibility-v2")
+        from .web_research import VERDICT_PRESENTATION
+        return CredibilityRating(version=VERSION, status="research_only", score=None,
+            label=VERDICT_PRESENTATION[research.verdict][3],
+            explanation=("This is a qualitative assessment from OpenAI web research. "
+                "The findings are generated explanations with cited sources, not independently verified source quotations. "
+                "No numerical truth probability or credibility score is assigned."))
     rating = _build_v1(result)
     component = getattr(result, "component_assessment", None)
     if version == "credibility-v1":
@@ -93,9 +103,26 @@ def build_credibility(result, *, version=None) -> CredibilityRating:
         return rating
     if version != VERSION:
         raise ValueError("Unknown credibility version")
+    meanings = getattr(result, 'control_interpretations', None)
+    if meanings:
+        label = ('Likely misinformation — if referring to day-to-day management'
+                 if meanings.operations.outcome == 'contradicting' else 'The meaning of control matters')
+        return CredibilityRating(version=VERSION, status='insufficient_evidence',
+            label=label, explanation='No single score is assigned because management and ownership are different claims. Read the finding for each meaning.')
     label, explanation = rating.label, rating.explanation
+    if rating.status == "plausibility_only":
+        # Preserve already saved ratings while new checks use the shared label.
+        label = saved.label if saved and saved.label == "Highly unlikely based on climate records" else "Likely misinformation"
+    if getattr(result, "inference_context", None) and result.assessment_outcome == "likely_misinformation":
+        return CredibilityRating(version=VERSION, status="inference_only", label="Likely misinformation",
+            explanation=result.inference_context.explanation + " No numerical probability is assigned to this inference.")
     if rating.status == "rated":
-        if component and component.finding == "material_contradiction":
+        forecast = getattr(result, "forecast_context", None)
+        if forecast and forecast.risk_basis == "forecast_comparison":
+            if not saved or saved.label == "Likely misinformation":
+                label = "Likely misinformation"
+                explanation = forecast.explanation + " This compares the claim with an issued forecast, not a probability of future weather."
+        elif component and component.finding == "material_contradiction":
             label = "Likely misinformation"
             explanation = (component.explanation + " The score reflects evidence against a material assertion. "
                 "Support for a different assertion does not cancel that finding. " + DEFINITION)

@@ -125,6 +125,66 @@ def test_first_party_eligibility_is_scoped_to_reviewed_identity_and_relationship
     assert not classify_source("https://temasek.com.sg.evil.com/governance", "SIA is run by the government").eligible
 
 
+@pytest.mark.parametrize('name', ['Singapore airline', 'Singapore Airlines', 'SIA', 'sia'])
+def test_company_aliases_reach_the_same_reviewed_publishers(name):
+    from app.pipeline.shared.interpretation import relationship_queries
+    from app.pipeline.evidence_retrieval.source_policy import preferred_corporate_domains
+    claim = f'{name} is controlled by Singapore government through voting rights'
+    for host in ['singaporeair.com', 'temasek.com.sg']:
+        assert classify_source('https://www.' + host + '/governance', claim).eligible
+        assert host in preferred_corporate_domains(claim)
+    assert 'Singapore Airlines' in relationship_queries(claim)[0]
+    assert 'sole shareholder' in relationship_queries(claim)[1]
+
+
+@pytest.mark.parametrize('claim', [
+    'A Singapore airline industry group is controlled by the government',
+    'Another airline is controlled by the government',
+    'Singapore airline sector is controlled by the government',
+])
+def test_alias_resolution_does_not_turn_an_industry_into_sia(claim):
+    assert not classify_source('https://www.singaporeair.com/governance', claim).eligible
+
+
+def test_regional_copies_of_investor_page_use_one_slot_and_preserve_fetch_url():
+    state = enhanced.RetrievalRun('SIA is controlled by the government', None, 'g', 't', 'o')
+    original = 'https://www.singaporeair.com/en_UK/hk/about-us/information-for-investors/shareholding-info'
+    state.add(result_item(original), 'preferred_search')
+    state.add(result_item(original.replace('/hk/', '/sg/')), 'web_search')
+    assert len(state.pool) == 1
+    assert state.next_pages(2)[0]['url'] == original
+
+
+def test_current_ownership_table_precedes_older_annual_reports():
+    state = enhanced.RetrievalRun('Singapore airline is controlled by the government', None, 'g', 't', 'o')
+    current = 'https://www.singaporeair.com/en_UK/sg/about-us/information-for-investors/shareholding-info'
+    state.add(result_item(current, score=.8), 'preferred_search')
+    state.add(result_item('https://www.singaporeair.com/annualreport1920.pdf',
+                         title='Annual report 2020', content='Deemed interests and sole shareholder', score=1), 'web_search')
+    assert state.next_pages(1)[0]['url'] == current
+
+
+def test_ownership_chain_reserves_coverage_for_a_different_publisher():
+    state = enhanced.RetrievalRun('SIA is controlled by the government through voting rights', None, 'g', 't', 'o')
+    state.evidence.append(EvidenceCandidate(evidence_id='table',
+        url='https://www.singaporeair.com/shareholding', title='Current shareholders',
+        publisher='Singapore Airlines', source_type='other', passage='Shareholding table.',
+        retrieval_score=.5, retrieved_at='2026-11-01T00:00:00Z'))
+    state.add(result_item('https://www.singaporeair.com/old-report',
+        title='Total interest', score=1), 'web_search')
+    parent = 'https://www.temasek.com.sg/en/about-us/faqs'
+    state.add(result_item(parent, title='Who owns Temasek?', score=.8), 'web_search')
+    assert state.next_pages(1)[0]['url'] == parent
+
+
+def test_ownership_windows_include_ultimate_owner_and_deemed_interests():
+    clause = 'Temasek is wholly owned by its sole shareholder, the Government. Total interest includes deemed interests.'
+    text = ('Singapore Airlines shareholder voting rights. ' * 2000) + clause
+    windows = source_windows('Singapore airline is controlled by Singapore government', text)
+    assert any(clause in window for window in windows)
+    assert len(windows) <= 6
+
+
 def test_management_question_prioritises_governance_over_funding():
     run = enhanced.RetrievalRun("SIA is run by Singapore Government", None, "g", "t", "o")
     run.add(result_item("https://reuters.com/rescue", title="Airline rescue funding", score=1), "web_search")

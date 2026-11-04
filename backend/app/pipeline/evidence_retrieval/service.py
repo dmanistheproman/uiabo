@@ -307,16 +307,18 @@ def retrieve_evidence(claim_analysis: ClaimAnalysis | Mapping[str, Any],
             from .enhanced import live
             result = asyncio.run(live(claim.extracted_claim, google_key, tavily_key,
                 os.environ.get("OLLAMA_API_KEY", "").strip(), date_context=claim.date_context,
-                claim_context=claim.claim_context))
-        elif not google_key or not tavily_key:
+                claim_context=claim.claim_context, verification_plan=getattr(claim, 'verification_plan', None)))
+        elif not tavily_key or selected_mode == 'catalogue' and not google_key:
             result = RetrievalResult(retrieval_status="failed", warnings=[
+                "Web retrieval requires TAVILY_API_KEY on the backend." if selected_mode == 'web' else
                 "Evidence retrieval requires GOOGLE_FACT_CHECK_API_KEY and TAVILY_API_KEY on the backend."])
         else:
             if selected_mode == "web":
                 from .enhanced import live
                 key = os.environ.get("OLLAMA_API_KEY", "").strip()
                 result = (asyncio.run(live(claim.extracted_claim, google_key, tavily_key, key,
-                    date_context=claim.date_context, claim_context=claim.claim_context)) if key
+                    date_context=claim.date_context, claim_context=claim.claim_context,
+                    verification_plan=getattr(claim, 'verification_plan', None))) if key
                     else RetrievalResult(retrieval_status="failed", warnings=[
                         "Web retrieval requires OLLAMA_API_KEY for semantic relevance checks."]))
             else:
@@ -339,3 +341,18 @@ def configured_retriever():
         from .enhanced import VERSION
         return partial(retrieve_evidence, mode=mode), VERSION
     return partial(retrieve_evidence, mode=mode), RETRIEVAL_VERSION
+
+
+def repair_evidence(claim_analysis: ClaimAnalysis, previous: RetrievalResult, queries: list[str]) -> RetrievalResult:
+    """Sync orchestration hook: one bounded search for assessed coverage gaps."""
+    from .repair import live
+    load_dotenv(PROJECT_ENV, override=False)
+    claim = ClaimAnalysis.model_validate(claim_analysis)
+    if not claim.checkable:
+        return previous.model_copy(deep=True)
+    return asyncio.run(live(claim, previous, queries,
+        os.environ.get('TAVILY_API_KEY', '').strip(), os.environ.get('OLLAMA_API_KEY', '').strip()))
+
+
+def configured_repairer():
+    return repair_evidence if retrieval_mode() == 'web' else None

@@ -7,10 +7,12 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 
 import { initFirebaseAuth } from '../config/firebase';
 import { ensureProfile, getProfile } from '../services/api';
+import { isPortalRole, storedPortalChoice } from '../utils/portalAccess';
 
 const AuthContext = React.createContext(null);
 
@@ -23,6 +25,7 @@ function friendlyAuthError(error) {
     'auth/user-disabled': 'This account is unavailable.',
     'auth/user-not-found': 'The email or password is incorrect.',
     'auth/weak-password': 'Use a password with at least 8 characters.',
+    'auth/email-already-in-use': 'This email already has an account. Use your staff login, or a different email from your UIABO app account.',
   };
   return new Error(messages[error?.code] || error?.message || 'Something went wrong. Please try again.');
 }
@@ -31,11 +34,33 @@ function suggestedName(user) {
   return user.displayName || user.email?.split('@')[0] || 'UIABO operator';
 }
 
+async function syncPortalProfile(user) {
+  let name = suggestedName(user);
+  if (user.emailVerified) {
+    try { name = (await getProfile(user)).name; }
+    catch (error) { if (error.code !== 'PROFILE_NOT_FOUND') throw error; }
+  }
+  return ensureProfile(user, name);
+}
+
 export function AuthProvider({ children }) {
   const [firebaseUser, setFirebaseUser] = React.useState(null);
   const [initialising, setInitialising] = React.useState(true);
+  const [authRevision, setAuthRevision] = React.useState(0);
   const [configurationError, setConfigurationError] = React.useState('');
+  const [accountSetupBusy, setAccountSetupBusy] = React.useState(false);
+  const [registrationNotice, setRegistrationNotice] = React.useState('');
+  const [sessionNotice, setSessionNotice] = React.useState('');
   const authRef = React.useRef(null);
+  const [portalRole, setPortalRole] = React.useState(() => {
+    try { return storedPortalChoice(window.sessionStorage); } catch { return 'data_engineer'; }
+  });
+
+  function selectPortal(role) {
+    if (!isPortalRole(role)) throw new Error('Choose a portal to continue.');
+    setPortalRole(role);
+    try { window.sessionStorage.setItem('uiabo.portalChoice', role); } catch { /* In-memory choice still works. */ }
+  }
 
   React.useEffect(() => {
     let unsubscribe = () => {};
@@ -53,12 +78,39 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  async function login(email, password) {
+  async function login(email, password, selectedRole) {
+    selectPortal(selectedRole);
+    setSessionNotice('');
+    setAccountSetupBusy(true);
     try {
-      await signInWithEmailAndPassword(authRef.current, email.trim(), password);
+      const credential = await signInWithEmailAndPassword(authRef.current, email.trim(), password);
+      await syncPortalProfile(credential.user);
     } catch (error) {
+      if (error.code === 'APP_ACCOUNT_ONLY') {
+        setSessionNotice(error.message);
+        await signOut(authRef.current);
+      }
       throw friendlyAuthError(error);
+    } finally {
+      setAccountSetupBusy(false);
     }
+  }
+
+  async function register(email, password, name, selectedRole) {
+    selectPortal(selectedRole);
+    setAccountSetupBusy(true); setRegistrationNotice(''); setSessionNotice('');
+    let user;
+    try {
+      const credential = await createUserWithEmailAndPassword(authRef.current, email.trim(), password);
+      user = credential.user;
+      await updateProfile(user, { displayName: name.trim() });
+      await ensureProfile(user, name.trim());
+      await sendEmailVerification(user);
+      setRegistrationNotice('Account created. Verify your email, then ask a System Admin to grant portal access.');
+    } catch (error) {
+      if (!user) throw friendlyAuthError(error);
+      setRegistrationNotice('Your account was created, but setup did not finish. Use Resend email below if needed, then verify and continue.');
+    } finally { setAccountSetupBusy(false); }
   }
 
   async function resetPassword(email) {
@@ -81,7 +133,15 @@ export function AuthProvider({ children }) {
   async function checkVerification() {
     try {
       await reload(authRef.current.currentUser);
-      return authRef.current.currentUser.emailVerified;
+      const verified = authRef.current.currentUser.emailVerified;
+      if (verified) {
+        // Firebase reload mutates the same User object; force the gate to rerender.
+        await authRef.current.currentUser.getIdToken(true);
+        await syncPortalProfile(authRef.current.currentUser);
+        setFirebaseUser(authRef.current.currentUser);
+        setAuthRevision(value => value + 1);
+      }
+      return verified;
     } catch (error) {
       throw friendlyAuthError(error);
     }
@@ -105,10 +165,17 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         checkVerification,
+        authRevision,
         configurationError,
         firebaseUser,
         initialising,
         login,
+        register,
+        accountSetupBusy,
+        registrationNotice,
+        sessionNotice,
+        portalRole,
+        selectPortal,
         logout,
         refreshProfile,
         resendVerification,

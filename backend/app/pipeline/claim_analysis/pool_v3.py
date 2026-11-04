@@ -278,6 +278,11 @@ async def _analyse_async(prepared: PreparedText) -> ClaimAnalysis:
             classification_reason="This is an imagined scenario, not an assertion that it will happen.")
     text = prepared.normalised_text
     context = build_claim_context(text)
+    from ..shared.public_changes import public_change_plan
+    if public_change_plan(text, context, infer_date_context(text)):
+        return ClaimAnalysis(claim_category="factual", checkable=True,
+            extracted_claim=text, claim_confidence=1,
+            classification_reason="A specific public operational or rule-change assertion. Verify the official baseline and announcements; this does not imply it is true or false.")
     # A simple question with grounded place/date/temperature can be compared
     # with forecasts. Keep the entire question, including its modal wording.
     if (input_intent(text) == "question" and context.claim_type == "weather_forecast"

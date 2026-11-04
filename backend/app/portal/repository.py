@@ -79,9 +79,8 @@ class FirestoreReportRepository:
         return self._client
 
     def create_report(self, report: dict[str, Any]) -> dict[str, Any]:
-        self.client.collection(RESULT_REPORTS_COLLECTION).document(
-            report["report_id"]
-        ).set(report)
+        from app.accounts.owned_writes import write_owned
+        write_owned(self.client, RESULT_REPORTS_COLLECTION, report["report_id"], report["user_id"], report)
         return report
 
     def get_report(self, report_id: str) -> dict[str, Any] | None:
@@ -99,9 +98,8 @@ class FirestoreReportRepository:
         return None
 
     def save_report(self, report: dict[str, Any]) -> None:
-        self.client.collection(RESULT_REPORTS_COLLECTION).document(
-            report["report_id"]
-        ).set(report)
+        from app.accounts.owned_writes import write_owned
+        write_owned(self.client, RESULT_REPORTS_COLLECTION, report["report_id"], report["user_id"], report, require_existing=True)
 
     def _sorted_documents(self, status: str | None = None) -> list[dict[str, Any]]:
         query = self.client.collection(RESULT_REPORTS_COLLECTION)

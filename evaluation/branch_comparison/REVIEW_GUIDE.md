@@ -11,13 +11,16 @@
 
 ## Labels
 
+Current policy: `evidence-labels-v2`. Keep original independent reviews intact when adjudicating the new category. Re-run both branches with the same mapping; old metrics used a different label meaning.
+
 | Label | Use when |
 | --- | --- |
 | `supported` | Reliable evidence supports the precise factual proposition, including its conditions and date. |
 | `contradicted` | Reliable evidence contradicts a material part of the proposition. Record the specific contradiction. |
+| `likely_misinformation` | Relevant evidence strongly weighs against the claim, but a limited inference is needed. Record the baseline, matching scope, search coverage and uncertainty. This includes extreme near-term temperatures and imminent public changes with verified normal operations/current rules and successful official announcement checks. |
 | `unresolved` | Evidence cannot settle it, important context is missing, sources conflict, or it is an uncertain future event. Explain which applies. |
 | `not_checkable` | The message expresses an opinion, an uncorroborated private experience or a purely imagined situation rather than a verifiable factual proposition. |
-| `forecast_conflict` | A definite prediction conflicts with a relevant, fresh official forecast. This is a comparison with the forecast, not proof that the future event cannot happen. |
+| `forecast_conflict` | Legacy category retained for reading earlier reviews. In v2, an applicable strong forecast mismatch maps to `likely_misinformation`, with its forecast basis retained. |
 
 ### Cases that need care
 
@@ -25,7 +28,7 @@
 - **Questions can contain factual propositions.** Evaluate the proposition the user asks about. “Is Mercury closest to the Sun?” asks about a checkable fact. Do not label every question `not_checkable`.
 - **Ownership and management are different relationships.** Evidence that someone owns shares does not, by itself, settle who makes operational decisions.
 - **Hypotheticals and definite forecasts differ.** “What if…” imagines a situation. “Could…” asks about possibility. A definite temperature prediction can conflict with a forecast without establishing physical impossibility.
-- **Missing details:** do not invent a place, person, policy, amount or company to obtain a verdict.
+- **Missing details:** do not invent a place, person, policy, amount or company to obtain a verdict. The documented Singapore default interprets an unnamed airport as Changi only without conflicting location context. State it explicitly. A named airport takes priority.
 - **No stated year:** for the regression messages, use the comparison's recorded assessment date and note the inferred year. Do not assume an unspecified “October” necessarily means a past or future year different from that date.
 - **Dated claims:** several final inputs explicitly say 29 September 2026. Use evidence applicable to that date, even if you label later.
 - **Compound statements:** identify which factual part determines the label. Do not treat one correct fragment as proof of the whole message.
@@ -36,7 +39,7 @@
 - **Sources:** the page URL, relevant passage or section, and publication/update date if available. Use primary sources where possible.
 - **Unresolved:** record what you searched, when, and which source pages you checked. Write `Search record: ...` if there is no decisive source.
 - **Not checkable:** explain why. A source link is optional for a subjective or private statement.
-- **Weather:** use the same saved official snapshot and assessment timestamp for both reviews. Record issue time, location, dates, temperature bounds and whether the requested day is covered. An uncovered date stays unresolved.
+- **Weather:** use the same saved official snapshot and assessment timestamp for both reviews. Record issue time, location, dates, temperature bounds and whether the requested day is covered. Outside forecast coverage, a verified historical-extremes comparison may support `likely_misinformation`; an uncovered date alone supplies no verdict. A typical range or annual average is not an absolute maximum.
 
 Keep copies of the decisive passages or screenshots in a local evidence folder, with the case ID in the filename. A URL alone may change later.
 

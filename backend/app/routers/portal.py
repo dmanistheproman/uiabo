@@ -4,7 +4,15 @@ from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response
+from google.api_core.exceptions import NotFound
+from app.analyses.images import get_image_storage
+from app.accounts.models import UserProfile, ProfileUpdateRequest
+from app.accounts.roles import OperationalRole, require_account_type
+from app.accounts.repository import AccountRepository, get_account_repository
+from app.auth.dependencies import get_current_user, get_verified_user
+from app.auth.models import AuthenticatedUser
+from pydantic import BaseModel
 
 from app.portal.dependencies import OperationalContext, require_role
 from app.portal.models import (
@@ -34,6 +42,7 @@ SGT = timezone(timedelta(hours=8))
 router = APIRouter(prefix="/portal", tags=["Portal"])
 
 Engineer = Annotated[OperationalContext, Depends(require_role("data_engineer"))]
+Operator = Annotated[OperationalContext, Depends(require_role())]
 Reports = Annotated[ReportRepository, Depends(get_report_repository)]
 Runs = Annotated[RunStore, Depends(get_run_store)]
 Ingestion = Annotated[IngestionService, Depends(get_ingestion_service)]
@@ -42,6 +51,54 @@ IngestionRuns = Annotated[IngestionRunStore, Depends(get_ingestion_run_store)]
 REPORT_ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 RUN_ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 INGESTION_JOBS = tuple(JOBS)
+
+
+class PortalSession(BaseModel):
+    portal_role: OperationalRole
+    profile: UserProfile
+
+
+@router.put("/me", response_model=UserProfile, summary="Register or update a staff-only profile")
+def ensure_staff_profile(body: ProfileUpdateRequest,
+                         user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+                         accounts: Annotated[AccountRepository, Depends(get_account_repository)]):
+    try:
+        return accounts.ensure_staff_profile(user, body.name)
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise unavailable() from error
+
+
+@router.get("/me", response_model=UserProfile, summary="View own staff profile")
+def get_staff_profile(user: Annotated[AuthenticatedUser, Depends(get_verified_user)],
+                      accounts: Annotated[AccountRepository, Depends(get_account_repository)]):
+    try:
+        profile = accounts.get_profile(user.uid)
+        if profile is None:
+            raise HTTPException(404, detail={"error_code": "PROFILE_NOT_FOUND", "message": "Finish registering your staff account in the portal."})
+        require_account_type(profile.model_dump(), "staff")
+        if profile.account_status in {"suspended", "deactivated"}:
+            raise HTTPException(403, detail={"error_code": "ACCOUNT_UNAVAILABLE", "message": "This staff account is unavailable."})
+        return profile
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise unavailable() from error
+
+
+@router.get("/session", response_model=PortalSession)
+def portal_session(operator: Operator, portal_role: OperationalRole, request: Request):
+    """Validate a login-screen choice against server-stored permissions.
+
+    The selection grants nothing. Each subsequent operational route checks
+    current permissions again, including suspension or role revocation.
+    """
+    if portal_role not in operator.profile.operational_roles:
+        raise HTTPException(403, detail={"error_code": "PORTAL_ACCESS_DENIED",
+            "message": "This account does not have access to the selected portal. Choose another portal or contact an administrator."})
+    request.state.operational_role = portal_role
+    return PortalSession(portal_role=portal_role, profile=operator.profile)
 
 ASSESSMENT_FIELDS = (
     "result_id",
@@ -58,12 +115,18 @@ ASSESSMENT_FIELDS = (
     "explanation",
     "recommended_action",
     "evidence",
+    "research_assessment",
+    "credibility",
     "assessment_outcome",
     "scoring",
     "warnings",
     "pipeline_version",
     "created_at",
     "saved_at",
+    "label", "confidence", "real_probability", "fake_probability",
+    "filename", "image_filename", "extracted_caption", "evidence_links",
+    "submitted_url", "checked_url", "safety_status", "threat_types", "provider",
+    "checked_at", "threat_expires_at", "cached", "limitations",
 )
 
 
@@ -85,6 +148,7 @@ def _report_view(document: dict[str, Any]) -> ResultReport:
 def _assessment_view(record: dict[str, Any], user_mask: str) -> dict[str, Any]:
     view = {key: record[key] for key in ASSESSMENT_FIELDS if key in record}
     view["user_mask"] = user_mask
+    view["has_saved_image"] = bool(record.get("saved_image"))
     return view
 
 
@@ -167,6 +231,8 @@ def report_detail(engineer: Engineer, reports: Reports,
     except Exception:
         raise unavailable() from None
     assessment = None
+    if record is not None and record.get("user_id") != document.get("user_id"):
+        record = None
     if record is not None:
         assessment = _assessment_view(record, document["user_mask"])
     return ReportDetailResponse(
@@ -174,6 +240,29 @@ def report_detail(engineer: Engineer, reports: Reports,
         assessment=assessment,
         result_missing=record is None,
     )
+
+
+@router.get("/reports/{report_id}/image")
+def report_image(engineer: Engineer, reports: Reports,
+                 report_id: Annotated[str, Path(pattern=REPORT_ID_PATTERN)]):
+    """Private, audited image access only through an existing investigation."""
+    try:
+        document = reports.get_report(report_id)
+        if not document:
+            raise not_found()
+        record = reports.get_analysis_result(document["result_id"])
+        if not record or record.get("user_id") != document.get("user_id") or not record.get("saved_image"):
+            raise HTTPException(404, detail="The reported image is no longer available.")
+        attachment = record["saved_image"]
+        data = get_image_storage().read(document["user_id"], document["result_id"], attachment)
+        return Response(data, media_type=attachment["content_type"], headers={
+            "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
+    except HTTPException:
+        raise
+    except NotFound:
+        raise HTTPException(404, detail="The reported image is no longer available.") from None
+    except Exception:
+        raise unavailable() from None
 
 
 @router.patch("/reports/{report_id}", response_model=ResultReport)
@@ -192,7 +281,7 @@ def update_report(engineer: Engineer, reports: Reports, request: ReportUpdateReq
             status_change=request.status,
             note=request.note,
             actor_uid=engineer.user.uid,
-            actor_role=engineer.profile.role,
+            actor_role="data_engineer",
             now=datetime.now(timezone.utc),
         )
         reports.save_report(updated)

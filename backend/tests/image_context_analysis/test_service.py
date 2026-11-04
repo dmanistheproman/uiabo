@@ -65,6 +65,7 @@ MOCK_GEMINI_ANALYSIS = {
             "url": "https://example.com/source-a",
             "relationship": "context",
             "summary": "Provides relevant context for the claim.",
+            "quote": "The source provides information relevant to the claim.",
         }
     ],
 }
@@ -86,11 +87,9 @@ def mock_analysis_gemini(
             raise exception
         return response
 
-    monkeypatch.setattr(
-        analysis_service.client.models,
-        "generate_content",
-        fake_generate_content,
-    )
+    monkeypatch.setattr(analysis_service, "GEMINI_API_KEY", "offline-test-key")
+    monkeypatch.setattr(analysis_service, "client", SimpleNamespace(
+        models=SimpleNamespace(generate_content=fake_generate_content)))
 
 
 def mock_tavily_search(monkeypatch, results=None, exception=None):
@@ -116,11 +115,9 @@ def assert_gemini_not_called(monkeypatch):
             "Gemini should not be called in this test."
         )
 
-    monkeypatch.setattr(
-        analysis_service.client.models,
-        "generate_content",
-        unexpected_call,
-    )
+    monkeypatch.setattr(analysis_service, "GEMINI_API_KEY", "offline-test-key")
+    monkeypatch.setattr(analysis_service, "client", SimpleNamespace(
+        models=SimpleNamespace(generate_content=unexpected_call)))
 
 
 def run_mocked_analysis(
@@ -151,6 +148,7 @@ def setup_image_context_endpoint_test(
     """Set up a mocked, authenticated Image Context endpoint test."""
 
     store, identity = signed_analysis
+    store.documents["users", identity["user"].uid]["role"] = "premium"
     fake_user = identity["user"]
 
     monkeypatch.setattr(
@@ -198,6 +196,7 @@ def setup_image_context_endpoint_test(
                     "url": "https://example.com/source-a",
                     "relationship": "context",
                     "summary": "Provides relevant context for the claim.",
+            "quote": "The source provides information relevant to the claim.",
                 }
             ],
             "image_filename": image_filename,
@@ -236,7 +235,7 @@ def make_image_upload_bytes():
 #   Tavily + Gemini -> result
 #
 # WARNING: This test consumes one Tavily API usage and 2 Gemini API usages
-# 
+#
 # - Uncomment print statements to view results of the analysis if testing
 # service's performance/results.
 # - Change test.jpg in this directory to try different images
@@ -343,7 +342,7 @@ def test_analysis_tavily_success(monkeypatch):
 # ---------------------------------------------------------------------------
 # Test 3: Tavily fails.
 #
-# The service must return Not enough information and skip Gemini.
+# A provider outage must propagate as a failure and skip Gemini.
 # ---------------------------------------------------------------------------
 
 def test_analysis_tavily_failure(monkeypatch):
@@ -353,13 +352,8 @@ def test_analysis_tavily_failure(monkeypatch):
     )
     assert_gemini_not_called(monkeypatch)
 
-    result = run_mocked_analysis(make_test_image())
-
-    assert result["status"] == "completed"
-    assert result["concern_label"] == "Not Enough Information"
-    assert result["evidence_links"] == []
-    assert result["image_filename"] == TEST_IMAGE_FILENAME
-    assert "search service" in result["explanation"].lower()
+    with pytest.raises(RuntimeError):
+        run_mocked_analysis(make_test_image())
 
 
 # ---------------------------------------------------------------------------
@@ -433,12 +427,8 @@ def test_analysis_missing_tavily_api_key(monkeypatch):
     )
     assert_gemini_not_called(monkeypatch)
 
-    result = run_mocked_analysis(make_test_image())
-
-    assert result["status"] == "completed"
-    assert result["concern_label"] == "Not Enough Information"
-    assert result["evidence_links"] == []
-    assert "search service" in result["explanation"].lower()
+    with pytest.raises(RuntimeError):
+        run_mocked_analysis(make_test_image())
 
 
 # ---------------------------------------------------------------------------
@@ -467,6 +457,7 @@ def test_extract_caption_missing_api_key(monkeypatch):
 
 def test_image_context_endpoint(signed_analysis, monkeypatch):
     store, identity = signed_analysis
+    store.documents["users", identity["user"].uid]["role"] = "premium"
     fake_user = identity["user"]
 
     monkeypatch.setattr(
@@ -552,6 +543,7 @@ def test_image_context_endpoint_idempotent_retry(
     monkeypatch,
 ):
     store, identity = signed_analysis
+    store.documents["users", identity["user"].uid]["role"] = "premium"
     fake_user = identity["user"]
 
     monkeypatch.setattr(
@@ -627,7 +619,7 @@ def test_image_context_endpoint_idempotent_retry(
             ("usage_allowances", "analysis-user")
         ]
         assert allowance["successful_submissions"] == 1
-        assert allowance["remaining_submissions"] == 0
+        assert allowance["remaining_submissions"] == 59
 
     finally:
         app.dependency_overrides.pop(get_verified_user, None)
@@ -680,7 +672,7 @@ def test_image_context_extraction_failure_no_allowance(
         ]
 
         assert allowance["successful_submissions"] == 0
-        assert allowance["remaining_submissions"] == 1
+        assert allowance["remaining_submissions"] == 60
 
     finally:
         app.dependency_overrides.pop(get_verified_user, None)
@@ -689,11 +681,10 @@ def test_image_context_extraction_failure_no_allowance(
 # ---------------------------------------------------------------------------
 # Test 11: Caption extraction succeeds but final analysis fails.
 #
-# The first Gemini call succeeded, so one allowance must be deducted even
-# though the overall endpoint returns a failure response.
+# Partial provider success does not charge when the complete check fails.
 # ---------------------------------------------------------------------------
 
-def test_image_context_analysis_failure_charges_allowance(
+def test_image_context_analysis_failure_does_not_charge_allowance(
     signed_analysis,
     monkeypatch,
 ):
@@ -733,8 +724,8 @@ def test_image_context_analysis_failure_charges_allowance(
             ("usage_allowances", "analysis-user")
         ]
 
-        assert allowance["successful_submissions"] == 1
-        assert allowance["remaining_submissions"] == 0
+        assert allowance["successful_submissions"] == 0
+        assert allowance["remaining_submissions"] == 60
 
     finally:
         app.dependency_overrides.pop(get_verified_user, None)
@@ -789,7 +780,7 @@ def test_image_context_success_charges_one_allowance(
         ]
 
         assert allowance["successful_submissions"] == 1
-        assert allowance["remaining_submissions"] == 0
+        assert allowance["remaining_submissions"] == 59
 
     finally:
         app.dependency_overrides.pop(get_verified_user, None)

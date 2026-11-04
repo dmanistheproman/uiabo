@@ -23,6 +23,7 @@ from datetime import datetime, timedelta, timezone
 from firebase_admin import auth as firebase_auth
 
 from app.firebase import get_firebase_app, get_firestore_client
+from app.accounts.roles import require_account_type, stored_operational_roles
 from app.pipeline.evidence_retrieval.sources import SOURCES
 
 DEMO_EMAIL = "demo.engineer@uiabo.test"
@@ -317,10 +318,13 @@ def _ensure_demo_operational(db, email, password, name, role):
     except firebase_auth.EmailAlreadyExistsError:
         user = firebase_auth.get_user_by_email(email)
         created = False
+    existing = db.collection("users").document(user.uid).get().to_dict()
+    require_account_type(existing, "staff")
     now = datetime.now(timezone.utc)
     db.collection("users").document(user.uid).set({
         "uid": user.uid, "name": name, "email": user.email,
-        "email_verified": True, "role": role, "account_status": "active",
+        "email_verified": True, "role": "staff", "account_type": "staff",
+        "operational_roles": sorted(set(stored_operational_roles(existing)) | {role}), "account_status": "active",
         "profile": {}, "storage_used_bytes": 0, "storage_quota_bytes": 0,
         "last_login_at": None, "created_at": now, "updated_at": now,
     }, merge=True)
@@ -339,10 +343,11 @@ def ensure_demo_free_user(db, email, password, name, role="free", status="active
     except firebase_auth.EmailAlreadyExistsError:
         user = firebase_auth.get_user_by_email(email)
         created = False
+    require_account_type(db.collection("users").document(user.uid).get().to_dict(), "app")
     now = datetime.now(timezone.utc)
     db.collection("users").document(user.uid).set({
         "uid": user.uid, "name": name, "email": user.email,
-        "email_verified": True, "role": role, "account_status": status,
+        "email_verified": True, "role": role, "account_type": "app", "account_status": status,
         "profile": {}, "storage_used_bytes": 0, "storage_quota_bytes": 0,
         "last_login_at": None, "created_at": now, "updated_at": now,
     }, merge=True)

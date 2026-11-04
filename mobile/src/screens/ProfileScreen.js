@@ -4,13 +4,15 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 import { useAuth } from '../auth/AuthContext';
 import Button from '../components/Button';
 import Screen from '../components/Screen';
+import DeleteAccountPanel from '../components/DeleteAccountPanel';
 import { submitFeedback } from '../services/api';
-import { colours, sharedStyles } from '../theme';
+import { colours, sharedStyles, typography } from '../theme';
 
-export default function ProfileScreen({ onBack }) {
+export default function ProfileScreen({ onBack, setWorking }) {
   const { firebaseUser, logout, profile, saveName } = useAuth();
   const [name, setName] = React.useState(profile?.name || firebaseUser.displayName || '');
   const [busy, setBusy] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
   const [message, setMessage] = React.useState('');
 
   const [category, setCategory] = React.useState('general_feedback');
@@ -69,9 +71,9 @@ export default function ProfileScreen({ onBack }) {
         <Text style={sharedStyles.label}>Account type</Text>
         <View style={styles.readOnly}><Text style={styles.readOnlyText}>{profile?.role || 'free'}</Text></View>
         {!!message && <Text accessibilityRole="alert" style={styles.message}>{message}</Text>}
-        <Button loading={busy} onPress={save}>Save name</Button>
-        <Button disabled={busy} onPress={onBack} secondary>Back to home</Button>
-        <Button disabled={busy} onPress={confirmLogout} secondary>Sign out</Button>
+        <Button loading={busy} disabled={deleting} onPress={save}>Save name</Button>
+        <Button disabled={busy || deleting} onPress={onBack} secondary>Back to home</Button>
+        <Button disabled={busy || deleting} onPress={confirmLogout} secondary>Sign out</Button>
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>Send feedback</Text>
@@ -79,6 +81,7 @@ export default function ProfileScreen({ onBack }) {
         <View style={styles.chipRow}>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: category === 'general_feedback' }}
             onPress={() => setCategory('general_feedback')}
             style={[styles.chip, category === 'general_feedback' && styles.chipActive]}
           >
@@ -86,6 +89,7 @@ export default function ProfileScreen({ onBack }) {
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: category === 'service_review' }}
             onPress={() => setCategory('service_review')}
             style={[styles.chip, category === 'service_review' && styles.chipActive]}
           >
@@ -97,6 +101,8 @@ export default function ProfileScreen({ onBack }) {
           {[1, 2, 3, 4, 5].map(value => (
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel={`${value} out of 5`}
+              accessibilityState={{ selected: rating === value }}
               key={value}
               onPress={() => setRating(value)}
               style={[styles.rating, rating != null && rating >= value && styles.ratingActive]}
@@ -111,29 +117,31 @@ export default function ProfileScreen({ onBack }) {
           numberOfLines={3}
           onChangeText={setComments}
           placeholder="Optional, but it helps us improve."
+          placeholderTextColor={colours.muted}
           style={[sharedStyles.field, styles.comments]}
           value={comments}
         />
         {!!feedbackMessage && <Text accessibilityRole="alert" style={styles.message}>{feedbackMessage}</Text>}
-        <Button loading={sending} onPress={sendFeedback}>Send feedback</Button>
+        <Button loading={sending} disabled={deleting} onPress={sendFeedback}>Send feedback</Button>
       </View>
+      <DeleteAccountPanel disabled={busy || sending} setWorking={value => { setDeleting(value); setWorking(value); }} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   card: { backgroundColor: colours.white, borderRadius: 16, marginBottom: 16, padding: 22 },
-  message: { color: colours.blueDark, fontSize: 17, marginBottom: 15 },
+  message: { ...typography.secondary, color: colours.blueDark, marginBottom: 16 },
   readOnly: { backgroundColor: colours.locked, borderRadius: 10, marginBottom: 16, minHeight: 56, padding: 16 },
-  readOnlyText: { color: colours.ink, fontSize: 18, textTransform: 'capitalize' },
-  title: { color: colours.ink, fontSize: 29, fontWeight: '700', marginBottom: 22 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
-  chip: { borderRadius: 999, borderWidth: 1.5, borderColor: colours.blue, minHeight: 48, paddingHorizontal: 18, justifyContent: 'center' },
+  readOnlyText: { ...typography.body, color: colours.ink },
+  title: { ...typography.title, color: colours.ink, marginBottom: 24 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+  chip: { borderRadius: 16, borderWidth: 2, borderColor: colours.blue, minHeight: 56, maxWidth: '100%', paddingHorizontal: 18, paddingVertical: 12, justifyContent: 'center' },
   chipActive: { backgroundColor: colours.blue, borderColor: colours.blue },
-  chipText: { color: colours.blue, fontSize: 17, fontWeight: '600' },
+  chipText: { ...typography.secondary, color: colours.blue, fontWeight: '600', flexShrink: 1 },
   chipTextActive: { color: colours.white },
-  rating: { alignItems: 'center', borderColor: colours.blue, borderRadius: 12, borderWidth: 1.5, height: 48, justifyContent: 'center', width: 48 },
+  rating: { alignItems: 'center', borderColor: colours.blue, borderRadius: 12, borderWidth: 2, minHeight: 56, justifyContent: 'center', minWidth: 56, padding: 12 },
   ratingActive: { backgroundColor: colours.blue },
-  ratingText: { color: colours.blue, fontSize: 18, fontWeight: '700' },
-  comments: { height: 110, textAlignVertical: 'top' },
+  ratingText: { ...typography.button, color: colours.blue },
+  comments: { minHeight: 140, textAlignVertical: 'top' },
 });

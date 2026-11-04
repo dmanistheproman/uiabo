@@ -42,8 +42,13 @@ def check_link(request: LinkSafetyRequest, user: User, store: Store,
             _record_link_run(runs, reservation["result_id"], "failed",
                              started, error_code=error.code, message=error.message)
             raise
+        try:
+            saved = store.finish(user.uid, reservation, result)
+        except Exception:
+            _record_link_run(runs, reservation["result_id"], "failed", started, error_code="RESULT_STORAGE_UNAVAILABLE")
+            raise
         _record_link_run(runs, reservation["result_id"], "completed", started)
-        return store.finish(user.uid, reservation, result)
+        return saved
     except LinkSafetyError as error:
         raise HTTPException(error.status, detail={"error_code": error.code, "message": error.message}) from None
     except HTTPException:

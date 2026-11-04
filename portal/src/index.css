@@ -115,6 +115,14 @@ a { color: var(--blue); }
 .field { display: flex; flex-direction: column; gap: 5px; }
 .field-label { font-size: 13px; font-weight: 700; color: var(--blue-dark); }
 .inline-label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--blue-dark); }
+.role-choices { border: 1px solid var(--border); border-radius: 8px; display: flex; gap: 20px; flex-wrap: wrap; padding: 12px; }
+.role-choices legend { font-weight: 700; font-size: 13px; }
+.role-choices input { width: 18px; height: 18px; }
+.stack-form .field { width: 100%; max-width: 560px; }
+.table-scroll { overflow-x: auto; }
+.table-scroll .table { min-width: 850px; }
+.setup-steps { margin: 0; padding-left: 22px; }
+.setup-steps li { margin: 6px 0; }
 input, select, textarea {
   border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px;
   font: inherit; color: var(--text); background: white; min-width: 0;

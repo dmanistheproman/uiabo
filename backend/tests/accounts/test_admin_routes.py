@@ -24,6 +24,43 @@ FIXED_TIME = datetime(
 )
 
 
+def test_admin_cannot_suspend_self(admin_context):
+    client, repository, _ = admin_context
+    response = client.patch('/admin/users/admin-123/status', json={'account_status':'suspended','reason':'test'})
+    assert response.status_code == 409
+    assert repository.profiles['admin-123']['account_status'] == 'active'
+
+
+def test_suspension_requires_reason_and_revokes_sessions(admin_context, monkeypatch):
+    from unittest.mock import Mock
+    from app.routers import admin
+    client, repository, _ = admin_context
+    revoke = Mock()
+    monkeypatch.setattr(admin,'revoke_sessions',revoke)
+    assert client.patch('/admin/users/user-456/status',json={'account_status':'suspended'}).status_code == 422
+    response = client.patch('/admin/users/user-456/status',json={'account_status':'suspended','reason':'Abusive submissions'})
+    assert response.status_code == 200
+    revoke.assert_called_once_with('user-456')
+    assert repository.profiles['user-456']['profile']['access_change']['reason'] == 'Abusive submissions'
+
+
+def test_operational_requests_have_audit_and_fail_closed(admin_context):
+    from app.portal.audit import get_audit_store
+    client, _, _ = admin_context
+    events = {}
+    class Audit:
+        def write(self,key,value): events[key] = dict(value)
+    app.dependency_overrides[get_audit_store] = Audit
+    assert client.get('/admin/users?query=private-email@example.org').status_code == 200
+    event = next(iter(events.values()))
+    assert event['outcome'] == 'succeeded' and event['status_code'] == 200
+    assert 'private-email' not in str(event)
+    class UnavailableAudit:
+        def write(self,key,value): raise RuntimeError('offline')
+    app.dependency_overrides[get_audit_store] = UnavailableAudit
+    assert client.patch('/admin/users/user-456/status',json={'account_status':'suspended','reason':'test'}).status_code == 503
+
+
 @pytest.fixture
 def admin_context():
     repository = InMemoryAccountRepository(
@@ -43,13 +80,13 @@ def admin_context():
     )
 
     # Create the admin profile.
-    repository.ensure_free_profile(
+    repository.ensure_staff_profile(
         admin_identity,
         "System Admin",
     )
 
     # Promote the account on the server side.
-    repository.profiles["admin-123"]["role"] = "system_admin"
+    repository.profiles["admin-123"]["operational_roles"] = ["system_admin"]
     repository.profiles["admin-123"]["account_status"] = "active"
 
     # Create an ordinary user for the admin to manage.
@@ -120,7 +157,7 @@ def test_system_admin_can_suspend_user(
     response = client.patch(
         "/admin/users/user-456/status",
         json={
-            "account_status": "suspended"
+            "account_status": "suspended", "reason": "Test suspension"
         },
     )
 
@@ -239,14 +276,14 @@ def test_data_engineer_cannot_access_admin_routes(
         email_verified=True,
     )
 
-    repository.ensure_free_profile(
+    repository.ensure_staff_profile(
         engineer,
         "Data Engineer",
     )
 
     repository.profiles[
         "engineer-789"
-    ]["role"] = "data_engineer"
+    ]["operational_roles"] = ["data_engineer"]
 
     repository.profiles[
         "engineer-789"

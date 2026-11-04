@@ -1,11 +1,11 @@
 import React from 'react';
 import { ActivityIndicator, Alert, Image, Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { chooseImageFor } from '../services/imagePicker';
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 import { checkText, readImageText } from '../services/api';
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 const MAX_BASE64_LENGTH = 4 * Math.ceil(8 * 1024 * 1024 / 3);
 
@@ -39,7 +39,7 @@ export default function OcrScreen({ initialSelection = null, onNavigate, onResul
     if (sending.current) return;
     sending.current = true; setBusy('selecting'); setWorking(true); setError('');
     try {
-      acceptSelection(await ImagePicker.launchImageLibraryAsync({
+      acceptSelection(await chooseImageFor(firebaseUser.uid, 'ocr', {
         mediaTypes: ['images'], allowsMultipleSelection: false, allowsEditing: false,
         quality: 1, base64: true, exif: false,
       }));
@@ -106,14 +106,14 @@ export default function OcrScreen({ initialSelection = null, onNavigate, onResul
 }
 
 const styles = StyleSheet.create({
-  heading: { color: '#173447', fontSize: 23, fontWeight: '800', marginBottom: 7 },
-  copy: { color: '#526F83', fontSize: 14, lineHeight: 22 },
-  label: { color: '#173447', fontSize: 15, fontWeight: '700', marginBottom: 8 },
-  preview: { width: '100%', height: 240, backgroundColor: '#E7EEF1', borderRadius: 14 },
-  card: { backgroundColor: 'white', padding: 20, borderRadius: 16, gap: 14 },
-  info: { backgroundColor: '#E5F3FA', borderLeftWidth: 3, borderLeftColor: '#1778A3', borderRadius: 14, padding: 16, gap: 10 },
-  input: { backgroundColor: 'white', minHeight: 220, borderColor: '#B8CDD9', borderWidth: 1, borderRadius: 14, padding: 15, fontSize: 16, lineHeight: 24, color: '#173447' },
-  hint: { color: '#617D90', fontSize: 12, lineHeight: 19, marginTop: 8 },
-  error: { color: '#A12020', fontSize: 14, lineHeight: 21 },
+  heading: { ...typography.title, color: colours.ink, marginBottom: 8 },
+  copy: { ...typography.body, color: colours.text },
+  label: { ...typography.label, color: colours.ink, marginBottom: 8 },
+  preview: { width: '100%', height: 240, backgroundColor: colours.infoBackground, borderRadius: 14 },
+  card: { backgroundColor: colours.white, padding: 20, borderRadius: 16, gap: 16 },
+  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, borderRadius: 14, padding: 18, gap: 12 },
+  input: { ...typography.body, backgroundColor: colours.white, minHeight: 240, borderColor: colours.border, borderWidth: 2, borderRadius: 14, padding: 16, color: colours.ink },
+  hint: { ...typography.secondary, color: colours.muted, marginTop: 8 },
+  error: { ...typography.secondary, color: colours.danger },
   progress: { alignItems: 'center', gap: 12, padding: 14 },
 });

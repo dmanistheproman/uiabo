@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import * as ImagePicker from 'expo-image-picker';
+import { recoverImageSelection } from './src/services/imagePicker';
 import LinkCheckScreen from './src/screens/LinkCheckScreen';
 import LinkResultScreen from './src/screens/LinkResultScreen';
 import OcrScreen from './src/screens/OcrScreen';
@@ -21,11 +21,12 @@ import Deepfake_AI_Check_Screen from './src/screens/Deepfake_AI_Check_Screen';
 import Deepfake_AI_Result_Screen from './src/screens/Deepfake_AI_Result_Screen';
 import Image_Context_Analysis_Screen from './src/screens/Image_Context_Analysis_Screen';
 import Image_Context_Result_Screen from './src/screens/Image_Context_Result_Screen';
-import { BottomTabs } from './src/components/AppShell';
-import { colours } from './src/theme';
+import { BottomTabs, PageBody, PageHeader } from './src/components/AppShell';
+import Button from './src/components/Button';
+import { colours, typography } from './src/theme';
 
 function AppContent() {
-  const { configurationError, firebaseUser, initialising } = useAuth();
+  const { configurationError, firebaseUser, initialising, deletionPending, sessionNotice, logout } = useAuth();
   const [page, setPage] = React.useState('home');
   const [result, setResult] = React.useState(null);
   const [deepfakeAI_Result, setDeepfakeAI_Result] = React.useState(null);
@@ -35,6 +36,8 @@ function AppContent() {
   const [working, setWorking] = React.useState(false);
   const [textDraft, setTextDraft] = React.useState(null);
   const [ocrSelection, setOcrSelection] = React.useState(null);
+  const [imageSelection, setImageSelection] = React.useState(null);
+  const [deepfakeSelection, setDeepfakeSelection] = React.useState(null);
 
   React.useEffect(() => {
     setPage('home');
@@ -43,16 +46,20 @@ function AppContent() {
     setImageContext_Result(null);
     setWorking(false);
     setTextDraft(null);
-    setOcrSelection(null);
+    setOcrSelection(null); setImageSelection(null); setDeepfakeSelection(null);
   }, [firebaseUser?.uid]);
 
   React.useEffect(() => {
     if (!firebaseUser?.emailVerified) return;
     let active = true;
     // Android may recreate the activity while its system photo picker is open.
-    ImagePicker.getPendingResultAsync().then(selection => {
-      if (active && selection && !selection.canceled) {
-        setOcrSelection(selection); setPage('ocr');
+    recoverImageSelection(firebaseUser.uid).then(recovered => {
+      if (active && recovered) {
+        const { page: destination, selection } = recovered;
+        if (destination === 'ocr') setOcrSelection(selection);
+        else if (destination === 'imageContext') setImageSelection(selection);
+        else setDeepfakeSelection(selection);
+        setPage(destination);
       }
     }).catch(() => {});
     return () => { active = false; };
@@ -62,6 +69,8 @@ function AppContent() {
     if (working) return;
     setTextDraft(next === 'text' ? options.draft || null : null);
     if (next !== 'ocr') setOcrSelection(null);
+    if (next !== 'imageContext') setImageSelection(null);
+    if (next !== 'deepfakeAI') setDeepfakeSelection(null);
     setPage(next);
   }
   React.useEffect(() => {
@@ -97,6 +106,7 @@ function AppContent() {
 
   if (configurationError) return <SetupScreen message={configurationError} />;
   if (!firebaseUser) return <AuthScreen />;
+  if (deletionPending) return <View style={{ flex: 1 }}><PageHeader title="Deletion requested" /><PageBody><Text style={styles.loadingText}>{sessionNotice}</Text><Button onPress={() => logout().catch(() => Alert.alert('Sign out', 'Could not sign out. Please try again.'))}>Sign out</Button></PageBody></View>;
   if (!firebaseUser.emailVerified) return <VerifyEmailScreen />;
 
   function showResult(value) {
@@ -131,17 +141,17 @@ function AppContent() {
   }
 
   let content;
-  if (page === 'profile') content = <ProfileScreen onBack={() => navigate('home')} />;
+  if (page === 'profile') content = <ProfileScreen onBack={() => navigate('home')} setWorking={setWorking} />;
   else if (page === 'text') content = <TextCheckScreen initialDraft={textDraft} onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
   else if (page === 'link') content = <LinkCheckScreen onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
   else if (page === 'ocr') content = <OcrScreen initialSelection={ocrSelection} onNavigate={navigate} onResult={showResult} setWorking={setWorking} />;
-  else if (page === 'deepfakeAI') content = <Deepfake_AI_Check_Screen onNavigate={navigate} onResult={showDeepfakeAI_Result} />;
+  else if (page === 'deepfakeAI') content = <Deepfake_AI_Check_Screen initialSelection={deepfakeSelection} setWorking={setWorking} onNavigate={navigate} onResult={showDeepfakeAI_Result} />;
   else if (page === 'deepfakeAI-result' && deepfakeAI_Result) content = ( <Deepfake_AI_Result_Screen result={deepfakeAI_Result} onNavigate={navigate} onBack={() => navigate(deepfakeAI_ResultOrigin)} />);
-  else if (page === 'imageContext') content = ( <Image_Context_Analysis_Screen onNavigate={navigate} onResult={showImageContext_Result} setWorking={setWorking} />);
+  else if (page === 'imageContext') content = ( <Image_Context_Analysis_Screen initialSelection={imageSelection} onNavigate={navigate} onResult={showImageContext_Result} setWorking={setWorking} />);
   else if (page === 'imageContext-result' && imageContext_Result) content = ( <Image_Context_Result_Screen result={imageContext_Result} onNavigate={navigate} onBack={() => navigate(imageContext_ResultOrigin)} />);
   else if (page === 'results') content = <ResultsScreen onNavigate={navigate} onResult={showResult} />;
   else if (page === 'result' && result) content = result.input_type === 'link_safety' ? <LinkResultScreen result={result} onNavigate={navigate} /> : <ResultScreen result={result} onNavigate={navigate} />;
-  else if (page === 'help' || page === 'premium') content = <InfoScreen premium={page === 'premium'} onNavigate={navigate} />;
+  else if (page === 'help' || page === 'premium') content = <InfoScreen premium={page === 'premium'} onNavigate={navigate} onWorking={setWorking} />;
   else content = <HomeScreen onNavigate={navigate} />;
   return <View style={{ flex: 1 }}>{content}<BottomTabs active={page === 'result' ? 'results' : ['text', 'link', 'ocr', 'deepfakeAI', 'deepfakeAI-result', 'imageContext', 'imageContext-result', 'premium'].includes(page) ? 'home' : page} onNavigate={navigate} disabled={working} /></View>;
 }
@@ -169,8 +179,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
+    ...typography.body,
     color: colours.ink,
-    fontSize: 18,
     marginTop: 16,
   },
 });

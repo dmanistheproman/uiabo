@@ -1,0 +1,59 @@
+{
+  "version": "policy-verification-v1",
+  "notice": "All names, policies and financial circumstances in this pack are fictional. These paired cases check policy reasoning, not real-world accuracy.",
+  "as_of": "2026-11-03T12:00:00+08:00",
+  "cases": [
+    {
+      "id": "P01", "pattern": "asserted_change_incompatible_schedule_unknown_cause",
+      "claim": "Riverton Council is raising the annual resident waste licence fee to $120 because its treasury is running out of money.",
+      "expected": "contradicted",
+      "reason": "Under the disclosed current-policy reading, the approved change being implemented is to $45 for the same fee and population. This weighs against the asserted $120 change. The alleged treasury problem remains unresolved.",
+      "sources": [{"id": "fee-schedule", "title": "Riverton Council approved resident fee schedule", "published_at": "2026-10-30", "passage": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents. This notice describes the adopted fee schedule."}]
+    },
+    {
+      "id": "P02", "pattern": "discussion_not_refuted_by_adopted_schedule",
+      "claim": "Riverton Council is discussing raising the annual resident waste licence fee to $120 because its treasury is running out of money.",
+      "expected": "unresolved",
+      "reason": "The same adopted schedule does not establish whether an additional proposal is being discussed. Neither discussions nor the financial allegation are addressed.",
+      "sources": [{"id": "fee-schedule", "title": "Riverton Council approved resident fee schedule", "published_at": "2026-10-30", "passage": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents. This notice describes the adopted fee schedule."}]
+    },
+    {
+      "id": "P03", "pattern": "supported_change_does_not_prove_cause",
+      "claim": "Riverton Council is raising the annual resident waste licence fee to $45 because its treasury is running out of money.",
+      "expected": "unresolved",
+      "reason": "The fee change is supported, but neither treasury depletion nor its causal connection is established. The entire message must not become supported merely because its event is true.",
+      "sources": [{"id": "fee-schedule", "title": "Riverton Council approved resident fee schedule", "published_at": "2026-10-30", "passage": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents. This notice describes the adopted fee schedule."}]
+    },
+    {
+      "id": "P04", "pattern": "later_period_not_refuted_by_near_term_schedule",
+      "claim": "Riverton Council will raise the annual resident waste licence fee to $120 in 2045.",
+      "expected": "unresolved",
+      "reason": "A 2027 fee schedule does not set or rule out the fee for 2045. An explicit later date must not be silently replaced with today's policy horizon.",
+      "sources": [{"id": "fee-schedule", "title": "Riverton Council approved resident fee schedule", "published_at": "2026-10-30", "passage": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents. This notice describes the adopted fee schedule."}]
+    },
+    {
+      "id": "P05", "pattern": "new_announcement_supersedes_earlier_schedule",
+      "claim": "Riverton Council has announced an increase in the annual resident waste licence fee to $120.",
+      "expected": "supported",
+      "reason": "A later explicit adopted announcement replaces the earlier schedule. Old policy cannot veto a documented new change.",
+      "sources": [
+        {"id": "fee-schedule", "title": "Riverton Council earlier resident fee schedule", "published_at": "2026-10-30", "passage": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents."},
+        {"id": "revised-schedule", "title": "Riverton Council revised fee announcement", "published_at": "2026-11-02", "passage": "On 2 November 2026, Riverton Council announced and adopted an annual resident waste licence fee of $120 effective 1 January 2027. This replaces the $45 schedule announced on 30 October 2026 for the same annual resident waste licence. The current fee remains $30 until the new schedule takes effect."}
+      ]
+    },
+    {
+      "id": "P06", "pattern": "different_population_not_policy_contradiction",
+      "claim": "Riverton Council is raising the annual commercial waste licence fee to $120.",
+      "expected": "unresolved",
+      "reason": "A resident fee schedule does not establish a commercial licence fee. Different populations or policy categories cannot be treated as a value contradiction.",
+      "sources": [{"id": "fee-schedule", "title": "Riverton Council approved resident fee schedule", "published_at": "2026-10-30", "passage": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents. This notice describes the adopted resident fee schedule."}]
+    },
+    {
+      "id": "P07", "pattern": "historical_snapshot_not_current_policy",
+      "claim": "Riverton Council is raising the annual resident waste licence fee to $120.",
+      "expected": "unresolved",
+      "reason": "Only an explicitly historical 2021-2022 snapshot is supplied. It does not establish the current policy as of November 2026.",
+      "sources": [{"id": "archived-fee-schedule", "title": "Historical resident fee schedule, version as at 1 December 2021", "published_at": "2021-12-01", "passage": "Archived version as at 1 December 2021: Riverton Council will raise the annual resident waste licence fee from $30 to $45 on 1 January 2022. This archive is a historical snapshot and does not include later amendments or the current fee schedule."}]
+    }
+  ]
+}

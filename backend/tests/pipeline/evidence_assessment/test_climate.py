@@ -54,11 +54,24 @@ def test_50_c_beyond_forecast_becomes_plausibility_warning_not_falsehood():
     assert "not proof" in result.explanation
 
 
+@pytest.mark.parametrize('verb', ['reach', 'hit'])
+def test_date_between_location_and_verb_reaches_the_climate_assessment(verb):
+    from app.pipeline.input_preparation.service import prepare_text
+    from app.pipeline.shared.credibility import build_credibility
+    text = f'Singapore next week will {verb} 50 degree celcius'
+    prepared = prepare_text(text)
+    claim = make_claim(prepared.normalised_text)
+    assert claim.claim_context.location == 'Singapore'
+    result = assess_pool_evidence(claim, RetrievalResult(
+        retrieval_status='completed', evidence=[make_source()]))
+    assert build_credibility(result).label == 'Likely misinformation'
+    assert result.plausibility_context.deviation_c == 13
+
+
 @pytest.mark.parametrize("text", [
     "Singapore will hit 38 C next Saturday.",
     "Singapore will hit 46.9 C next Saturday.",
     "Singapore could hit 50 C next Saturday.",
-    "Could Singapore hit 50 C next Saturday?",
     "What if Singapore will hit 50 C next Saturday?",
     "Singapore will not hit 50 C next Saturday.",
     "Singapore's heat index will hit 50 C next Saturday.",
@@ -84,6 +97,35 @@ def test_units_and_threshold_are_compared_with_actual_record(value):
     result = assess_pool_evidence(make_claim(f"Singapore will hit {value} next Saturday."),
         RetrievalResult(retrieval_status="completed", evidence=[make_source()]))
     assert result.assessment_outcome == "highly_unlikely"
+
+
+@pytest.mark.parametrize('text', [
+    'Could Singapore reach 50 degrees Celsius tomorrow?',
+    'Will Singapore hit 50 C next Saturday?',
+    'Can Singapore hit 122 F tomorrow?',
+    'Tomorrow it will be 50 degree Celsius in Singapore.',
+    'This Saturday it will be 50 degrees Celsius in Singapore.',
+])
+def test_factual_temperature_questions_and_assertions_share_likelihood_label(text):
+    from app.pipeline.shared.credibility import build_credibility
+    # Monday makes "this Saturday" future; the module's Sunday clock means yesterday.
+    now = NOW + timedelta(days=1)
+    claim = make_claim(text).model_copy(update={'date_context': infer_date_context(text, now),
+                                               'claim_context': build_claim_context(text, now)})
+    source = make_source().model_copy(update={'retrieved_at': now})
+    result = assess_pool_evidence(claim, RetrievalResult(retrieval_status='completed', evidence=[source]))
+    assert result.assessment_outcome == 'highly_unlikely'
+    assert build_credibility(result).label == 'Likely misinformation'
+    assert build_credibility(result).score is None
+
+
+@pytest.mark.parametrize('text', ['Could Singapore not hit 50 C tomorrow?',
+    'Could Singapore hit 50 C tomorrow because of a heatwave?',
+    'Could Singapore reach 50 C tomorrow and close schools?',
+    'Could Singapore reach a heat index of 50 C tomorrow?'])
+def test_question_scope_guards_still_apply(text):
+    result = assess_pool_evidence(make_claim(text), RetrievalResult(retrieval_status='completed', evidence=[make_source()]))
+    assert result.plausibility_context is None
 
 
 @pytest.mark.parametrize("changes", [

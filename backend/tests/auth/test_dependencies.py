@@ -50,6 +50,7 @@ def test_valid_token_returns_trusted_identity(monkeypatch) -> None:
         "uid": "user-123",
         "email": "person@example.com",
         "email_verified": True,
+        "auth_time": None,
     }
 
 

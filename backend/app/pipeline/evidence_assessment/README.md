@@ -293,11 +293,38 @@ guards, quoted provenance, provider failures and legacy compatibility.
 These tests check behavior, not real-world accuracy. Human-labelled evaluation
 and user comprehension testing are still required before claiming calibration.
 
+### Undated statistical comparisons
+
+For a statistical change with no stated date or historical interval, use the
+latest comparable observations found. Compare the newest observation with its
+preceding comparable observation, preserving population, measurement and units.
+Values do not determine which dates are selected.
+
+- Search queries request the latest official statistics without inventing years.
+- The input interpretation discloses the default. Numerical findings state the
+  actual dates, and the main explanation includes that comparison.
+- Explicit dates, historical/relative periods and year-on-year wording take
+  priority; they are never silently replaced with another interval.
+- PDF series supply their observation dates. A newer rate or publication date
+  cannot replace dates belonging to an unemployment-count series.
+- Supported default intervals are adjacent monthly, quarterly-spaced monthly
+  labels, and annual observations. Irregular/unsupported intervals remain
+  contextual. Recency limits are 3, 9 and 24 months respectively from the latest
+  observation. These are prototype guardrails, not proof that a source is the
+  globally newest release.
+- Newer validated same-population/measurement comparisons suppress older pairs.
+  Missing dates alone no longer block a vote. Missing measurements, different
+  populations, uncorroborated values and unsupported causes still do.
+
+The component path applies this to grounded text and PDF comparisons; the
+whole-pool PDF guard uses the same period rule. Existing saved results retain
+their original interpretation. Version: `numeric-v3-latest`.
+
 ### Extreme Singapore temperature predictions
 
 With `EVIDENCE_PIPELINE_V3=1`, `climate.py` can return `highly_unlikely` with `scoring.status=plausibility_based` when an otherwise unresolved claim meets every condition:
 
-- A simple, positive assertion about Singapore air temperature; one Celsius or Fahrenheit quantity.
+- A simple, positive assertion or factual possibility question about Singapore air temperature; one Celsius or Fahrenheit quantity. Pure imagined scenarios are excluded.
 - A grounded date range from today through the next 14 days.
 - A freshly retrieved official MSS annual **all-stations** historical maximum. Retrieval validates the table headers, Celsius unit, value, source update date (at most 90 days old), response size and timeout. A changed/unavailable page produces no climate score.
 - The claimed temperature exceeds that retrieved record by at least 10 degrees Celsius.
@@ -306,13 +333,13 @@ The legacy internal prototype indicator remains **risk 85/100** for backward
 compatibility. It is not displayed as a factual credibility score; the app shows
 the climate plausibility warning and explains its limitations. The 10-degree margin, 14-day horizon and indicator value are design choices awaiting labelled evaluation, not meteorological probability estimates. The initial request budget guard only fetches climate records for temperatures of at least 45 C; the final comparison always uses the retrieved maximum.
 
-The record remains a **neutral** evidence source: it does not become a fabricated contradiction vote. The new context, comparison and source survive API responses and saved history. Matching official forecast comparisons and decisive web findings take precedence. Questions, possibility statements, hypotheses, negations, heat index, surface temperature, causal/compound claims and long-term projections do not receive this rule's score. Other countries and domains are not covered yet.
+The record remains a **neutral** evidence source: it does not become a fabricated contradiction vote. The context, comparison and source survive API responses and saved history. Matching official forecast comparisons and decisive web findings take precedence. Factual questions such as “Could Singapore reach 50°C tomorrow?” are eligible. Possibility statements, pure hypotheses, negations, heat index, surface temperature, causal/compound claims and long-term projections do not receive this rule's score. Other countries and domains are not covered yet.
 
 Example, assessed 4 October 2026: "Singapore will hit 50 degree celcius next Saturday" refers to 10 October. A live in-memory pipeline check returned `highly_unlikely`, citing the MSS table updated 22 September 2026 with a 37 C maximum. This is one diagnostic, not a measured accuracy improvement. Recheck old submissions to run the new rule; their stored outcomes are not rewritten.
 
 Source: https://www.weather.gov.sg/climate-historical-extremes-temperature/
 
-The branch comparison benchmark retains `highly_unlikely` as unresolved for its existing factual-truth labels. Inspect the separate `plausibility_context` when reviewing this feature; do not count an outlier warning as a proven falsehood.
+The visible label is **Likely misinformation**. The branch comparison benchmark's `evidence-labels-v2` policy maps `highly_unlikely` to `likely_misinformation`, separate from `contradicted`. Earlier benchmark mappings used unresolved and are not directly comparable. See `EVIDENCE_LABELS.md` at the project root for public-change inference and implementation limits.
 
 
 ### Live diagnostic on 8 October 2026

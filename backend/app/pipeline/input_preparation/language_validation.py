@@ -16,6 +16,7 @@ different facts.
 
 from dataclasses import dataclass
 from enum import Enum
+import re
 
 from lingua import Language, LanguageDetectorBuilder
 
@@ -39,6 +40,18 @@ DEFAULT_MINIMUM_MARGIN = 0.05
 # All spoken languages are included so that French, Malay, Indonesian, Tamil,
 # and other submissions are not forced into the small set {English, Chinese}.
 _DETECTOR = LanguageDetectorBuilder.from_all_spoken_languages().build()
+
+# Detection-only spelling repair for numeric temperature units. Never rewrite
+# the claim or add English words to otherwise ambiguous/non-English input.
+_TEMPERATURE_TYPO = re.compile(
+    r"(?P<prefix>\b\d+(?:\.\d+)?\s*(?:degrees?\s+|°\s*)?)"
+    r"(?P<unit>celcius|farenheit|farenhite)\b", re.I)
+
+
+def _language_probe(text: str) -> str:
+    return _TEMPERATURE_TYPO.sub(
+        lambda match: match['prefix'] + (
+            'Celsius' if match['unit'].lower() == 'celcius' else 'Fahrenheit'), text)
 
 
 class LanguageStatus(str, Enum):
@@ -131,6 +144,21 @@ def validate_english(
     )
     margin = best.value - second_score
 
+    # Short English sentences can be pushed below the separation threshold by
+    # a misspelt unit. Retry only if English already leads with the required
+    # minimum score. The repaired probe must pass the same two thresholds.
+    if (best.language == SUPPORTED_LANGUAGE and best.value >= minimum_confidence
+            and margin < minimum_margin):
+        probe = _language_probe(text)
+        if probe != text:
+            repaired = _DETECTOR.compute_language_confidence_values(probe)
+            if repaired:
+                candidate = repaired[0]
+                repaired_margin = candidate.value - (repaired[1].value if len(repaired) > 1 else 0.0)
+                if (candidate.language == SUPPORTED_LANGUAGE
+                        and candidate.value >= minimum_confidence and repaired_margin >= minimum_margin):
+                    best, margin = candidate, repaired_margin
+
     if best.value < minimum_confidence or margin < minimum_margin:
         return LanguageValidationResult(
             status=LanguageStatus.UNCERTAIN,
@@ -139,8 +167,8 @@ def validate_english(
             confidence_margin=round(margin, 4),
             supported=False,
             warning=(
-                "The text may be English, but the language result is not "
-                "confident enough for the English-only pipeline."
+                "We could not confidently identify the language. Please write "
+                "a full English sentence and check for spelling mistakes."
             ),
         )
 

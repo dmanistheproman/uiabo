@@ -11,3 +11,5 @@ class AuthenticatedUser(BaseModel):
     uid: str = Field(min_length=1)
     email: str = Field(min_length=3)
     email_verified: bool = False
+
+    auth_time: int | None = None

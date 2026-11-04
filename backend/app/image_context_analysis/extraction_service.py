@@ -26,7 +26,8 @@ load_dotenv(ROOT_DIR / ".env")
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key=API_KEY)
+client = genai.Client(api_key=API_KEY, http_options=types.HttpOptions(
+    timeout=45000, retry_options=types.HttpRetryOptions(attempts=1))) if API_KEY else None
 
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 

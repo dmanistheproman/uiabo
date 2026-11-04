@@ -157,8 +157,8 @@ export function Distribution({ title, counts, emptyText = 'Nothing recorded yet.
 }
 
 export const REPORT_REASON_LABELS = {
-  wrong_label: 'The concern label is wrong',
-  wrong_score: 'The risk score is wrong',
-  wrong_evidence: 'The evidence or sources are wrong',
+  wrong_label: 'The result label is wrong',
+  wrong_score: 'The displayed score is wrong',
+  wrong_evidence: 'The evidence or explanation is wrong',
   other: 'Something else',
 };

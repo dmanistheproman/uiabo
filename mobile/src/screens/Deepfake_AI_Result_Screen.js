@@ -1,3 +1,6 @@
+import { colours, typography } from '../theme';
+import ReportResultPanel from '../components/ReportResultPanel';
+import SavedResultImage from '../components/SavedResultImage';
 import React from 'react';
 
 import {
@@ -16,7 +19,7 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
   const confidence = Number(result?.confidence);
   const realProbability = Number(result?.real_probability);
   const fakeProbability = Number(result?.fake_probability);
-  
+
   const formatPercent = (value) => {
     const num = Number(value);
     // Checks if it's a valid finite number AND greater than 0
@@ -49,13 +52,13 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
       : 'alert-circle';
 
   const resultColor = isUncertain
-    ? '#8A6D1D'
+    ? colours.warning
     : isReal
-      ? '#197551'
+      ? colours.success
       : isFake
-        ? '#AA2825'
-        : '#A33A3A';
-  
+        ? colours.danger
+        : colours.danger;
+
   const summaryStyle = isReal
     ? styles.realSummary
     : isFake
@@ -75,8 +78,8 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
   const visualEvidence = explanation?.visual_evidence;
   const reasoning = explanation?.reasoning;
   const limitations = explanation?.limitations;
-  
-  
+
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -87,6 +90,7 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
       />
 
       <PageBody>
+        <SavedResultImage result={result} />
         <View style={[styles.summary, summaryStyle]}>
           <Feather
             name={resultIcon}
@@ -103,7 +107,7 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
             {getAnalysisMessage()}
           </Text>
         </View>
-        
+
         <View style={styles.card}>
           <Text accessibilityRole="header" style={styles.heading}>
             Image filename
@@ -191,130 +195,32 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
         <Button onPress={() => onNavigate('deepfakeAI')}>
           Check another image
         </Button>
+        <ReportResultPanel result={result} />
       </PageBody>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  summary: {
-    alignItems: 'center',
-    borderRadius: 18,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#CCDCE5',
-    padding: 20,
-    gap: 14,
-  },
-  realSummary: {
-    backgroundColor: '#E4F4EC',
-    borderColor: '#197551',
-  },
-  fakeSummary: {
-    backgroundColor: '#FBE9E7',
-    borderColor: '#AA2825',
-  },
-  realTitle: {
-    color: '#197551',
-  },
-  fakeTitle: {
-    color: '#AA2825',
-  },
-  title: {
-    color: '#173447',
-    fontWeight: '800',
-    fontSize: 27,
-    lineHeight: 35,
-    textAlign: 'center',
-  },
-  copy: {
-    color: '#243E50',
-    fontSize: 18,
-    lineHeight: 28,
-    textAlign: 'center',
-  },
-  card: {
-    borderRadius: 16,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#CCDCE5',
-    padding: 16,
-    gap: 12,
-  },
-  heading: {
-    color: '#173447',
-    fontWeight: '700',
-    fontSize: 21,
-    lineHeight: 29,
-  },
-  score: {
-    color: '#173447',
-    fontWeight: '800',
-    fontSize: 46,
-    lineHeight: 58,
-  },
-  secondary: {
-    color: '#465D6B',
-    fontSize: 16,
-    lineHeight: 25,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#D5E1E8',
-    paddingTop: 12,
-  },
-  label: {
-    color: '#243E50',
-    fontSize: 18,
-    lineHeight: 27,
-  },
-  value: {
-    color: '#173447',
-    fontWeight: '700',
-    fontSize: 18,
-    lineHeight: 27,
-  },
-  filename: {
-    color: '#243E50',
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-    overflow: 'hidden',
-  },
-  explanationHeading: {
-  color: '#173447',
-  fontWeight: '700',
-  fontSize: 17,
-  lineHeight: 25,
-  },
-  explanationText: {
-    color: '#243E50',
-    fontSize: 16,
-    lineHeight: 25,
-  },
-  placeholder: {
-    color: '#71818B',
-    fontSize: 16,
-    lineHeight: 25,
-    fontStyle: 'italic',
-  },
-  evidenceRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  bullet: {
-    color: '#174E72',
-    fontSize: 18,
-    lineHeight: 25,
-  },
-  disclaimer: {
-    color: '#465D6B',
-    fontSize: 15,
-    lineHeight: 23,
-    textAlign: 'center',
-  },
+  summary: { borderRadius: 18, backgroundColor: colours.white, borderWidth: 2, borderColor: colours.divider, padding: 20, gap: 16 },
+  realSummary: { backgroundColor: colours.successBackground, borderColor: colours.success },
+  fakeSummary: { backgroundColor: colours.dangerBackground, borderColor: colours.danger },
+  realTitle: { color: colours.success },
+  fakeTitle: { color: colours.danger },
+  title: { ...typography.title, color: colours.ink },
+  copy: { ...typography.body, color: colours.text },
+  card: { borderRadius: 16, backgroundColor: colours.white, borderWidth: 1, borderColor: colours.divider, padding: 18, gap: 16 },
+  heading: { ...typography.heading, color: colours.ink },
+  score: { color: colours.ink, fontWeight: '700', fontSize: 36, lineHeight: 48 },
+  secondary: { ...typography.secondary, color: colours.muted },
+  row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', columnGap: 16, rowGap: 8, borderTopWidth: 1, borderTopColor: colours.divider, paddingTop: 16 },
+  label: { ...typography.body, color: colours.text, flexShrink: 1 },
+  value: { ...typography.label, color: colours.ink },
+  filename: { ...typography.secondary, color: colours.text },
+  explanationHeading: { ...typography.label, color: colours.ink },
+  explanationText: { ...typography.body, color: colours.text, flexShrink: 1 },
+  placeholder: { ...typography.secondary, color: colours.muted },
+  evidenceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  bullet: { ...typography.body, color: colours.blueDark },
+  disclaimer: { ...typography.secondary, color: colours.muted },
 });

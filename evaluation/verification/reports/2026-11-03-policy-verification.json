@@ -1,0 +1,995 @@
+{
+  "mode": "live_oracle",
+  "version": "policy-verification-v1",
+  "notice": "All names, policies and financial circumstances in this pack are fictional. These paired cases check policy reasoning, not real-world accuracy.",
+  "assessment_as_of": "2026-11-03T12:00:00+08:00",
+  "run_at": "2026-11-03T18:32:34.858954+08:00",
+  "metrics": {
+    "attempted": 7,
+    "completed": 7,
+    "provider_or_contract_errors": 0,
+    "matched_expected": 7,
+    "expected_match_rate_completed": 1.0,
+    "expected_match_rate_all_attempted": 1.0,
+    "answerable_completed": 2,
+    "answerable_abstentions": 0,
+    "answerable_abstention_rate": 0.0,
+    "correct_decisive_findings": 2,
+    "decisive_findings": 2,
+    "unsupported_misinformation_verdicts": 0,
+    "expected_unresolved_completed": 5,
+    "correct_unresolved": 5,
+    "planner_fallbacks": 0,
+    "observed_counts": {
+      "contradicted": 1,
+      "unresolved": 5,
+      "supported": 1
+    }
+  },
+  "results": [
+    {
+      "id": "P01",
+      "pattern": "asserted_change_incompatible_schedule_unknown_cause",
+      "claim": "Riverton Council is raising the annual resident waste licence fee to $120 because its treasury is running out of money.",
+      "expected": "contradicted",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council is raising the annual resident waste licence fee to $120 because its treasury is running out of money.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council is raising the annual resident waste licence fee to $120",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "What is the current and proposed annual resident waste licence fee for Riverton Council?",
+              "Has Riverton Council announced a fee increase for resident waste licences to $120?"
+            ],
+            "queries": [
+              "Riverton Council annual resident waste licence fee",
+              "Riverton Council waste licence fee increase $120"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2026-11-03",
+            "population": "resident",
+            "metric": "$120",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Riverton Council"
+          },
+          {
+            "id": "a2",
+            "text": "its treasury is running out of money",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "What is the current financial status of the Riverton Council treasury?",
+              "Is Riverton Council experiencing a treasury deficit or running out of funds?"
+            ],
+            "queries": [
+              "Riverton Council treasury financial status",
+              "Riverton Council budget deficit"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2026-11-03",
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          },
+          {
+            "id": "a3",
+            "text": "Riverton Council is raising the annual resident waste licence fee to $120 because its treasury is running out of money",
+            "material": true,
+            "kind": "causal",
+            "evidence_questions": [
+              "Did Riverton Council state that the waste licence fee increase is due to treasury shortages?",
+              "Is there a causal link between Riverton Council's treasury funds and the decision to raise waste licence fees?"
+            ],
+            "queries": [
+              "Riverton Council waste licence fee increase reason",
+              "Riverton Council treasury funds waste licence fee"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2026-11-03",
+            "population": "resident",
+            "metric": "$120",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "contradicted",
+      "assessment_outcome": "contradicted",
+      "explanation": "Likely misinformation: the evidence weighs against a material part of the message. The source from Riverton Council’s fee schedule states that the approved fee change raises the annual resident waste licence fee to $45 (effective 1 January 2027). The claim that the council is raising the fee to $120 is incompatible with this official figure, so the asserted amount is false. The cited evidence contradicts this material statement: \"Riverton Council is raising the annual resident waste licence fee to $120\". The claim’s first clause says the council is raising the fee to $120, but the official fee schedule shows the increase is to $45, not $120. Because this factual premise is false, the causal statement that the increase is because the treasury is running out of money is contradicted. No source links the treasury shortage to the fee decision, further weakening the causal claim. The alleged causal connection remains unresolved; we have not proved every detail false. Other parts remain unresolved; this does not mean every detail has been disproved.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "fee-schedule",
+              "quote": "The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents."
+            }
+          ],
+          "explanation": "The source from Riverton Council’s fee schedule states that the approved fee change raises the annual resident waste licence fee to $45 (effective 1 January 2027). The claim that the council is raising the fee to $120 is incompatible with this official figure, so the asserted amount is false.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        },
+        {
+          "assertion_id": "a2",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "No provided source contains information about the financial status of the Riverton Council treasury, so the claim that its treasury is running out of money cannot be verified nor contradicted.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "unknown",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "Missing evidence on Riverton Council treasury financial status"
+          ],
+          "repair_queries": [
+            "What is the current financial status of Riverton Council's treasury as of November 2026?",
+            "Has Riverton Council reported a budget deficit or shortage of funds in recent council minutes or financial reports?"
+          ]
+        },
+        {
+          "assertion_id": "a3",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "fee-schedule",
+              "quote": "The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents."
+            }
+          ],
+          "explanation": "The cited evidence contradicts this material statement: \"Riverton Council is raising the annual resident waste licence fee to $120\". The claim’s first clause says the council is raising the fee to $120, but the official fee schedule shows the increase is to $45, not $120. Because this factual premise is false, the causal statement that the increase is because the treasury is running out of money is contradicted. No source links the treasury shortage to the fee decision, further weakening the causal claim. The alleged causal connection remains unresolved; we have not proved every detail false.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": {
+            "evidence_id": "fee-schedule",
+            "quote": "The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents.",
+            "claim_span": "Riverton Council is raising the annual resident waste licence fee to $120",
+            "explanation": "The claim’s first clause says the council is raising the fee to $120, but the official fee schedule shows the increase is to $45, not $120. Because this factual premise is false, the causal statement that the increase is because the treasury is running out of money is contradicted. No source links the treasury shortage to the fee decision, further weakening the causal claim.",
+            "scope_checks": {
+              "entity": "established",
+              "jurisdiction": "not_applicable",
+              "time": "established",
+              "population": "established",
+              "metric": "established",
+              "modality": "established",
+              "attribution": "not_applicable"
+            }
+          },
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 19.67,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [
+          {
+            "decision": "verification_contract_failure",
+            "attempt": "1",
+            "reason": "a1: : value_error: A decisive status requires citations, reasoning_type other than none, and every scope_checks value established/not_applicable. If evidence cannot establish those requirements, return status unresolved, reasoning_type none, and the specific gap.; a3: material_counterfact: value_error: material_counterfact requires every scope_checks value to be established or not_applicable for the selected clause. If any required scope remains unknown/different, return status unresolved and omit material_counterfact; do not invent scope.",
+            "pending_assertion_ids": "a1,a3",
+            "retained_assertion_ids": "a2"
+          }
+        ],
+        "coverage_issues": []
+      }
+    },
+    {
+      "id": "P02",
+      "pattern": "discussion_not_refuted_by_adopted_schedule",
+      "claim": "Riverton Council is discussing raising the annual resident waste licence fee to $120 because its treasury is running out of money.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council is discussing raising the annual resident waste licence fee to $120 because its treasury is running out of money.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council is discussing raising the annual resident waste licence fee to $120",
+            "material": true,
+            "kind": "attribution",
+            "evidence_questions": [
+              "Is Riverton Council currently discussing an increase in the annual resident waste licence fee to $120?"
+            ],
+            "queries": [
+              "Riverton Council resident waste licence fee discussion",
+              "Riverton Council waste licence fee $120"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "resident",
+            "metric": "annual resident waste licence fee",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Riverton Council"
+          },
+          {
+            "id": "a2",
+            "text": "its treasury is running out of money",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "What is the current financial status of Riverton Council's treasury?"
+            ],
+            "queries": [
+              "Riverton Council treasury financial status",
+              "Riverton Council budget deficit"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": null,
+            "metric": "treasury",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          },
+          {
+            "id": "a3",
+            "text": "Riverton Council is discussing raising the annual resident waste licence fee to $120 because its treasury is running out of money",
+            "material": true,
+            "kind": "causal",
+            "evidence_questions": [
+              "Is the discussion to raise the waste licence fee to $120 caused by the state of Riverton Council's treasury?"
+            ],
+            "queries": [
+              "Riverton Council waste licence fee increase reason",
+              "Riverton Council treasury funding waste licence fee"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "resident",
+            "metric": "annual resident waste licence fee",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force.",
+          "a2: an ungrounded optional time scope was omitted; existing assumptions remain in force.",
+          "a3: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The published rule does not establish whether the alleged discussion took place. The only provided source concerns the resident waste licence fee schedule and contains no information about Riverton Council's treasury financial status. Consequently there is no evidence to confirm or refute the claim that its treasury is running out of money. The published rule does not establish whether the alleged discussion took place.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [
+            {
+              "evidence_id": "fee-schedule",
+              "quote": "The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents."
+            }
+          ],
+          "explanation": "The published rule does not establish whether the alleged discussion took place.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [
+            "missing_discussion_evidence"
+          ],
+          "repair_queries": [
+            "Riverton Council resident waste licence fee discussion",
+            "Riverton Council waste licence fee $120"
+          ]
+        },
+        {
+          "assertion_id": "a2",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The only provided source concerns the resident waste licence fee schedule and contains no information about Riverton Council's treasury financial status. Consequently there is no evidence to confirm or refute the claim that its treasury is running out of money.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "unknown",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "not_applicable",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "No source provides information about the current financial status of Riverton Council's treasury."
+          ],
+          "repair_queries": [
+            "What recent financial report or news article indicates that Riverton Council's treasury is running out of money?",
+            "Has Riverton Council announced a budget deficit or funding shortfall in 2026?"
+          ]
+        },
+        {
+          "assertion_id": "a3",
+          "status": "unresolved",
+          "citations": [
+            {
+              "evidence_id": "fee-schedule",
+              "quote": "The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents."
+            }
+          ],
+          "explanation": "The published rule does not establish whether the alleged discussion took place.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [
+            "missing_discussion_evidence"
+          ],
+          "repair_queries": [
+            "Riverton Council waste licence fee increase reason",
+            "Riverton Council treasury funding waste licence fee"
+          ]
+        }
+      ],
+      "elapsed_seconds": 10.87,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [],
+        "coverage_issues": []
+      }
+    },
+    {
+      "id": "P03",
+      "pattern": "supported_change_does_not_prove_cause",
+      "claim": "Riverton Council is raising the annual resident waste licence fee to $45 because its treasury is running out of money.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council is raising the annual resident waste licence fee to $45 because its treasury is running out of money.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council is raising the annual resident waste licence fee to $45",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "What is the current and proposed annual resident waste licence fee for Riverton Council?",
+              "Has Riverton Council announced a fee increase to $45 for resident waste licences?"
+            ],
+            "queries": [
+              "Riverton Council annual resident waste licence fee",
+              "Riverton Council waste licence fee increase $45"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "resident",
+            "metric": "$45",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Riverton Council"
+          },
+          {
+            "id": "a2",
+            "text": "its treasury is running out of money",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "What is the current financial status of the Riverton Council treasury?",
+              "Are there reports of Riverton Council facing a treasury deficit or running out of funds?"
+            ],
+            "queries": [
+              "Riverton Council treasury financial status",
+              "Riverton Council budget deficit"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          },
+          {
+            "id": "a3",
+            "text": "Riverton Council is raising the annual resident waste licence fee to $45 because its treasury is running out of money",
+            "material": true,
+            "kind": "causal",
+            "evidence_questions": [
+              "Did Riverton Council state that the waste licence fee increase to $45 is due to treasury shortages?",
+              "Is there a causal link between Riverton Council's treasury status and the increase in waste licence fees?"
+            ],
+            "queries": [
+              "Riverton Council waste licence fee increase reason",
+              "Riverton Council treasury funding waste licence fee"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "resident",
+            "metric": "$45",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force.",
+          "a2: an ungrounded optional time scope was omitted; existing assumptions remain in force.",
+          "a3: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The council notice states that the annual resident waste licence fee, currently $30, will be raised to $45 for all Riverton residents starting 1 January 2027, confirming the asserted increase. No source provides information about Riverton Council's treasury financial status or any report of it running out of money, so the claim cannot be verified nor contradicted. The available notice confirms the fee increase but does not state any reason for it, so the alleged causal link to the council's treasury shortage is not supported.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "supported",
+          "citations": [
+            {
+              "evidence_id": "fee-schedule",
+              "quote": "The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents."
+            }
+          ],
+          "explanation": "The council notice states that the annual resident waste licence fee, currently $30, will be raised to $45 for all Riverton residents starting 1 January 2027, confirming the asserted increase.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "established",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        },
+        {
+          "assertion_id": "a2",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "No source provides information about Riverton Council's treasury financial status or any report of it running out of money, so the claim cannot be verified nor contradicted.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "unknown",
+            "time": "unknown",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "unknown",
+            "attribution": "unknown"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "no source provides evidence on the financial status of Riverton Council's treasury"
+          ],
+          "repair_queries": [
+            "Riverton Council treasury deficit 2026",
+            "Riverton Council financial report October 2026"
+          ]
+        },
+        {
+          "assertion_id": "a3",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The available notice confirms the fee increase but does not state any reason for it, so the alleged causal link to the council's treasury shortage is not supported.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "unknown",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "unknown",
+            "attribution": "unknown"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "no source links the fee increase to a treasury shortage"
+          ],
+          "repair_queries": [
+            "Riverton Council statement reason for waste licence fee increase",
+            "Riverton Council treasury shortage explanation for fee change"
+          ]
+        }
+      ],
+      "elapsed_seconds": 12.43,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [],
+        "coverage_issues": []
+      }
+    },
+    {
+      "id": "P04",
+      "pattern": "later_period_not_refuted_by_near_term_schedule",
+      "claim": "Riverton Council will raise the annual resident waste licence fee to $120 in 2045.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council will raise the annual resident waste licence fee to $120 in 2045.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council will raise the annual resident waste licence fee to $120 in 2045",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "Has Riverton Council announced a change to the annual resident waste licence fee for 2045?",
+              "What is the scheduled annual resident waste licence fee for Riverton Council in 2045?"
+            ],
+            "queries": [
+              "Riverton Council annual resident waste licence fee 2045",
+              "Riverton Council waste licence fee schedule"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2045",
+            "population": "resident",
+            "metric": "$120",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Riverton Council"
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The only source (fee-schedule) states that the annual resident waste licence fee will be raised to $45 starting 1 January 2027. It does not mention any fee amount for the year 2045, nor does it indicate a future increase to $120. Because the source provides no information about the fee in 2045, the claim that Riverton Council will raise the fee to $120 in that year cannot be confirmed or contradicted.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The only source (fee-schedule) states that the annual resident waste licence fee will be raised to $45 starting 1 January 2027. It does not mention any fee amount for the year 2045, nor does it indicate a future increase to $120. Because the source provides no information about the fee in 2045, the claim that Riverton Council will raise the fee to $120 in that year cannot be confirmed or contradicted.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "unknown",
+            "jurisdiction": "unknown",
+            "time": "unknown",
+            "population": "unknown",
+            "metric": "unknown",
+            "modality": "unknown",
+            "attribution": "unknown"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "No source provides the scheduled fee amount for Riverton Council in 2045."
+          ],
+          "repair_queries": [
+            "What is the scheduled annual resident waste licence fee for Riverton Council in 2045?",
+            "Has Riverton Council announced any fee increase to $120 effective in 2045?"
+          ]
+        }
+      ],
+      "elapsed_seconds": 12.5,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [
+          {
+            "decision": "verification_contract_failure",
+            "attempt": "1",
+            "reason": "a1: : value_error: A decisive status requires citations, reasoning_type other than none, and every scope_checks value established/not_applicable. If evidence cannot establish those requirements, return status unresolved, reasoning_type none, and the specific gap.",
+            "pending_assertion_ids": "a1",
+            "retained_assertion_ids": ""
+          }
+        ],
+        "coverage_issues": []
+      }
+    },
+    {
+      "id": "P05",
+      "pattern": "new_announcement_supersedes_earlier_schedule",
+      "claim": "Riverton Council has announced an increase in the annual resident waste licence fee to $120.",
+      "expected": "supported",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council has announced an increase in the annual resident waste licence fee to $120.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council has announced an increase in the annual resident waste licence fee to $120",
+            "material": true,
+            "kind": "attribution",
+            "evidence_questions": [
+              "Did Riverton Council announce an increase in the annual resident waste licence fee to $120?"
+            ],
+            "queries": [
+              "Riverton Council annual resident waste licence fee announcement",
+              "Riverton Council waste licence fee 2026"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "resident",
+            "metric": "$120",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Riverton Council"
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "supported",
+      "assessment_outcome": "supported",
+      "explanation": "The combined cited evidence supports the material assertions. The revised-schedule source from Riverton Council dated 2 November 2026 states that the council announced and adopted an annual resident waste licence fee of $120 effective 1 January 2027, directly confirming the claim of an announced increase to $120.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "supported",
+          "citations": [
+            {
+              "evidence_id": "revised-schedule",
+              "quote": "On 2 November 2026, Riverton Council announced and adopted an annual resident waste licence fee of $120 effective 1 January 2027."
+            }
+          ],
+          "explanation": "The revised-schedule source from Riverton Council dated 2 November 2026 states that the council announced and adopted an annual resident waste licence fee of $120 effective 1 January 2027, directly confirming the claim of an announced increase to $120.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 5.63,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [],
+        "coverage_issues": []
+      }
+    },
+    {
+      "id": "P06",
+      "pattern": "different_population_not_policy_contradiction",
+      "claim": "Riverton Council is raising the annual commercial waste licence fee to $120.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council is raising the annual commercial waste licence fee to $120.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council is raising the annual commercial waste licence fee to $120",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "What is the current and proposed annual commercial waste licence fee for Riverton Council?",
+              "Has Riverton Council announced an increase in commercial waste licence fees to $120?"
+            ],
+            "queries": [
+              "Riverton Council commercial waste licence fee",
+              "Riverton Council waste licence fee increase $120"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "commercial waste licence",
+            "metric": "$120",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The only source provided discusses Riverton Council's resident waste licence fee, stating it is currently $30 and will rise to $45 on 1 January 2027. It does not mention a commercial waste licence fee nor any increase to $120. Therefore the claim that Riverton Council is raising the annual commercial waste licence fee to $120 is neither supported nor contradicted by the available evidence.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [
+            {
+              "evidence_id": "fee-schedule",
+              "quote": "Riverton Council resident waste licence policy update, 30 October 2026. The annual resident waste licence fee is currently $30. The approved fee change now being implemented raises that annual fee to $45 from 1 January 2027 for all Riverton residents. This notice describes the adopted resident fee schedule."
+            }
+          ],
+          "explanation": "The only source provided discusses Riverton Council's resident waste licence fee, stating it is currently $30 and will rise to $45 on 1 January 2027. It does not mention a commercial waste licence fee nor any increase to $120. Therefore the claim that Riverton Council is raising the annual commercial waste licence fee to $120 is neither supported nor contradicted by the available evidence.",
+          "basis": "none",
+          "scope": "different",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "different",
+            "metric": "different",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "No evidence about the current amount of the commercial waste licence fee.",
+            "No evidence that Riverton Council announced raising the commercial waste licence fee to $120."
+          ],
+          "repair_queries": [
+            "What is the current annual commercial waste licence fee for Riverton Council?",
+            "Has Riverton Council announced an increase in the commercial waste licence fee to $120?"
+          ]
+        }
+      ],
+      "elapsed_seconds": 5.34,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [],
+        "coverage_issues": []
+      }
+    },
+    {
+      "id": "P07",
+      "pattern": "historical_snapshot_not_current_policy",
+      "claim": "Riverton Council is raising the annual resident waste licence fee to $120.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Riverton Council is raising the annual resident waste licence fee to $120.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Riverton Council is raising the annual resident waste licence fee to $120",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "What is the current and proposed annual resident waste licence fee for Riverton Council?",
+              "Has Riverton Council announced an increase in the resident waste licence fee to $120?"
+            ],
+            "queries": [
+              "Riverton Council resident waste licence fee",
+              "Riverton Council waste fee increase $120"
+            ],
+            "entities": [
+              "Riverton Council"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "resident",
+            "metric": "$120",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The claim states that Riverton Council is raising the annual resident waste licence fee to $120. The only available source is a 2021 archive that records a planned increase from $30 to $45 effective 1 January 2022 and explicitly notes that the archive does not include later amendments or the current fee schedule. This source confirms a past increase to $45 but provides no information about any later increase to $120, nor does it rule such an increase out. Consequently, there is no evidence to support the $120 figure and the source does not contradict it, leaving the assertion unresolved.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [
+            {
+              "evidence_id": "archived-fee-schedule",
+              "quote": "Archived version as at 1 December 2021: Riverton Council will raise the annual resident waste licence fee from $30 to $45 on 1 January 2022."
+            }
+          ],
+          "explanation": "The claim states that Riverton Council is raising the annual resident waste licence fee to $120. The only available source is a 2021 archive that records a planned increase from $30 to $45 effective 1 January 2022 and explicitly notes that the archive does not include later amendments or the current fee schedule. This source confirms a past increase to $45 but provides no information about any later increase to $120, nor does it rule such an increase out. Consequently, there is no evidence to support the $120 figure and the source does not contradict it, leaving the assertion unresolved.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "unknown",
+            "time": "unknown",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "unknown"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "No source confirms a fee increase to $120.",
+            "No current fee schedule or recent announcement is provided."
+          ],
+          "repair_queries": [
+            "What is the current annual resident waste licence fee for Riverton Council?",
+            "Has Riverton Council announced an increase in the resident waste licence fee to $120?"
+          ]
+        }
+      ],
+      "elapsed_seconds": 12.93,
+      "diagnostics": {
+        "search_requests": 0,
+        "extraction_urls": 0,
+        "relevance_calls": 0,
+        "decisions": [
+          {
+            "decision": "verification_contract_failure",
+            "attempt": "1",
+            "reason": "a1: : value_error: A decisive status requires citations, reasoning_type other than none, and every scope_checks value established/not_applicable. If evidence cannot establish those requirements, return status unresolved, reasoning_type none, and the specific gap.",
+            "pending_assertion_ids": "a1",
+            "retained_assertion_ids": ""
+          }
+        ],
+        "coverage_issues": []
+      }
+    }
+  ]
+}

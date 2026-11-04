@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth as firebase_auth
 
@@ -57,6 +57,7 @@ def get_current_user(
         HTTPAuthorizationCredentials | None,
         Depends(bearer_scheme),
     ],
+    request: Request = None,
 ) -> AuthenticatedUser:
     """Return the user represented by the request's Bearer token."""
     if credentials is None or credentials.scheme.lower() != "bearer":
@@ -70,10 +71,13 @@ def get_current_user(
     if not isinstance(email, str) or not email:
         raise _authentication_error()
 
+    if request is not None:
+        request.state.authenticated_uid = uid
     return AuthenticatedUser(
         uid=uid,
         email=email,
         email_verified=bool(claims.get("email_verified", False)),
+        auth_time=claims.get("auth_time") if isinstance(claims.get("auth_time"), int) else None,
     )
 
 

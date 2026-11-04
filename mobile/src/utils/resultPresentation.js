@@ -1,7 +1,27 @@
 import { assessmentLabel } from './assessment.js';
+import { controlLabel } from './controlInterpretations.js';
+import { webResearchDetails } from './webResearch.js';
 
 // Presentation only: never infer truth from a number or reverse uncertainty.
 export function resultPresentation(result) {
+  const research = webResearchDetails(result);
+  if (research) {
+    const tones = {
+      positive: { icon: 'check-circle', color: '#176347', background: '#EAF5EF' },
+      negative: { icon: 'alert-triangle', color: '#963128', background: '#FBEDEA' },
+      caution: { icon: 'help-circle', color: '#795408', background: '#FFF5D9' },
+      neutral: { icon: 'message-circle', color: '#285B7D', background: '#EAF3FA' },
+    };
+    return { outcome: research.outcome, title: research.title, meaning: research.summary,
+      action: research.action, ...tones[research.tone] };
+  }
+  const conditionalLabel = controlLabel(result);
+  if (conditionalLabel) return {
+    outcome: result.assessment_outcome, title: conditionalLabel,
+    meaning: 'Day-to-day management and ownership are different. Read the separate findings below; this is not a blanket verdict on both meanings.',
+    action: 'Specify whether you mean who runs the business or who owns or controls its shares.',
+    icon: 'help-circle', color: '#795408', background: '#FFF5D9',
+  };
   if (result.processing_status === 'failed') return {
     outcome: 'failed', title: 'We could not finish this check',
     meaning: 'There was a problem completing the check. This is not a result about whether the message is true.',
@@ -50,9 +70,15 @@ export function resultPresentation(result) {
       icon: 'message-circle', color: '#285B7D', background: '#EAF3FA',
     },
     highly_unlikely: {
-      title: 'This prediction is highly unlikely',
+      title: 'Likely misinformation',
       meaning: 'The claimed air temperature is far above Singapore’s recorded maximum. Climate records make this prediction implausible, but do not prove that a future event is impossible.',
       action: 'Do not share this prediction as a fact. Check the latest official forecast.',
+      icon: 'alert-triangle', color: '#963128', background: '#FBEDEA',
+    },
+    likely_misinformation: {
+      title: 'Likely misinformation',
+      meaning: 'The official information we checked weighs against this claim. This is a reasoned assessment, not a conclusive denial.',
+      action: 'Do not share it as a fact. Read Why this result and the latest official information.',
       icon: 'alert-triangle', color: '#963128', background: '#FBEDEA',
     },
   };
@@ -68,7 +94,7 @@ export function resultPresentation(result) {
   }
   const forecast = result.forecast_context;
   if (outcome === 'contradicted' && forecast?.risk_basis === 'forecast_comparison') {
-    return { ...presentation, title: 'This prediction conflicts with the forecast',
+    return { ...presentation, title: 'Likely misinformation',
       meaning: 'The claimed temperature is substantially outside the official forecast for the dates and place checked. This is a warning about the prediction, not a guarantee of future weather.',
       action: 'Do not share this prediction as a fact. Check the latest official forecast.' };
   }
@@ -81,7 +107,7 @@ export function resultPresentation(result) {
   }
   // A partial temperature comparison must not hide a whole-claim finding
   // from an explicit source refutation or conflicting evidence.
-  const showForecastHeadline = !['supported', 'contradicted', 'conflicting', 'not_checkable', 'highly_unlikely'].includes(outcome)
+  const showForecastHeadline = !['supported', 'contradicted', 'conflicting', 'not_checkable', 'highly_unlikely', 'likely_misinformation'].includes(outcome)
     || (outcome === 'supported' && forecast?.status === 'supported_by_forecast');
   if (forecast && showForecastHeadline) {
     const forecastMessages = {

@@ -23,7 +23,7 @@ TEXT = "A new community tax starts next week."
 class SuccessfulPipeline:
     def __init__(self):
         self.calls = 0
-    def with_repository(self, repository):
+    def with_repository(self, repository, **kwargs):
         return self
     def analyze(self, text):
         self.calls += 1

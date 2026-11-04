@@ -4,10 +4,10 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import Button from '../components/Button';
 import Screen from '../components/Screen';
-import { colours, sharedStyles } from '../theme';
+import { colours, sharedStyles, typography } from '../theme';
 
 export default function AuthScreen() {
-  const { login, register, resetPassword } = useAuth();
+  const { login, register, resetPassword, sessionNotice } = useAuth();
   const [mode, setMode] = React.useState('login');
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -56,6 +56,7 @@ export default function AuthScreen() {
     <Screen>
       <Text style={styles.brand}>UIABO</Text>
       <Text style={styles.subtitle}>Check information before you share it.</Text>
+      {!!sessionNotice && <Text accessibilityRole="alert" style={styles.subtitle}>{sessionNotice}</Text>}
       <View style={styles.card}>
         <Text style={styles.title}>{title}</Text>
         {mode === 'register' && (
@@ -106,7 +107,7 @@ export default function AuthScreen() {
         {mode === 'login' ? (
           <>
             <Button onPress={() => changeMode('register')} secondary>Create a free account</Button>
-            <Pressable onPress={() => changeMode('reset')}><Text style={styles.link}>Forgot password?</Text></Pressable>
+            <Pressable accessibilityRole="button" onPress={() => changeMode('reset')} style={styles.linkButton}><Text style={styles.link}>Forgot password?</Text></Pressable>
           </>
         ) : (
           <Button onPress={() => changeMode('login')} secondary>Back to sign in</Button>
@@ -117,16 +118,17 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  brand: { color: colours.blueDark, fontSize: 40, fontWeight: '800', textAlign: 'center' },
-  card: { backgroundColor: colours.white, borderColor: colours.border, borderRadius: 16, borderWidth: 1, marginTop: 24, padding: 20 },
-  checkbox: { alignItems: 'center', borderColor: colours.blue, borderRadius: 4, borderWidth: 2, height: 28, justifyContent: 'center', marginRight: 12, width: 28 },
+  brand: { color: colours.blueDark, fontSize: 40, lineHeight: 50, fontWeight: '800', textAlign: 'center' },
+  card: { backgroundColor: colours.white, borderColor: colours.divider, borderRadius: 16, borderWidth: 1, marginTop: 24, padding: 20 },
+  checkbox: { alignItems: 'center', alignSelf: 'flex-start', borderColor: colours.blue, borderRadius: 4, borderWidth: 2, minHeight: 32, justifyContent: 'center', marginRight: 12, minWidth: 32, padding: 2 },
   checkboxChecked: { backgroundColor: colours.blue },
-  checkmark: { color: colours.white, fontSize: 19, fontWeight: '800' },
-  consentRow: { flexDirection: 'row', marginBottom: 18 },
-  consentText: { color: colours.ink, flex: 1, fontSize: 16, lineHeight: 23 },
-  error: { color: colours.danger, fontSize: 17, marginBottom: 14 },
-  link: { color: colours.blue, fontSize: 17, padding: 12, textAlign: 'center' },
-  subtitle: { color: colours.muted, fontSize: 19, marginTop: 6, textAlign: 'center' },
-  success: { color: colours.success, fontSize: 17, marginBottom: 14 },
-  title: { color: colours.ink, fontSize: 28, fontWeight: '700', marginBottom: 22 },
+  checkmark: { ...typography.label, color: colours.white },
+  consentRow: { flexDirection: 'row', minHeight: 56, marginBottom: 20, paddingVertical: 8 },
+  consentText: { ...typography.secondary, color: colours.ink, flex: 1 },
+  error: { ...typography.secondary, color: colours.danger, marginBottom: 16 },
+  linkButton: { minHeight: 56, padding: 12, justifyContent: 'center' },
+  link: { ...typography.secondary, color: colours.blue, textAlign: 'center', textDecorationLine: 'underline' },
+  subtitle: { ...typography.body, color: colours.muted, marginTop: 8, textAlign: 'center' },
+  success: { ...typography.secondary, color: colours.success, marginBottom: 16 },
+  title: { ...typography.title, color: colours.ink, marginBottom: 24 },
 });

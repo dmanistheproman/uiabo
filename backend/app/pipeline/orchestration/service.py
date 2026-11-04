@@ -36,6 +36,8 @@ from app.pipeline.shared.models import (
     RetrievalResult,
     TextAnalysisResult,
 )
+from app.pipeline.shared.verification import VerificationPlan, validate_plan_input
+from app.pipeline.shared.runtime_budget import request_budget, remaining_seconds
 
 
 PIPELINE_VERSION = "sprint-1-v1"
@@ -46,6 +48,13 @@ InputPreparer = Callable[[str], Any]
 ClaimAnalyzer = Callable[[PreparedText], Any]
 EvidenceRetriever = Callable[[ClaimAnalysis], Any]
 EvidenceAssessor = Callable[[ClaimAnalysis, RetrievalResult], Any]
+VerificationPlanner = Callable[..., Any]
+EvidenceRepairer = Callable[[ClaimAnalysis, RetrievalResult, list[str]], Any]
+
+# Leave room for the bounded follow-up search (35s), reassessment (55s), and
+# optional public-change inference (25s) and persistence before the mobile
+# client's four-minute request deadline.
+REPAIR_START_LIMIT_SECONDS = 105.0
 
 
 class PipelineOrchestrator:
@@ -63,6 +72,8 @@ class PipelineOrchestrator:
         clock: Callable[[], datetime] | None = None,
         pipeline_version: str = PIPELINE_VERSION,
         run_recorder: Callable[[dict[str, Any]], None] | None = None,
+        plan_verification: VerificationPlanner | None = None,
+        repair_evidence: EvidenceRepairer | None = None,
     ) -> None:
         self._prepare_input = prepare_input
         self._analyze_claim = analyze_claim
@@ -73,16 +84,29 @@ class PipelineOrchestrator:
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._pipeline_version = pipeline_version
         self._run_recorder = run_recorder
+        self._plan_verification = plan_verification
+        self._repair_evidence = repair_evidence
 
-    def with_repository(self, repository: ResultRepository) -> "PipelineOrchestrator":
+    @property
+    def pipeline_version(self) -> str:
+        """The configured pipeline identity used for results and monitoring."""
+        return self._pipeline_version
+
+    def with_repository(self, repository: ResultRepository, *, id_factory=None, run_recorder=None) -> "PipelineOrchestrator":
         """Give one authenticated request its own persistence boundary."""
         return PipelineOrchestrator(
             prepare_input=self._prepare_input, analyze_claim=self._analyze_claim,
             retrieve_evidence=self._retrieve_evidence, assess_evidence=self._assess_evidence,
             repository=repository, clock=self._clock, pipeline_version=self._pipeline_version,
-            run_recorder=self._run_recorder)
+            id_factory=id_factory,
+            run_recorder=run_recorder if run_recorder is not None else self._run_recorder,
+            plan_verification=self._plan_verification, repair_evidence=self._repair_evidence)
 
     def analyze(self, text: str) -> TextAnalysisResult:
+        with request_budget():
+            return self._analyze(text)
+
+    def _analyze(self, text: str) -> TextAnalysisResult:
         """Run the complete text pipeline and save a completed result.
 
         A valid ``Not Enough Information`` result is returned for a
@@ -92,6 +116,7 @@ class PipelineOrchestrator:
         """
         result_id = self._id_factory()
         created_at = self._clock()
+        started = time.perf_counter()
         stage_timings: dict[str, int] = {}
         prepared: PreparedText | None = None
         warnings: list[str] = []
@@ -113,6 +138,18 @@ class PipelineOrchestrator:
                                   if claim.checkable else None)
             claim.claim_context = (build_claim_context(claim.extracted_claim, created_at, original_text=prepared.normalised_text)
                                    if claim.checkable else None)
+            if claim.checkable and self._plan_verification is not None:
+                from functools import partial
+                claim.verification_plan = self._run_component(
+                    stage="verification_planning",
+                    component=partial(self._plan_verification, original_text=prepared.normalised_text),
+                    model=VerificationPlan, args=(claim,), timings=stage_timings,
+                )
+                try:
+                    validate_plan_input(claim.verification_plan, prepared.original_text, claim.extracted_claim)
+                except ValueError as error:
+                    raise PipelineContractError("The verification plan does not match the submitted message.",
+                                                stage="verification_planning") from error
 
             retrieval: RetrievalResult | None = None
             if not claim.checkable:
@@ -139,7 +176,7 @@ class PipelineOrchestrator:
                         retryable=True,
                     )
 
-                if retrieval.retrieval_status == "no_evidence":
+                if retrieval.retrieval_status == "no_evidence" and claim.verification_plan is None:
                     assessment = _no_evidence_assessment(retrieval)
                     from app.pipeline.shared.components import decompose_claim
                     components = decompose_claim(claim.extracted_claim or "")
@@ -154,6 +191,9 @@ class PipelineOrchestrator:
                         args=(claim, retrieval),
                         timings=stage_timings,
                     )
+                retrieval, assessment = self._repair_once(
+                    claim, retrieval, assessment, warnings, stage_timings, started,
+                )
 
             if (claim.claim_context and claim.claim_context.claim_type == "weather_forecast"
                     and not claim.claim_context.location):
@@ -210,6 +250,85 @@ class PipelineOrchestrator:
                     error=error,
                 )
             raise
+
+    def _repair_once(self, claim, retrieval, assessment, warnings, timings, started):
+        """One assessment-directed repair, never a recursive search loop.
+
+        An optional repair failure preserves the initial validated assessment
+        with an explicit limitation. It cannot be used as evidence of absence.
+        """
+        verification = assessment.verification
+        if (self._repair_evidence is None or verification is None
+                or assessment.assessment_outcome not in {"insufficient_evidence", "unsupported", "conflicting"}):
+            return retrieval, assessment
+        queries = _unique([query.strip() for query in verification.repair_queries if query.strip()])[:2]
+        if not queries:
+            queries = _unique([query.strip() for finding in verification.findings
+                              if finding.status == "unresolved" for query in finding.repair_queries
+                              if query.strip()])[:2]
+        if not queries:
+            return retrieval, assessment
+        if time.perf_counter() - started > REPAIR_START_LIMIT_SECONDS or remaining_seconds(120) < 120:
+            verification.repair_status = "budget_exhausted"
+            notice = "The follow-up search could not fit within this check's time limit. The remaining evidence gaps are shown below."
+            warnings.append(notice)
+            assessment.uncertainty_reasons.append(notice)
+            return retrieval, assessment
+
+        verification.repair_attempted = True
+        verification.repair_status = "attempted"
+        verification.repair_queries = queries
+        try:
+            repaired = self._run_component(
+                stage="evidence_repair", component=self._repair_evidence,
+                model=RetrievalResult,
+                args=(claim, retrieval.model_copy(deep=True), queries), timings=timings,
+            )
+            warnings.extend(repaired.warnings)
+            if repaired.retrieval_status == "failed":
+                raise PipelineComponentError(
+                    "The follow-up evidence search could not be completed. Please retry.",
+                    error_code="RETRIEVAL_REPAIR_UNAVAILABLE", stage="evidence_repair", retryable=True,
+                )
+            # A repeated URL can still contain a newly read table or passage.
+            before = {(e.evidence_id, e.passage, e.full_text,
+                       e.pdf_reading.model_dump_json() if e.pdf_reading else None) for e in retrieval.evidence}
+            after = {(e.evidence_id, e.passage, e.full_text,
+                      e.pdf_reading.model_dump_json() if e.pdf_reading else None) for e in repaired.evidence}
+            # Keep the attempted-search trace even if reassessment subsequently
+            # fails and the earlier, validated result has to be retained.
+            retrieval.trace = repaired.trace
+            if not (after - before):
+                finish = next((event for event in reversed(repaired.trace.decisions)
+                               if event.get("decision") == "assessment_driven_repair_finished"), {}) if repaired.trace else {}
+                verification.repair_status = "unavailable" if finish.get("outcome") == "partial_failure" else "no_new_evidence"
+                # Keep the evidence matched to the original assessment; only
+                # diagnostics change when the repair produces no useful text.
+                return retrieval, assessment
+            revised = self._run_component(
+                stage="verification_reassessment", component=self._assess_evidence,
+                model=AssessmentResult, args=(claim, repaired), timings=timings,
+            )
+            if revised.verification is None:
+                raise PipelineContractError("Reassessment did not return verification findings.", stage="verification_reassessment")
+            previous_resolved = {f.assertion_id for f in verification.findings if f.status != "unresolved"}
+            newly_resolved = {f.assertion_id for f in revised.verification.findings if f.status != "unresolved"}
+            revised.verification.repair_attempted = True
+            revised.verification.repair_queries = queries
+            revised.verification.repair_status = (
+                "improved" if newly_resolved - previous_resolved else "unchanged")
+            return repaired, revised
+        except PipelineError:
+            # A wholly empty result with an unavailable second search does not
+            # represent a successful verification of the absence of evidence.
+            if not retrieval.evidence:
+                raise
+            verification.repair_status = "unavailable"
+            notice = "The follow-up evidence check could not finish. This result uses the sources checked earlier; the remaining gaps are unresolved."
+            warnings.append(notice)
+            assessment.uncertainty_reasons.append(notice)
+            assessment.uncertainty = "High"
+            return retrieval, assessment
 
     def _elapsed_ms(self, started_at: datetime) -> int:
         return max(0, int((self._clock() - started_at).total_seconds() * 1000))
@@ -403,6 +522,8 @@ def _assemble_result(
         policy_context=assessment.policy_context,
         forecast_context=assessment.forecast_context,
         plausibility_context=assessment.plausibility_context,
+        inference_context=assessment.inference_context,
+            control_interpretations=assessment.control_interpretations,
         claim_context=claim.claim_context,
         uncertainty=assessment.uncertainty,
         uncertainty_reasons=assessment.uncertainty_reasons,
@@ -414,6 +535,9 @@ def _assemble_result(
                 "Needs Caution": "conflicting", "Not Enough Information": "insufficient_evidence",
             }[assessment.concern_label]),
         claim_comparisons=assessment.claim_comparisons,
+        verification_plan=claim.verification_plan,
+        verification=assessment.verification,
+        retrieval_trace=retrieval.trace if retrieval else None,
         date_context=claim.date_context,
         evidence=evidence,
         warnings=warnings,
@@ -465,6 +589,7 @@ def _combine_evidence(
             provenance=candidate.provenance,
             forecast=candidate.forecast,
             climate_record=candidate.climate_record,
+            pdf_reading=candidate.pdf_reading,
         )
         for candidate in retrieval.evidence
     ]

@@ -28,7 +28,8 @@ load_dotenv(ROOT_DIR / ".env")
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key=API_KEY)
+client = genai.Client(api_key=API_KEY, http_options=types.HttpOptions(
+    timeout=45000, retry_options=types.HttpRetryOptions(attempts=1))) if API_KEY else None
 
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 
@@ -135,7 +136,7 @@ def analyse_with_gemini(image: Image.Image, detector_result: dict) -> dict:
         raise RuntimeError(
             "Gemini API is unavailable because GEMINI_API_KEY is not configured."
         )
-    
+
     # The production service receives a PIL image, not a file path.
     # Encode it in memory so no uploaded image needs to be saved.
     image_buffer = io.BytesIO()
@@ -282,31 +283,13 @@ def analyse_deepfakeAI(image: Image.Image) -> dict:
     deepfake/AI image analysis pipeline.
 
     Detector failures propagate to the existing router error
-    handling. Gemini failures produce the prototype's generic
-    Uncertain result.
+    handling, as do Gemini failures. Genuine model disagreement
+    produces an Uncertain result.
     """
 
     detector_result = score_deepfakeAI(image)
 
-    try:
-        gemini_result = analyse_with_gemini(image, detector_result)
+    # Provider failures are failed checks, not completed uncertain assessments.
+    gemini_result = analyse_with_gemini(image, detector_result)
 
-    except Exception as exc:
-        # Authentication/configuration failures must fail the analysis.
-        # Do not misrepresent them as an uncertain classification.
-        error_code = getattr(exc, "code", None)
-        if (
-            isinstance(exc, RuntimeError)
-            or error_code in {400, 401, 403}
-        ):
-            logger.exception(
-                "Gemini configuration or authentication failed."
-            )
-            raise
-
-        logger.exception(
-            "Gemini assessment failed; returning an uncertain result."
-        )
-        return make_uncertain_result()
-    
     return final_result(detector_result, gemini_result)

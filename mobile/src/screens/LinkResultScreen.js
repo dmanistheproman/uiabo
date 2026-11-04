@@ -1,3 +1,5 @@
+import { colours, typography } from '../theme';
+import ReportResultPanel from '../components/ReportResultPanel';
 import { StyleSheet, Text, View } from 'react-native';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
@@ -16,7 +18,7 @@ export default function LinkResultScreen({ result, onNavigate }) {
     <PageHeader title="Link safety result" onBack={() => onNavigate('results')} badge="Saved" />
     <PageBody>
       <View style={[styles.card, flagged && styles.danger]}>
-        <Text accessibilityRole="header" style={[styles.heading, flagged && { color: '#A12020' }]}>{assessmentLabel(result)}</Text>
+        <Text accessibilityRole="header" style={[styles.heading, flagged && { color: colours.danger }]}>{assessmentLabel(result)}</Text>
         <Text style={styles.copy}>{failed ? result.message : result.explanation}</Text>
         {failed ? <Text style={styles.copy}>Your allowance was not used. No safety verdict was produced.</Text> : <Text style={styles.copy}>{result.recommended_action}</Text>}
       </View>
@@ -35,16 +37,17 @@ export default function LinkResultScreen({ result, onNavigate }) {
       </>}
       <Button onPress={() => onNavigate('link')}>{failed ? 'Try another link check' : 'Check another link'}</Button>
       <Text style={styles.hint}>Saved {new Date(result.created_at).toLocaleString()}</Text>
+      <ReportResultPanel result={result} />
     </PageBody>
   </View>;
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 18, backgroundColor: 'white', borderWidth: 1, borderColor: '#D7E3EA', padding: 18, gap: 12 },
-  danger: { backgroundColor: '#FBE9E7', borderColor: '#E7B5B0' },
-  note: { borderRadius: 14, backgroundColor: '#FFF4D2', borderLeftWidth: 3, borderLeftColor: '#D49A00', padding: 16, gap: 10 },
-  heading: { color: '#173447', fontSize: 21, fontWeight: '800' },
-  label: { color: '#173447', fontSize: 15, fontWeight: '700' },
-  copy: { color: '#48677C', fontSize: 15, lineHeight: 23 },
-  hint: { color: '#617D90', fontSize: 12, lineHeight: 19 },
+  card: { borderRadius: 18, backgroundColor: colours.white, borderWidth: 1, borderColor: colours.divider, padding: 18, gap: 16 },
+  danger: { backgroundColor: colours.dangerBackground, borderColor: colours.danger, borderWidth: 2 },
+  note: { borderRadius: 14, backgroundColor: colours.warningBackground, borderLeftWidth: 3, borderLeftColor: colours.warning, padding: 18, gap: 14 },
+  heading: { ...typography.heading, color: colours.ink },
+  label: { ...typography.label, color: colours.ink },
+  copy: { ...typography.body, color: colours.text },
+  hint: { ...typography.secondary, color: colours.muted },
 });

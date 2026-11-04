@@ -24,6 +24,7 @@ async function request(path, user, options = {}) {
     clearTimeout(timeout);
   }
 
+  if (response.ok && options.responseType === 'blob') return response.blob();
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const detail = data?.detail;
@@ -49,11 +50,15 @@ function qs(params) {
 }
 
 export function ensureProfile(user, name) {
-  return request('/account/me', user, { body: JSON.stringify({ name }), method: 'PUT' });
+  return request('/portal/me', user, { body: JSON.stringify({ name }), method: 'PUT' });
 }
 
 export function getProfile(user) {
-  return request('/account/me', user);
+  return request('/portal/me', user);
+}
+
+export function getPortalSession(user, portalRole) {
+  return request(`/portal/session${qs({ portal_role: portalRole })}`, user);
 }
 
 export const getReportSummary = (user, params) =>
@@ -64,6 +69,9 @@ export const listReports = (user, params) =>
 
 export const getReport = (user, reportId) =>
   request(`/portal/reports/${encodeURIComponent(reportId)}`, user);
+
+export const getReportImage = (user, reportId) =>
+  request(`/portal/reports/${encodeURIComponent(reportId)}/image`, user, { responseType: 'blob' });
 
 export const updateReport = (user, reportId, body) =>
   request(`/portal/reports/${encodeURIComponent(reportId)}`, user, {
@@ -96,12 +104,27 @@ export const addFollowUp = (user, runId, note) =>
 export const searchUsers = (user, params) =>
   request(`/admin/users${qs(params)}`, user);
 
+export const provisionAccount = (user, email, operational_roles, reason) =>
+  request('/admin/provision', user, { method: 'POST', body: JSON.stringify({ email, operational_roles, reason }) });
+
+export const convertStaffToApp = (user, uid, reason) =>
+  request(`/admin/users/${encodeURIComponent(uid)}/convert-to-app`, user, {
+    method: 'POST', body: JSON.stringify({ confirm_conversion: true, reason }),
+  });
+
+export const updatePortalRoles = (user, uid, operational_roles, expected_roles, reason) =>
+  request(`/admin/users/${encodeURIComponent(uid)}/roles`, user, {
+    method: 'PATCH', body: JSON.stringify({ operational_roles, expected_roles, reason }),
+  });
+
+export const listAuditHistory = (user, params) => request(`/admin/audit${qs(params)}`, user);
+
 export const getUser = (user, uid) =>
   request(`/admin/users/${encodeURIComponent(uid)}`, user);
 
-export const updateUserStatus = (user, uid, account_status) =>
+export const updateUserStatus = (user, uid, account_status, reason = "") =>
   request(`/admin/users/${encodeURIComponent(uid)}/status`, user, {
-    method: 'PATCH', body: JSON.stringify({ account_status }),
+    method: 'PATCH', body: JSON.stringify({ account_status, reason }),
   });
 
 export const listFeedback = (user, params) =>

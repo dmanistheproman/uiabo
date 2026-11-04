@@ -6,8 +6,9 @@ import re
 
 from .dates import assumption_notice, infer_date_context, submission_time
 from .models import ClaimContext, ClaimQuantity
-from .interpretation import input_intent, claim_relationship
+from .interpretation import input_intent, claim_relationship, corporate_search_text, control_wording
 from .rankings import political_salary_ranking, SALARY_SCOPE
+from .jurisdiction import NON_PLACES, scope_for, SG_ASSUMPTION
 
 
 NUMBER = r"[-+]?\d+(?:\.\d+)?"
@@ -55,8 +56,6 @@ def _location(text, *, allow_leading=False):
         if flags == 0 and not allow_leading:
             continue
         for match in re.finditer(pattern, text, flags):
-            if flags == 0 and not all(word[0].isupper() for word in match['place'].split()):
-                continue
             words = []
             for word in match['place'].split():
                 if word.casefold() in {'and', 'or'}:
@@ -67,10 +66,13 @@ def _location(text, *, allow_leading=False):
             if not words or words[0].casefold() in NOT_PLACES:
                 continue
             candidate = ' '.join(words).rstrip('.').removesuffix("'s").removesuffix('’s')
+            # Check the place after trimming temporal/verb words. In e.g.
+            # "Singapore next week will reach ...", the captured span includes
+            # "next week", but those words are not part of the place name.
             # The leading-subject heuristic only accepts place-like proper names.
             if flags == 0 and not all(word[0].isupper() for word in candidate.split()):
                 continue
-            if candidate and candidate in text:
+            if candidate and candidate in text and not NON_PLACES.search(candidate):
                 candidates.append(candidate)
     distinct = {candidate.casefold(): candidate for candidate in candidates}
     return next(iter(distinct.values())) if len(distinct) == 1 else None
@@ -105,6 +107,19 @@ def build_claim_context(text, now=None, *, original_text=None):
     temperatures = [item for item in quantities if item.unit in {'C', 'F'}]
     location = _location(text, allow_leading=bool(temperatures or WEATHER.search(text)))
     assumptions = []
+    from .statistical_dates import uses_latest_statistics, LATEST_STATISTICS_NOTICE
+    if uses_latest_statistics(text):
+        assumptions.append(LATEST_STATISTICS_NOTICE)
+    jurisdiction, jurisdiction_basis, retrieval_topic = scope_for(text, location)
+    if jurisdiction_basis == 'singapore_default':
+        assumptions.append(SG_ASSUMPTION)
+    if claim_relationship(text) != 'general':
+        if claim_relationship(text) == 'ambiguous_control':
+            assumptions.append("'Controlled by' could mean day-to-day management or ownership/voting control. We assess these meanings separately, without choosing one for you.")
+        if corporate_search_text(text) != text:
+            assumptions.append("Interpreted the company name as Singapore Airlines for source discovery; the submitted claim is preserved.")
+        if control_wording(text) and claim_relationship(text) == 'ownership':
+            assumptions.append("Interpreted 'control' as ownership or voting control, including through an intermediate owner. This does not mean the government runs day-to-day operations.")
     if political_salary_ranking(text):
         assumptions.append(SALARY_SCOPE)
     if re.search(r"\b(?:run|ran)\s+by\b", text, re.I):
@@ -132,7 +147,13 @@ def build_claim_context(text, now=None, *, original_text=None):
     claim_type = ('weather_forecast' if weather and (future_language or forecast_period)
                   else 'policy_change' if POLICY.search(text) and (future_language or date_context)
                   else 'general')
-    return ClaimContext(claim_type=claim_type, modality='possible' if POSSIBILITY.search(modality_text) else 'asserted',
+    context = ClaimContext(claim_type=claim_type, modality='possible' if POSSIBILITY.search(modality_text) else 'asserted',
         input_intent=input_intent(original_text or text), relationship=claim_relationship(text),
         location=location, measurement=measurement, quantities=quantities,
+        jurisdiction=jurisdiction, jurisdiction_basis=jurisdiction_basis, retrieval_topic=retrieval_topic,
         as_of=assessed_at.date(), assessed_at=assessed_at, assumptions=assumptions)
+    from .public_changes import public_change_plan
+    plan = public_change_plan(text, context, date_context)
+    if plan and plan['assumption']:
+        context.assumptions.append(plan['assumption'])
+    return context

@@ -3,6 +3,18 @@ import test from 'node:test';
 import { assessmentLabel, componentDetails, credibilityDetails, credibilityRating, credibilityScore } from '../src/utils/assessment.js';
 import { resultPresentation } from '../src/utils/resultPresentation.js';
 
+test('a confidence failure is not displayed as a scope mismatch', () => {
+  const result = materialResult();
+  Object.assign(result.component_assessment.findings[0], {
+    scope_status: 'established', reason_codes: ['below_decisiveness_threshold'],
+    explanation: 'The assessment did not meet the required evidence-confidence threshold.',
+  });
+  const finding = componentDetails(result)[0].findings[0];
+  assert.equal(finding.limitation, '');
+  assert.match(finding.explanation, /confidence/);
+  assert.equal(finding.stance, 'unresolved');
+});
+
 function materialResult() {
   return {
     assessment_outcome: 'contradicted',
@@ -153,13 +165,13 @@ test('new strong whole-claim contradiction stays separate from partial contradic
 test('forecast and climate qualifications take precedence over component headlines', () => {
   const result = materialResult();
   result.forecast_context = { risk_basis: 'forecast_comparison' };
-  assert.equal(assessmentLabel(result), 'Conflicts with current forecast');
-  assert.match(resultPresentation(result).title, /conflicts with the forecast/);
+  assert.equal(assessmentLabel(result), 'Likely misinformation');
+  assert.match(resultPresentation(result).meaning, /outside the official forecast/);
   result.assessment_outcome = 'highly_unlikely';
   result.scoring.status = 'plausibility_based';
-  assert.match(assessmentLabel(result), /Highly unlikely/);
+  assert.equal(assessmentLabel(result), 'Likely misinformation');
   assert.equal(credibilityScore(result), null);
-  assert.equal(resultPresentation(result).title, 'This prediction is highly unlikely');
+  assert.equal(resultPresentation(result).title, 'Likely misinformation');
 });
 
 test('failed, older and unknown component records remain readable', () => {

@@ -8,6 +8,18 @@ from uuid import uuid4
 from app.portal.models import ReportAuditEntry
 
 
+REPORTABLE_TYPES = {"text", "ocr_text", "image_text", "webpage_text", "deepfake_ai", "image_context", "link_safety"}
+
+
+def result_label(record):
+    if record.get("input_type") == "deepfake_ai":
+        return record.get("label", "Unavailable")
+    if record.get("input_type") == "link_safety":
+        return {"threat_detected": "Threat detected", "no_known_threats": "No known threats found"}.get(
+            record.get("safety_status"), "Unavailable")
+    return record.get("concern_label", "Unavailable")
+
+
 def mask_identifier(value: str, prefix: str) -> str:
     """A stable non-reversible label for a uid shown in the portal."""
     return f"{prefix}_{sha256(value.encode()).hexdigest()[:10]}"
@@ -36,18 +48,20 @@ def build_report_document(
         "result_id": result_id,
         "user_id": user_id,
         "user_mask": user_mask,
-        "input_type": record.get("input_type", "text"),
+        "input_type": record.get("input_type") or {"ocr": "ocr_text", "webpage": "webpage_text"}.get(record.get("input_source"), "text"),
         "reason": reason,
         "detail": detail,
         "status": "open",
         "created_at": now,
         "updated_at": now,
         "snapshot": {
-            "claim_category": record["claim_category"],
-            "checkable": record["checkable"],
-            "concern_label": record["concern_label"],
+            "claim_category": record.get("claim_category"),
+            "checkable": record.get("checkable"),
+            "concern_label": result_label(record),
             "misinformation_risk_score": record.get("misinformation_risk_score"),
-            "uncertainty": record["uncertainty"],
+            "uncertainty": record.get("uncertainty"),
+            "confidence": record.get("confidence"),
+            "safety_status": record.get("safety_status"),
             "pipeline_version": record["pipeline_version"],
             "result_created_at": record["created_at"],
         },

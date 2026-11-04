@@ -51,14 +51,14 @@ def feedback_context():
     )
 
     # Create System Administrator account.
-    account_repository.ensure_free_profile(
+    account_repository.ensure_staff_profile(
         admin_identity,
         "System Admin",
     )
 
     account_repository.profiles[
         "admin-123"
-    ]["role"] = "system_admin"
+    ]["operational_roles"] = ["system_admin"]
 
     account_repository.profiles[
         "admin-123"
@@ -360,14 +360,14 @@ def test_data_engineer_cannot_access_admin_feedback(
         email_verified=True,
     )
 
-    account_repository.ensure_free_profile(
+    account_repository.ensure_staff_profile(
         engineer,
         "Data Engineer",
     )
 
     account_repository.profiles[
         "engineer-789"
-    ]["role"] = "data_engineer"
+    ]["operational_roles"] = ["data_engineer"]
 
     account_repository.profiles[
         "engineer-789"

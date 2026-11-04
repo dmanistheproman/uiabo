@@ -49,6 +49,7 @@ urllib3==2.7.0
 uvicorn==0.52.1
 lingua-language-detector==2.2.0
 python-dotenv==1.2.3
+Babel==2.18.0
 Pillow==12.3.0
 ollama
 torch
@@ -59,3 +60,4 @@ huggingface_hub
 timm==1.0.24
 google-genai
 python-multipart==0.0.32
+pypdf==6.21.4

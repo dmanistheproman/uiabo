@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import Button from '../components/Button';
 import Screen from '../components/Screen';
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 export default function VerifyEmailScreen() {
   const { checkVerification, firebaseUser, logout, resendVerification } = useAuth();
@@ -46,9 +46,9 @@ export default function VerifyEmailScreen() {
 }
 
 const styles = StyleSheet.create({
-  body: { color: colours.ink, fontSize: 19, lineHeight: 29, marginBottom: 22, textAlign: 'center' },
+  body: { ...typography.body, color: colours.text, marginBottom: 24 },
   card: { backgroundColor: colours.white, borderRadius: 16, padding: 24 },
   icon: { fontSize: 52, textAlign: 'center' },
-  message: { color: colours.blueDark, fontSize: 17, lineHeight: 24, marginBottom: 16 },
-  title: { color: colours.ink, fontSize: 29, fontWeight: '700', marginBottom: 14, textAlign: 'center' },
+  message: { ...typography.secondary, color: colours.blueDark, marginBottom: 16 },
+  title: { ...typography.title, color: colours.ink, marginBottom: 16 },
 });

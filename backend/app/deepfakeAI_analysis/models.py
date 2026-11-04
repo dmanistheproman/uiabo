@@ -1,3 +1,4 @@
+from app.analyses.images import SavedImage
 from datetime import datetime
 from typing import Literal
 
@@ -20,6 +21,7 @@ class DeepfakeAI_AnalysisResult(DeepfakeAIModel):
 
     input_type: Literal["deepfake_ai"] = "deepfake_ai"
     processing_status: Literal["completed"] = "completed"
+    saved_image: SavedImage | None = None
 
     label: Literal["Real", "Fake", "Uncertain"]
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)

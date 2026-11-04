@@ -18,7 +18,8 @@ import sys
 import time
 
 HERE = Path(__file__).resolve().parent
-LABELS = {"supported", "contradicted", "unresolved", "not_checkable", "forecast_conflict"}
+LABELS = {"supported", "contradicted", "likely_misinformation", "unresolved", "not_checkable", "forecast_conflict"}
+LABEL_POLICY = "evidence-labels-v2"
 FORECAST_URL = "https://api-open.data.gov.sg/v2/real-time/api/four-day-outlook"
 
 
@@ -100,15 +101,16 @@ def fingerprint(root):
 def outcome(result):
     value = result.get("assessment_outcome")
     if value == "contradicted" and (result.get("forecast_context") or {}).get("risk_basis") == "forecast_comparison":
-        return "forecast_conflict"
+        return "likely_misinformation"
     if result.get("checkable") is False or value == "not_checkable":
         return "not_checkable"
     if value in {"supported", "contradicted"}:
         return value
+    if value in {"highly_unlikely", "likely_misinformation"}:
+        return "likely_misinformation"
     # Never turn a 50 risk score or a provider failure into a factual verdict.
-    # Historical plausibility is not a verified falsehood. Existing truth-label
-    # benchmarks keep it unresolved; inspect plausibility_context separately.
-    if value in {"unsupported", "conflicting", "insufficient_evidence", "highly_unlikely"}:
+    # A likelihood inference is distinct from proven contradiction in v2.
+    if value in {"unsupported", "conflicting", "insufficient_evidence"}:
         return "unresolved"
     raise ValueError("Unsupported result contract: missing assessment_outcome")
 
@@ -119,7 +121,7 @@ def summarise(cases, labels):
         runs = [(c, c["runs"][branch]) for c in cases if branch in c["runs"]]
         checked = [(c, r) for c, r in runs if c["id"] in labels]
         correct = sum(r.get("outcome") == labels[c["id"]]["final_label"] for c, r in checked)
-        decisive = [(c, r) for c, r in checked if r.get("outcome") in {"supported", "contradicted", "forecast_conflict"}]
+        decisive = [(c, r) for c, r in checked if r.get("outcome") in {"supported", "contradicted", "forecast_conflict", "likely_misinformation"}]
         unsafe = sum(r["outcome"] != labels[c["id"]]["final_label"] for c, r in decisive)
         durations = [r["duration_seconds"] for _, r in runs]
         confusion = {}
@@ -133,7 +135,8 @@ def summarise(cases, labels):
             "unresolved": sum(r.get("outcome") == "unresolved" for _, r in runs),
             "wrong_decisive": unsafe,
             "decisive_precision": (len(decisive) - unsafe) / len(decisive) if decisive else None,
-            "decisive_coverage": sum(r.get("outcome") in {"supported", "contradicted", "forecast_conflict"} for _, r in runs) / len(runs) if runs else None,
+            "decisive_coverage": sum(r.get("outcome") in {"supported", "contradicted", "forecast_conflict", "likely_misinformation"} for _, r in runs) / len(runs) if runs else None,
+            "label_policy": LABEL_POLICY,
             "median_seconds": statistics.median(durations) if durations else None,
             "p95_seconds": sorted(durations)[max(0, int(len(durations) * .95 + .999999) - 1)] if durations else None,
             "http_attempts": sum(len(r.get("requests", [])) for _, r in runs),

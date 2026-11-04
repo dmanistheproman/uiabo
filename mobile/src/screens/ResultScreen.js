@@ -1,62 +1,19 @@
+import { colours, typography } from '../theme';
 import { useState } from 'react';
-import { Alert, Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 import { credibilityDetails, componentDetails, comparisonAspects, comparisonFindings, changeVerificationLabel } from '../utils/assessment';
-import { useAuth } from '../auth/AuthContext';
-import { reportResult } from '../services/api';
+import ReportResultPanel from '../components/ReportResultPanel';
 import { resultPresentation, plainSourceStance, datePresentation } from '../utils/resultPresentation';
-
-const REPORT_REASONS = [
-  { value: 'wrong_label', label: 'The concern label is wrong' },
-  { value: 'wrong_score', label: 'The credibility score is wrong' },
-  { value: 'wrong_evidence', label: 'The evidence or sources are wrong' },
-  { value: 'other', label: 'Something else' },
-];
-
-function ReportSection({ result }) {
-  const { firebaseUser } = useAuth();
-  const [reason, setReason] = useState(null);
-  const [detail, setDetail] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
-
-  async function submit() {
-    if (!reason || detail.trim().length === 0) {
-      Alert.alert('Add a little more', 'Choose a reason and describe what looks wrong.');
-      return;
-    }
-    setBusy(true);
-    try {
-      await reportResult(firebaseUser, result.result_id, reason, detail.trim());
-      setDone(true);
-    } catch (error) {
-      Alert.alert('Could not send report', error.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return <Details title="Report a problem with this result">
-    {done ? <Text style={styles.copy}>Thank you. Our team will review this result and may use it to improve UIABO.</Text> : <>
-      <Text style={styles.copy}>What looks wrong?</Text>
-      {REPORT_REASONS.map(option => (
-        <Pressable key={option.value} accessibilityRole="radio"
-          accessibilityLabel={option.label} accessibilityState={{ checked: reason === option.value }}
-          onPress={() => setReason(option.value)}
-          style={({ pressed }) => [styles.option, reason === option.value && styles.optionSelected, pressed && styles.pressed]}>
-          <Feather name={reason === option.value ? 'check-circle' : 'circle'} size={22} color="#174E72" accessible={false} />
-          <Text style={styles.optionText}>{option.label}</Text>
-        </Pressable>
-      ))}
-      <TextInput accessibilityLabel="Describe what is wrong" multiline textAlignVertical="top"
-        editable={!busy} maxLength={2000} placeholder="Tell us what looks wrong…"
-        placeholderTextColor="#7D909E" style={styles.reportInput} value={detail} onChangeText={setDetail} />
-      <Button secondary loading={busy} onPress={submit}>Send report</Button>
-    </>}
-  </Details>;
-}
+import { controlFindings } from '../utils/controlInterpretations';
+import EvidenceText from '../components/EvidenceText';
+import { pdfSeriesTable } from '../utils/pdfEvidence';
+import { evidencePresentation } from '../utils/evidencePresentation';
+import { evidencePlainText } from '../utils/evidenceMarkdown';
+import { webResearchDetails, researchShareText } from '../utils/webResearch';
+import ResearchAssessmentPanel from '../components/ResearchAssessmentPanel';
 
 function Details({ title, children }) {
   const [open, setOpen] = useState(false);
@@ -65,7 +22,7 @@ function Details({ title, children }) {
       accessibilityState={{ expanded: open }} onPress={() => setOpen(value => !value)}
       style={({ pressed }) => [styles.toggle, pressed && styles.pressed]}>
       <Text style={[styles.heading, styles.flexText]}>{title}</Text>
-      <Feather name={open ? 'chevron-up' : 'chevron-down'} size={24} color="#174E72" accessible={false} />
+      <Feather name={open ? 'chevron-up' : 'chevron-down'} size={24} color={colours.blueDark} accessible={false} />
     </Pressable>
     {open && <View style={styles.detailBody}>{children}</View>}
   </View>;
@@ -75,17 +32,19 @@ function WebsiteButton({ source, onPress }) {
   return <Pressable accessibilityRole="link" accessibilityLabel={`Open ${source.publisher} website`}
     onPress={() => onPress(source.forecast?.reader_url || source.url)} style={({ pressed }) => [styles.websiteButton, pressed && styles.pressed]}>
     <Text style={[styles.linkText, styles.flexText]}>{source.forecast?.reader_url ? 'Open latest forecast' : 'Open website'}</Text>
-    <Feather name="external-link" size={22} color="#174E72" accessible={false} />
+    <Feather name="external-link" size={22} color={colours.blueDark} accessible={false} />
   </Pressable>;
 }
 
 export default function ResultScreen({ result, onNavigate }) {
   const summary = resultPresentation(result);
   const failed = result.processing_status === 'failed';
+  const research = webResearchDetails(result);
   const timing = datePresentation(result.date_context);
   const forecast = result.forecast_context;
   const sources = result.evidence || [];
   const components = componentDetails(result);
+  const reading = evidencePresentation(result);
   const limitations = (result.uncertainty_reasons || []).filter(reason =>
     !reason.startsWith('The risk indicator uses prototype rules;') && !reason.startsWith('Assumed date:'));
 
@@ -96,7 +55,11 @@ export default function ResultScreen({ result, onNavigate }) {
   }
   async function share() {
     try {
-      await Share.share({ message: `UIABO result: ${summary.title}\n${result.extracted_claim || result.original_text}\n\n${summary.meaning}\n${timing ? `\n${timing.explanation}\n${timing.caution}\n` : ''}\nWhy this result?\n${result.explanation}\n\n${credibilityDetails(result)}\n\n${summary.action}\n\nSources:\n${sources.map(item => item.url).join('\n')}\n\nAutomated checks can make mistakes.` });
+      if (research) {
+        await Share.share({ message: researchShareText(result) });
+        return;
+      }
+      await Share.share({ message: `UIABO result: ${summary.title}\n${result.extracted_claim || result.original_text}\n\n${summary.meaning}\n${timing ? `\n${timing.explanation}\n${timing.caution}\n` : ''}\nWhy this result?\n${evidencePlainText(reading.explanation)}\n\n${credibilityDetails(result)}\n\n${summary.action}\n\nSources:\n${sources.map(item => item.url).join('\n')}\n\nAutomated checks can make mistakes.` });
     } catch { Alert.alert('Could not share', 'Please try again.'); }
   }
 
@@ -118,6 +81,21 @@ export default function ResultScreen({ result, onNavigate }) {
         <Text selectable style={styles.copy}>{result.extracted_claim || result.original_text}</Text>
         {result.input_source === 'ocr' && <Text style={styles.secondary}>This checks the words you reviewed from the image. It does not check whether the image is real.</Text>}
       </View>
+
+      {controlFindings(result).map(finding => <View key={finding.key} style={styles.card}>
+        <Text accessibilityRole="header" style={styles.heading}>{finding.title}</Text>
+        <Text style={styles.label}>{finding.status}</Text>
+        <Text style={styles.copy}>{finding.explanation}</Text>
+        {!!finding.citations.length && <Details title="Evidence for this meaning">
+          {finding.citations.map((citation, index) => {
+            const source = result.evidence?.find(item => item.evidence_id === citation.evidence_id);
+            return <View key={index} style={styles.section}>
+              <EvidenceText quoted baseURL={source?.url}>{citation.quote}</EvidenceText>
+              {!!source && <Text style={styles.secondary}>{source.publisher} — {source.title}</Text>}
+            </View>;
+          })}
+        </Details>}
+      </View>)}
 
       {!failed && !!timing && <View style={styles.card}>
         <Text accessibilityRole="header" style={styles.heading}>{timing.title}</Text>
@@ -144,6 +122,10 @@ export default function ResultScreen({ result, onNavigate }) {
       {!failed && !!result.claim_context?.assumptions?.length && <Details title="How we read your message">
         {result.claim_context.assumptions.map((reason, index) => <Text key={index} style={styles.copy}>{reason}</Text>)}
       </Details>}
+      {!failed && !!result.inference_context && <Details title="Official announcement checks">
+        <Text style={styles.copy}>We checked {result.inference_context.subject}.</Text>
+        {result.inference_context.limitations.map((reason, index) => <Text key={index} style={styles.secondary}>{reason}</Text>)}
+      </Details>}
 
       {failed ? <>
         <Details title="What went wrong?">
@@ -151,24 +133,31 @@ export default function ResultScreen({ result, onNavigate }) {
         </Details>
         <Button onPress={() => onNavigate(result.input_source === 'ocr' ? 'ocr' : 'text')}>Try another check</Button>
       </> : <>
+        {research ? <ResearchAssessmentPanel research={research} onOpenSource={openSource} /> : <>
         <Details title="Why this result?">
-          <Text style={styles.copy}>{result.explanation}</Text>
+          <EvidenceText>{reading.explanation}</EvidenceText>
           <Text style={styles.secondary}>{credibilityDetails(result)}</Text>
+          {!!reading.quote && <Details title="Read the evidence">
+            <Text style={styles.label}>{reading.source.publisher}</Text>
+            <Text style={styles.secondary}>{reading.source.title}</Text>
+            <EvidenceText baseURL={reading.source.url}>{reading.quote}</EvidenceText>
+            <WebsiteButton source={reading.source} onPress={openSource} />
+          </Details>}
           {!!components.length && <View style={styles.section}>
             <Text accessibilityRole="header" style={styles.heading}>The parts we checked</Text>
-            <Text style={styles.copy}>We checked the main statement and its stated reason separately. A finding about one part does not settle every part of the message.</Text>
+            <Text style={styles.copy}>We checked the factual parts of your message separately. Read what the evidence establishes for each part.</Text>
             {components.map((part, index) => <View key={part.id || index} style={styles.section}>
               <Text selectable style={styles.label}>{index + 1}. {part.text}</Text>
               <Text style={styles.label}>{part.status}</Text>
-              <Text style={styles.copy}>{part.explanation}</Text>
+              <EvidenceText>{part.explanation}</EvidenceText>
               {!!part.findings.length && <Details title="Read the evidence for this part">
                 {part.findings.map((finding, findingIndex) => <View key={findingIndex} style={findingIndex ? styles.section : styles.detailBody}>
                   <Text style={styles.label}>{finding.status}</Text>
-                  <Text style={styles.copy}>{finding.explanation}</Text>
+                  <EvidenceText>{finding.explanation}</EvidenceText>
                   {!!finding.basis && <Text style={styles.secondary}>{finding.basis}</Text>}
                   {!!finding.limitation && <Text style={styles.secondary}>{finding.limitation}</Text>}
                   {finding.quotes.map((item, quoteIndex) => <View key={`${item.evidence_id}-${quoteIndex}`} style={styles.detailBody}>
-                    <Text selectable style={styles.quote}>{item.quote}</Text>
+                    <EvidenceText quoted baseURL={item.source.url}>{item.quote}</EvidenceText>
                     <Text style={styles.secondary}>{item.source.publisher}</Text>
                     <WebsiteButton source={item.source} onPress={openSource} />
                   </View>)}
@@ -178,7 +167,7 @@ export default function ResultScreen({ result, onNavigate }) {
           </View>}
           {!!result.policy_context && <View style={styles.section}>
             <Text accessibilityRole="header" style={styles.heading}>{result.policy_context.policy_scope === 'comparable_policy' ? 'What the official information says' : 'Related official information'}</Text>
-            <Text selectable style={styles.copy}>{result.policy_context.published_policy_summary}</Text>
+            <EvidenceText>{result.policy_context.published_policy_summary}</EvidenceText>
             <Text style={styles.label}>The reported change: {changeVerificationLabel(result.policy_context.change_status)}</Text>
             <Text style={styles.copy}>{result.policy_context.change_summary}</Text>
           </View>}
@@ -197,11 +186,20 @@ export default function ResultScreen({ result, onNavigate }) {
           <Text accessibilityRole="header" style={styles.heading}>{source.title}</Text>
           <Text style={styles.secondary}>{plainSourceStance(source.stance)}</Text>
           <Details title="Read source details">
-            {!!source.assessment_reason && <Text style={styles.copy}>{source.assessment_reason}</Text>}
+            {!!source.assessment_reason && <EvidenceText>{source.assessment_reason}</EvidenceText>}
+            {!!source.pdf_reading?.document?.series?.length && <Details title="Figures read from the PDF">
+              <Text style={styles.copy}>AI read these charts and tables. The numbers were checked against PDF text, but their dates and chart groupings may still be misread. Open the original PDF to check them.</Text>
+              {source.pdf_reading.document.series.map((series, i) => <View key={i} style={styles.section}>
+                <Text style={styles.label}>{series.metric_label} · Page {series.page}</Text>
+                <Text style={styles.copy}>{series.population_label}</Text>
+                <EvidenceText>{pdfSeriesTable(series)}</EvidenceText>
+              </View>)}
+              {source.pdf_reading.document.limitations.map((limit, i) => <Text key={i} style={styles.copy}>{limit}</Text>)}
+            </Details>}
             <Text style={styles.label}>{source.climate_record ? 'Values from official climate records' : source.forecast ? 'Values from the official forecast' : source.evidence_quote ? 'Words from this source' : 'Source passage'}</Text>
-            <Text selectable style={styles.quote}>{source.evidence_quote || source.passage}</Text>
+            <EvidenceText quoted baseURL={source.url}>{source.evidence_quote || source.passage}</EvidenceText>
             {!!source.evidence_quote && source.evidence_quote !== source.passage && <Details title="Read the surrounding text">
-              <Text selectable style={styles.copy}>{source.passage}</Text>
+              <EvidenceText baseURL={source.url}>{source.passage}</EvidenceText>
             </Details>}
             <Text style={styles.secondary}>{source.published_at ? `Published ${source.published_at}` : 'Publication date not available'}</Text>
           </Details>
@@ -219,13 +217,14 @@ export default function ResultScreen({ result, onNavigate }) {
               <Text style={styles.copy}>{part.explanation}</Text>
               {!!part.scope_limitation && <Text style={styles.copy}>{part.scope_limitation}</Text>}
               {part.finding !== 'unresolved' && !part.applies_to_claim && <Text style={styles.copy}>We could not confirm that this rule applies to the circumstances in the message.</Text>}
-              {!!part.evidence_quote && <Text selectable style={styles.quote}>{part.evidence_quote}</Text>}
+              {!!part.evidence_quote && <EvidenceText quoted baseURL={source?.url}>{part.evidence_quote}</EvidenceText>}
               {!!source && <><Text style={styles.label}>{source.publisher}</Text><WebsiteButton source={source} onPress={openSource} /></>}
             </View>;
           })}
         </Details>}
 
-        <ReportSection result={result} />
+        </>}
+        <ReportResultPanel result={result} />
         <Text style={styles.secondary}>Automated checks can make mistakes. Read the sources before you share.</Text>
         <Button secondary onPress={share}>Share this result</Button>
       </>}
@@ -236,26 +235,26 @@ export default function ResultScreen({ result, onNavigate }) {
 }
 
 const styles = StyleSheet.create({
-  summary: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 14 },
-  title: { fontWeight: '800', fontSize: 27, lineHeight: 35 },
-  card: { borderRadius: 16, backgroundColor: 'white', borderWidth: 1, borderColor: '#CCDCE5', padding: 16, gap: 14 },
-  source: { borderRadius: 16, backgroundColor: 'white', borderWidth: 1, borderColor: '#CCDCE5', padding: 16, gap: 14 },
-  heading: { color: '#173447', fontWeight: '700', fontSize: 21, lineHeight: 29 },
-  label: { color: '#173447', fontWeight: '700', fontSize: 18, lineHeight: 27 },
-  copy: { color: '#243E50', fontSize: 18, lineHeight: 28 },
-  secondary: { color: '#465D6B', fontSize: 16, lineHeight: 25 },
+  summary: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 16 },
+  title: { ...typography.title },
+  card: { borderRadius: 16, backgroundColor: colours.white, borderWidth: 1, borderColor: colours.divider, padding: 18, gap: 16 },
+  source: { borderRadius: 16, backgroundColor: colours.white, borderWidth: 1, borderColor: colours.divider, padding: 18, gap: 16 },
+  heading: { ...typography.heading, color: colours.ink },
+  label: { ...typography.label, color: colours.ink },
+  copy: { ...typography.body, color: colours.text },
+  secondary: { ...typography.secondary, color: colours.muted },
   bold: { fontWeight: '700' },
-  action: { borderTopWidth: 1, borderTopColor: '#B8C9C6', paddingTop: 16, gap: 10 },
+  action: { borderTopWidth: 1, borderTopColor: colours.border, paddingTop: 18, gap: 12 },
   toggle: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
   flexText: { flex: 1, flexShrink: 1 },
-  pressed: { opacity: 0.7 },
-  option: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: '#CCDCE5', borderRadius: 12, paddingVertical: 10 },
-  optionSelected: { borderColor: '#24628D', borderWidth: 2 },
-  optionText: { color: '#243E50', fontSize: 17, lineHeight: 26, flex: 1, flexShrink: 1 },
-  reportInput: { backgroundColor: 'white', minHeight: 120, borderColor: '#B8CDD9', borderWidth: 1, borderRadius: 14, padding: 15, color: '#173447', fontSize: 16, lineHeight: 24 },
-  detailBody: { gap: 16 },
-  section: { borderTopWidth: 1, borderTopColor: '#D5E1E8', paddingTop: 18, gap: 14 },
-  quote: { color: '#243E50', fontSize: 18, lineHeight: 28, borderLeftWidth: 3, borderLeftColor: '#427494', paddingLeft: 14 },
-  websiteButton: { minHeight: 56, borderWidth: 2, borderColor: '#24628D', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', gap: 12, alignItems: 'center' },
-  linkText: { color: '#174E72', fontWeight: '700', fontSize: 18, lineHeight: 27 },
+  pressed: { backgroundColor: colours.infoBackground },
+  option: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, borderWidth: 2, borderColor: colours.border, borderRadius: 12, paddingVertical: 12 },
+  optionSelected: { borderColor: colours.blue, backgroundColor: colours.infoBackground },
+  optionText: { ...typography.body, color: colours.text, flex: 1, flexShrink: 1 },
+  reportInput: { ...typography.body, backgroundColor: colours.white, minHeight: 150, borderColor: colours.border, borderWidth: 2, borderRadius: 14, padding: 16, color: colours.ink },
+  detailBody: { gap: 18 },
+  section: { borderTopWidth: 1, borderTopColor: colours.divider, paddingTop: 18, gap: 16 },
+  quote: { ...typography.body, color: colours.text, borderLeftWidth: 3, borderLeftColor: colours.blue, paddingLeft: 14 },
+  websiteButton: { minHeight: 56, borderWidth: 2, borderColor: colours.blue, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', gap: 12, alignItems: 'center' },
+  linkText: { ...typography.label, color: colours.blueDark, textDecorationLine: 'underline' },
 });

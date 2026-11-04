@@ -10,6 +10,7 @@
     "expo-linear-gradient": "~57.0.1",
     "expo-status-bar": "~57.0.1",
     "firebase": "^12.18.0",
+    "markdown-it": "15.0.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",

@@ -1,19 +1,21 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 export default function Button({ children, disabled = false, loading = false, onPress, secondary = false }) {
   const unavailable = disabled || loading;
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={typeof children === 'string' ? children : undefined}
+      accessibilityState={{ disabled: unavailable, busy: loading }}
       disabled={unavailable}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         secondary && styles.secondary,
         unavailable && styles.disabled,
-        pressed && !unavailable && styles.pressed,
+        pressed && !unavailable && (secondary ? styles.secondaryPressed : styles.pressed),
       ]}
     >
       {loading ? (
@@ -29,11 +31,12 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center', backgroundColor: colours.blue, borderColor: colours.blue,
     borderRadius: 10, borderWidth: 2, justifyContent: 'center', marginBottom: 12,
-    minHeight: 56, paddingHorizontal: 18,
+    minHeight: 56, paddingHorizontal: 18, paddingVertical: 14,
   },
   disabled: { opacity: 0.55 },
   pressed: { backgroundColor: colours.blueDark },
+  secondaryPressed: { backgroundColor: colours.infoBackground },
   secondary: { backgroundColor: colours.white },
   secondaryText: { color: colours.blue },
-  text: { color: colours.white, fontSize: 18, fontWeight: '700', textAlign: 'center' },
+  text: { ...typography.button, color: colours.white, textAlign: 'center', flexShrink: 1 },
 });

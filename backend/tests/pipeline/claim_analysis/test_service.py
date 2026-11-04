@@ -279,3 +279,22 @@ def test_default_pipeline_connects_claim_stage_without_loading_key(monkeypatch):
         assert pipeline._analyze_claim is service.analyse_claim
     finally:
         dependencies.get_pipeline_orchestrator.cache_clear()
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_pipeline_mode_explicitly_selects_the_correct_claim_and_assessment_stages(monkeypatch, enabled):
+    from app.pipeline.orchestration import dependencies
+    from app.pipeline.claim_analysis import pool_v3
+    from app.pipeline.evidence_assessment import pool
+    legacy_assessor, pool_assessor = object(), object()
+    monkeypatch.setenv("EVIDENCE_PIPELINE_V3", "1" if enabled else "0")
+    monkeypatch.setattr(dependencies, "configured_assessor", lambda: (legacy_assessor, "legacy-test"))
+    monkeypatch.setattr(pool, "configured_pool_assessor", lambda: (pool_assessor, "pool-test"))
+    monkeypatch.setattr(dependencies, "FirestoreResultRepository", InMemoryResultRepository)
+    dependencies.get_pipeline_orchestrator.cache_clear()
+    try:
+        pipeline = dependencies.get_pipeline_orchestrator()
+        assert pipeline._analyze_claim is (pool_v3.analyse_claim_v3 if enabled else service.analyse_claim)
+        assert pipeline._assess_evidence is (pool_assessor if enabled else legacy_assessor)
+    finally:
+        dependencies.get_pipeline_orchestrator.cache_clear()

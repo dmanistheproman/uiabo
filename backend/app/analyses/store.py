@@ -12,6 +12,7 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 from app.accounts.repository import _new_free_allowance, _new_premium_allowance
+from app.accounts.roles import require_account_type
 from app.firebase import get_firestore_client
 from app.pipeline.shared.models import FailedAnalysisRecord, TextAnalysisResult
 from app.link_safety.models import FailedLinkSafetyRecord, LinkSafetyResult
@@ -29,6 +30,7 @@ def reject(status, code, message):
 def active_profile(profile):
     if not profile:
         reject(404, "PROFILE_NOT_FOUND", "Finish setting up your profile to continue.")
+    require_account_type(profile, "app")
     if profile.get("account_status") != "active":
         reject(403, "ACCOUNT_UNAVAILABLE", "This account is currently unavailable.")
     return profile
@@ -105,7 +107,7 @@ class AnalysisStore:
         def operation(tx):
             profile = active_profile(tx.get("users", uid))
             if profile.get("role") != "premium":
-                reject(403, "PREMIUM_REQUIRED", "Read image text is available to Premium accounts.")
+                reject(403, "PREMIUM_REQUIRED", "Image checks are available to Premium accounts.")
         self.run(operation)
 
     def reserve(self, uid, request_key, text: str | bytes, input_type="text"):
@@ -117,6 +119,8 @@ class AnalysisStore:
         token = str(uuid4())
         def operation(tx):
             profile = active_profile(tx.get("users", uid))
+            if input_type in {"deepfake_ai", "image_context", "ocr_text"} and profile.get("role") != "premium":
+                reject(403, "PREMIUM_REQUIRED", "Image checks are available to Premium accounts.")
             existing = tx.get("analysis_results", result_id)
             allowance = tx.get("usage_allowances", uid)
             lock = tx.get("analysis_locks", uid)
@@ -139,8 +143,12 @@ class AnalysisStore:
     def finish(self, uid, reservation, record, charge_allowance=None):
         now = self.clock()
         payload = record.model_dump(mode="json")
+        # Direct research is anchored to its Singapore submission day. Retain
+        # that instant even if research finishes after midnight; saved_at is
+        # the completion time. Other result types keep their existing behavior.
+        created_at = record.created_at if getattr(record, "research_assessment", None) is not None else now
         payload.update(result_id=reservation["result_id"], user_id=uid, input_type=reservation.get("input_type", "text"),
-                       request_fingerprint=reservation["fingerprint"], created_at=now,
+                       request_fingerprint=reservation["fingerprint"], created_at=created_at,
                        saved_at=now, share_enabled=False)
         def operation(tx):
             profile = active_profile(tx.get("users", uid))
@@ -154,7 +162,7 @@ class AnalysisStore:
             should_charge = (
                 record.processing_status == "completed"
                 if charge_allowance is None
-                else charge_allowance
+                else charge_allowance and record.processing_status == "completed"
             )
 
             if should_charge:
@@ -185,6 +193,17 @@ class AnalysisStore:
                 reject(404, "RESULT_NOT_FOUND", "This result could not be found.")
             return public_record(record)
         return self.run(operation)
+
+
+    def clear_saved_image(self, uid, result_id):
+        def operation(tx):
+            active_profile(tx.get("users", uid))
+            record = tx.get("analysis_results", result_id)
+            if not record or record.get("user_id") != uid:
+                reject(404, "RESULT_NOT_FOUND", "This result could not be found.")
+            record["saved_image"] = None
+            tx.set("analysis_results", result_id, record)
+        self.run(operation)
 
 
 class FirestoreSession:

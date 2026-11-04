@@ -23,6 +23,10 @@ class ComponentFinding(BaseModel):
     explanation: str = Field(min_length=1, max_length=4000)
     scope_matched: bool
     quality_score: float = Field(default=0, ge=0, le=1)
+    # scope_matched is the legacy admitted-vote flag. Preserve actual scope and
+    # rejection causes separately so a confidence failure is not called a mismatch.
+    scope_status: Literal['established', 'unknown', 'different'] | None = None
+    reason_codes: list[str] = Field(default_factory=list, max_length=16)
 
     @model_validator(mode="after")
     def grounded_vote(self):

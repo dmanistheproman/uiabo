@@ -15,7 +15,8 @@ def eligible(context, dates):
     if not (context and context.claim_type == "weather_forecast"
             and context.location and context.location.casefold().strip() == "singapore"
             and context.measurement == "air_temperature"
-            and context.input_intent == "assertion" and context.modality == "asserted"
+            and context.input_intent in {"assertion", "question"}
+            and (context.modality == "asserted" or context.input_intent == "question")
             and dates and dates.start_date and dates.end_date
             and context.as_of <= dates.start_date <= dates.end_date <= context.as_of + timedelta(days=14)):
         return False

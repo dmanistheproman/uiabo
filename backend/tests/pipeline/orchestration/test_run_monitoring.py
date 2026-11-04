@@ -100,3 +100,32 @@ def test_with_repository_keeps_recorder():
     pipeline = _orchestrator(store).with_repository(InMemoryResultRepository())
     pipeline.analyze("A new $500 community tax starts next week.")
     assert len(store.runs) == 1
+
+
+@pytest.mark.parametrize("storage_fails", [False, True])
+def test_api_monitoring_uses_saved_id_and_waits_for_commit(signed_analysis, monkeypatch, storage_fails):
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.pipeline.orchestration.dependencies import get_pipeline_orchestrator
+    store, _ = signed_analysis
+    runs = InMemoryRunStore()
+    pipeline = _orchestrator(runs)
+    app.dependency_overrides[get_pipeline_orchestrator] = lambda: pipeline
+    finish = store.finish
+    def guarded_finish(*args, **kwargs):
+        assert not runs.runs, "Completion must not be published before persistence"
+        if storage_fails:
+            raise RuntimeError("Firestore unavailable")
+        return finish(*args, **kwargs)
+    monkeypatch.setattr(store, "finish", guarded_finish)
+    response = TestClient(app).post('/analysis/text', json={'text':'A new $500 community tax starts next week.'},
+                                    headers={'Idempotency-Key':'monitoring-test'})
+    assert response.status_code == (503 if storage_fails else 200)
+    assert len(runs.runs) == 1
+    run = next(iter(runs.runs.values()))
+    if storage_fails:
+        assert run['status'] == 'failed' and run['failure_stage'] == 'persistence'
+        assert not any(collection == 'analysis_results' for collection, _ in store.documents)
+    else:
+        assert run['run_id'] == response.json()['result_id']
+        assert ('analysis_results',run['run_id']) in store.documents

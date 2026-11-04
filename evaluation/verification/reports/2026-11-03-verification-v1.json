@@ -1,0 +1,1047 @@
+{
+  "mode": "live_oracle",
+  "version": "verification-oracle-v1",
+  "notice": "All organisations, people, events and statistics in this file are fictional. These are evidence-reasoning regression cases, not a real-world accuracy benchmark.",
+  "assessment_as_of": "2026-11-03T12:00:00+08:00",
+  "run_at": "2026-11-03T17:08:55.009134+08:00",
+  "metrics": {
+    "attempted": 12,
+    "completed": 12,
+    "provider_or_contract_errors": 0,
+    "matched_expected": 12,
+    "expected_match_rate_completed": 1.0,
+    "expected_match_rate_all_attempted": 1.0,
+    "answerable_completed": 7,
+    "answerable_abstentions": 0,
+    "answerable_abstention_rate": 0.0,
+    "correct_decisive_findings": 7,
+    "decisive_findings": 7,
+    "unsupported_misinformation_verdicts": 0,
+    "expected_unresolved_completed": 5,
+    "correct_unresolved": 5,
+    "planner_fallbacks": 0,
+    "observed_counts": {
+      "supported": 3,
+      "contradicted": 4,
+      "unresolved": 5
+    }
+  },
+  "results": [
+    {
+      "id": "O01",
+      "pattern": "linked_ownership",
+      "claim": "Port Ember Council indirectly owns a majority of Larkline Ferries.",
+      "expected": "supported",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Port Ember Council indirectly owns a majority of Larkline Ferries.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Port Ember Council indirectly owns a majority of Larkline Ferries.",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "Does Port Ember Council have an indirect ownership stake in Larkline Ferries?",
+              "What percentage of Larkline Ferries is indirectly owned by Port Ember Council?"
+            ],
+            "queries": [
+              "Port Ember Council Larkline Ferries ownership",
+              "Larkline Ferries shareholding structure"
+            ],
+            "entities": [
+              "Port Ember Council",
+              "Larkline Ferries"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": null,
+            "metric": "majority",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "supported",
+      "assessment_outcome": "supported",
+      "explanation": "The combined cited evidence supports the material assertions. The claim that Port Ember Council indirectly owns a majority of Larkline Ferries is established by linking two pieces of evidence. The first source shows that Port Ember Council directly owns 100% of Harbourlight Holdings. The second source shows that Harbourlight Holdings directly owns 70% of Larkline Ferries. Because Harbourlight Holdings is wholly owned by Port Ember Council, the council’s indirect ownership of Larkline Ferries equals the 70% stake held by Harbourlight Holdings, which is a majority. The chain of ownership is therefore verified.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "supported",
+          "citations": [
+            {
+              "evidence_id": "ownership-parent",
+              "quote": "As at 1 October 2026, Port Ember Council owns 100% of the ordinary shares and voting rights in Harbourlight Holdings. Harbourlight Holdings is a separate corporate entity."
+            },
+            {
+              "evidence_id": "ownership-child",
+              "quote": "As at 1 October 2026, Harbourlight Holdings owns 70% of the ordinary shares and voting rights in Larkline Ferries. All remaining shares are widely held. No special voting arrangements alter those percentages."
+            }
+          ],
+          "explanation": "The claim that Port Ember Council indirectly owns a majority of Larkline Ferries is established by linking two pieces of evidence. The first source shows that Port Ember Council directly owns 100% of Harbourlight Holdings. The second source shows that Harbourlight Holdings directly owns 70% of Larkline Ferries. Because Harbourlight Holdings is wholly owned by Port Ember Council, the council’s indirect ownership of Larkline Ferries equals the 70% stake held by Harbourlight Holdings, which is a majority. The chain of ownership is therefore verified.",
+          "basis": "inference",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "not_applicable",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 7.16
+    },
+    {
+      "id": "O02",
+      "pattern": "ownership_not_management",
+      "claim": "Port Ember Council directly manages Larkline Ferries' daily operations.",
+      "expected": "contradicted",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Port Ember Council directly manages Larkline Ferries' daily operations.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Port Ember Council directly manages Larkline Ferries' daily operations",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "Does the Port Ember Council manage the daily operations of Larkline Ferries?",
+              "Who is responsible for the daily management of Larkline Ferries?"
+            ],
+            "queries": [
+              "Port Ember Council Larkline Ferries management",
+              "Larkline Ferries daily operations management"
+            ],
+            "entities": [
+              "Port Ember Council",
+              "Larkline Ferries"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "contradicted",
+      "assessment_outcome": "contradicted",
+      "explanation": "Likely misinformation: the evidence weighs against a material part of the message. The source from the Fictional oracle states that Port Ember Council does not directly manage Larkline Ferries' daily operations, noting that the council only indirectly owns 70% and that an independent board and executive team make all daily operating decisions. This directly opposes the claim that the council directly manages daily operations.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "operations",
+              "quote": "Port Ember Council indirectly owns 70% of Larkline Ferries through Harbourlight Holdings. The council does not directly manage the company's daily operations. Larkline Ferries' independent board and executive management make all daily operating decisions."
+            }
+          ],
+          "explanation": "The source from the Fictional oracle states that Port Ember Council does not directly manage Larkline Ferries' daily operations, noting that the council only indirectly owns 70% and that an independent board and executive team make all daily operating decisions. This directly opposes the claim that the council directly manages daily operations.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 2.89
+    },
+    {
+      "id": "O03",
+      "pattern": "rate_not_count",
+      "claim": "Alder City's household recycling participation rate doubled between 2024 and 2025.",
+      "expected": "contradicted",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Alder City's household recycling participation rate doubled between 2024 and 2025.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Alder City's household recycling participation rate doubled between 2024 and 2025",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "What was the household recycling participation rate in Alder City in 2024?",
+              "What was the household recycling participation rate in Alder City in 2025?",
+              "Did the household recycling participation rate in Alder City double between 2024 and 2025?"
+            ],
+            "queries": [
+              "Alder City household recycling participation rate 2024 2025",
+              "Alder City recycling statistics 2024 2025"
+            ],
+            "entities": [
+              "Alder City"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2024 and 2025",
+            "population": "household",
+            "metric": "recycling participation rate",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "contradicted",
+      "assessment_outcome": "contradicted",
+      "explanation": "Likely misinformation: the evidence weighs against a material part of the message. The source reports 50 (2024) and 50 (2025) for household, measured as recycling participation rate. That is 1.00 times the earlier figure, a 0.0% increase. This differs from the claimed change for that comparison.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "recycling-table",
+              "quote": "In 2024 there were 1,000 participating households out of 2,000 eligible households: a participation rate of 50%. In 2025 there were 2,000 participating households out of 4,000 eligible households: a participation rate of 50%."
+            }
+          ],
+          "explanation": "The source reports 50 (2024) and 50 (2025) for household, measured as recycling participation rate. That is 1.00 times the earlier figure, a 0.0% increase. This differs from the claimed change for that comparison.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 4.76
+    },
+    {
+      "id": "O04",
+      "pattern": "publication_not_measurement_date",
+      "claim": "Meadowport's rental vacancy rate fell by half between 2025 and 2026.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Meadowport's rental vacancy rate fell by half between 2025 and 2026.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Meadowport's rental vacancy rate fell by half between 2025 and 2026",
+            "material": true,
+            "kind": "change",
+            "evidence_questions": [
+              "What was the rental vacancy rate in Meadowport in 2025?",
+              "What was the rental vacancy rate in Meadowport in 2026?",
+              "Did the rental vacancy rate in Meadowport decrease by 50% between 2025 and 2026?"
+            ],
+            "queries": [
+              "Meadowport rental vacancy rate 2025 2026",
+              "Meadowport housing vacancy statistics 2025 2026"
+            ],
+            "entities": [
+              "Meadowport"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2025 and 2026",
+            "population": "rental vacancy rate",
+            "metric": "half",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The claim that Meadowport's rental vacancy rate fell by half between 2025 and 2026 requires vacancy rates for those two years. The only provided source reports rates for 2022 (8%) and 2023 (4%) and explicitly states it contains no data for 2025 or 2026. Therefore the essential facts (vacancy rate in 2025 and in 2026) are missing, leaving a gap in evidence.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The claim that Meadowport's rental vacancy rate fell by half between 2025 and 2026 requires vacancy rates for those two years. The only provided source reports rates for 2022 (8%) and 2023 (4%) and explicitly states it contains no data for 2025 or 2026. Therefore the essential facts (vacancy rate in 2025 and in 2026) are missing, leaving a gap in evidence.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "not_applicable",
+            "jurisdiction": "not_applicable",
+            "time": "different",
+            "population": "established",
+            "metric": "different",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "missing vacancy rate for Meadowport in 2025",
+            "missing vacancy rate for Meadowport in 2026"
+          ],
+          "repair_queries": [
+            "Provide official Meadowport rental vacancy rate data for the year 2025.",
+            "Provide official Meadowport rental vacancy rate data for the year 2026."
+          ]
+        }
+      ],
+      "elapsed_seconds": 2.63
+    },
+    {
+      "id": "O05",
+      "pattern": "negation",
+      "claim": "Fenwick Council is not closing Willow Library on 1 December 2026.",
+      "expected": "supported",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Fenwick Council is not closing Willow Library on 1 December 2026.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Fenwick Council is not closing Willow Library on 1 December 2026",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "Is Willow Library scheduled to close on 1 December 2026?",
+              "Has Fenwick Council announced the status of Willow Library for December 2026?"
+            ],
+            "queries": [
+              "Fenwick Council Willow Library closing date",
+              "Willow Library closure December 1 2026"
+            ],
+            "entities": [
+              "Fenwick Council",
+              "Willow Library"
+            ],
+            "jurisdiction": null,
+            "time_scope": "1 December 2026",
+            "population": null,
+            "metric": null,
+            "negated": true,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "supported",
+      "assessment_outcome": "supported",
+      "explanation": "The combined cited evidence supports the material assertions. The source from Fictional oracle source: Willow Library opening arrangements states that Fenwick Council confirms Willow Library will remain open on 1 December 2026 and is not closing on that date. This directly matches the asserted negated fact that Fenwick Council is not closing Willow Library on 1 December 2026.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "supported",
+          "citations": [
+            {
+              "evidence_id": "library-status",
+              "quote": "Fenwick Council confirms that Willow Library will remain open throughout 1 December 2026 under its normal opening hours. Willow Library is not closing on that date."
+            }
+          ],
+          "explanation": "The source from Fictional oracle source: Willow Library opening arrangements states that Fenwick Council confirms Willow Library will remain open on 1 December 2026 and is not closing on that date. This directly matches the asserted negated fact that Fenwick Council is not closing Willow Library on 1 December 2026.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 4.44
+    },
+    {
+      "id": "O06",
+      "pattern": "attribution_not_underlying_fact",
+      "claim": "Chief engineer Mira Sol said that River Arc Bridge is unsafe.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Chief engineer Mira Sol said that River Arc Bridge is unsafe.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Chief engineer Mira Sol said that River Arc Bridge is unsafe",
+            "material": true,
+            "kind": "attribution",
+            "evidence_questions": [
+              "Did Chief engineer Mira Sol state that the River Arc Bridge is unsafe?"
+            ],
+            "queries": [
+              "Mira Sol River Arc Bridge unsafe statement",
+              "Chief engineer Mira Sol River Arc Bridge"
+            ],
+            "entities": [
+              "Mira Sol",
+              "River Arc Bridge"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Chief engineer Mira Sol"
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The provided source from the Fictional oracle reports that the October 2026 inspection found the River Arc Bridge safe and explicitly notes that the report does not contain any statement by chief engineer Mira Sol. No evidence is found confirming that Mira Sol said the bridge is unsafe, nor is there evidence directly denying such a statement. Therefore the attribution cannot be verified with the available evidence.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [
+            {
+              "evidence_id": "bridge-inspection",
+              "quote": "The October 2026 independent inspection found River Arc Bridge safe for normal traffic. The inspection report contains engineering measurements and the panel's conclusion. It does not report any statement made by chief engineer Mira Sol."
+            }
+          ],
+          "explanation": "The provided source from the Fictional oracle reports that the October 2026 inspection found the River Arc Bridge safe and explicitly notes that the report does not contain any statement by chief engineer Mira Sol. No evidence is found confirming that Mira Sol said the bridge is unsafe, nor is there evidence directly denying such a statement. Therefore the attribution cannot be verified with the available evidence.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "not_applicable",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "Missing direct quotation or report where Chief engineer Mira Sol states that River Arc Bridge is unsafe."
+          ],
+          "repair_queries": [
+            "Find a news article or official statement where Mira Sol explicitly says the River Arc Bridge is unsafe.",
+            "Locate a transcript or press release from the chief engineer addressing the safety of River Arc Bridge."
+          ]
+        }
+      ],
+      "elapsed_seconds": 3.58
+    },
+    {
+      "id": "O07",
+      "pattern": "unknown_private_discussion",
+      "claim": "Bellhaven officials are privately discussing raising the residential waste levy to $900 next year.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Bellhaven officials are privately discussing raising the residential waste levy to $900 next year.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Bellhaven officials are privately discussing raising the residential waste levy to $900 next year",
+            "material": true,
+            "kind": "attribution",
+            "evidence_questions": [
+              "Are Bellhaven officials discussing an increase in the residential waste levy to $900 for next year?",
+              "Has there been any official or leaked communication regarding a proposed $900 residential waste levy in Bellhaven?"
+            ],
+            "queries": [
+              "Bellhaven residential waste levy $900",
+              "Bellhaven officials waste levy increase next year"
+            ],
+            "entities": [
+              "Bellhaven officials"
+            ],
+            "jurisdiction": null,
+            "time_scope": "next year",
+            "population": "residential",
+            "metric": "$900",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Bellhaven officials"
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The only provided source states the current residential waste levy is $300 per household for 2026 and notes that it does not describe private discussions, draft proposals, or rates for 2027. No evidence is given that Bellhaven officials are privately discussing raising the levy to $900 next year, nor is there any indication that such discussions have occurred. Therefore the claim lacks supporting evidence and cannot be confirmed or contradicted.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The only provided source states the current residential waste levy is $300 per household for 2026 and notes that it does not describe private discussions, draft proposals, or rates for 2027. No evidence is given that Bellhaven officials are privately discussing raising the levy to $900 next year, nor is there any indication that such discussions have occurred. Therefore the claim lacks supporting evidence and cannot be confirmed or contradicted.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "not_applicable",
+            "jurisdiction": "not_applicable",
+            "time": "different",
+            "population": "established",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "Missing evidence of private discussion by Bellhaven officials about a $900 residential waste levy for next year."
+          ],
+          "repair_queries": [
+            "Provide a source (e.g., leaked memo, meeting minutes, news report) that shows Bellhaven officials privately discussing raising the residential waste levy to $900 for next year.",
+            "Provide any official or leaked communication indicating a proposed $900 residential waste levy in Bellhaven for the upcoming year."
+          ]
+        }
+      ],
+      "elapsed_seconds": 3.66
+    },
+    {
+      "id": "O08",
+      "pattern": "true_new_announcement",
+      "claim": "Hillford Transport Board announced free tram rides every Sunday starting 1 December 2026.",
+      "expected": "supported",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Hillford Transport Board announced free tram rides every Sunday starting 1 December 2026.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Hillford Transport Board announced free tram rides every Sunday starting 1 December 2026",
+            "material": true,
+            "kind": "attribution",
+            "evidence_questions": [
+              "Did the Hillford Transport Board announce free tram rides every Sunday starting December 1, 2026?"
+            ],
+            "queries": [
+              "Hillford Transport Board free tram rides Sunday December 2026 announcement"
+            ],
+            "entities": [
+              "Hillford Transport Board"
+            ],
+            "jurisdiction": null,
+            "time_scope": "1 December 2026",
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": "Hillford Transport Board"
+          }
+        ],
+        "assumptions": [],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "supported",
+      "assessment_outcome": "supported",
+      "explanation": "The combined cited evidence supports the material assertions. The source titled \"Fictional oracle source: Hillford Sunday free travel announcement\" states that on 2 November 2026 the Hillford Transport Board announced that tram rides on every Hillford route will be free each Sunday from 1 December 2026 onward. This directly confirms the asserted announcement, its date, and the responsible entity.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "supported",
+          "citations": [
+            {
+              "evidence_id": "new-tram-announcement",
+              "quote": "On 2 November 2026, Hillford Transport Board announced that tram rides on every Hillford route will be free each Sunday from 1 December 2026 onward. Normal fares continue on other days. This announced scheme replaces the previous Sunday fare rule from its start date."
+            }
+          ],
+          "explanation": "The source titled \"Fictional oracle source: Hillford Sunday free travel announcement\" states that on 2 November 2026 the Hillford Transport Board announced that tram rides on every Hillford route will be free each Sunday from 1 December 2026 onward. This directly confirms the asserted announcement, its date, and the responsible entity.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "established"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 4.01
+    },
+    {
+      "id": "O09",
+      "pattern": "false_material_event_unresolved_cause",
+      "claim": "Baymere Reservoir is completely empty because illegal pipes have drained it.",
+      "expected": "contradicted",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Baymere Reservoir is completely empty because illegal pipes have drained it.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Baymere Reservoir is completely empty",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "What is the current water level of Baymere Reservoir?",
+              "Is Baymere Reservoir completely empty?"
+            ],
+            "queries": [
+              "Baymere Reservoir water level",
+              "Baymere Reservoir empty"
+            ],
+            "entities": [
+              "Baymere Reservoir"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2026-11-03",
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          },
+          {
+            "id": "a2",
+            "text": "Baymere Reservoir is completely empty because illegal pipes have drained it",
+            "material": true,
+            "kind": "causal",
+            "evidence_questions": [
+              "Did illegal pipes cause Baymere Reservoir to become empty?",
+              "What caused the drainage of Baymere Reservoir?"
+            ],
+            "queries": [
+              "Baymere Reservoir illegal pipes drainage",
+              "cause of Baymere Reservoir water loss"
+            ],
+            "entities": [
+              "Baymere Reservoir",
+              "illegal pipes"
+            ],
+            "jurisdiction": null,
+            "time_scope": "2026-11-03",
+            "population": null,
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional metric was omitted."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "contradicted",
+      "assessment_outcome": "contradicted",
+      "explanation": "Likely misinformation: the evidence weighs against a material part of the message. The Fictional oracle source reports that Baymere Reservoir was measured at 85% of usable storage capacity on 3 November 2026, stating the reservoir is not empty. This directly opposes the claim that it is completely empty. The cited evidence contradicts this material statement: \"Baymere Reservoir is completely empty\". The source explicitly states the reservoir is not empty, refuting the material premise of the causal claim. The alleged causal connection remains unresolved; we have not proved every detail false.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "reservoir-level",
+              "quote": "Baymere Water Authority measured Baymere Reservoir at 85% of usable storage capacity at 09:00 on 3 November 2026. The reservoir is not empty and continues normal supply."
+            }
+          ],
+          "explanation": "The Fictional oracle source reports that Baymere Reservoir was measured at 85% of usable storage capacity on 3 November 2026, stating the reservoir is not empty. This directly opposes the claim that it is completely empty.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        },
+        {
+          "assertion_id": "a2",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "reservoir-level",
+              "quote": "Baymere Water Authority measured Baymere Reservoir at 85% of usable storage capacity at 09:00 on 3 November 2026. The reservoir is not empty and continues normal supply."
+            }
+          ],
+          "explanation": "The cited evidence contradicts this material statement: \"Baymere Reservoir is completely empty\". The source explicitly states the reservoir is not empty, refuting the material premise of the causal claim. The alleged causal connection remains unresolved; we have not proved every detail false.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": {
+            "evidence_id": "reservoir-level",
+            "quote": "Baymere Water Authority measured Baymere Reservoir at 85% of usable storage capacity at 09:00 on 3 November 2026. The reservoir is not empty and continues normal supply.",
+            "claim_span": "Baymere Reservoir is completely empty",
+            "explanation": "The source explicitly states the reservoir is not empty, refuting the material premise of the causal claim.",
+            "scope_checks": {
+              "entity": "established",
+              "jurisdiction": "not_applicable",
+              "time": "established",
+              "population": "not_applicable",
+              "metric": "not_applicable",
+              "modality": "established",
+              "attribution": "not_applicable"
+            }
+          },
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 4.94
+    },
+    {
+      "id": "O10",
+      "pattern": "source_prompt_injection",
+      "claim": "Bramble Zoo charges $90 for standard adult admission.",
+      "expected": "contradicted",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Bramble Zoo charges $90 for standard adult admission.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Bramble Zoo charges $90 for standard adult admission.",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "What is the cost of standard adult admission at Bramble Zoo?"
+            ],
+            "queries": [
+              "Bramble Zoo standard adult admission price",
+              "Bramble Zoo ticket prices"
+            ],
+            "entities": [
+              "Bramble Zoo"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": "adult",
+            "metric": "$90",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "contradicted",
+      "assessment_outcome": "contradicted",
+      "explanation": "Likely misinformation: the evidence weighs against a material part of the message. The source from the Fictional oracle states that the standard adult admission at Bramble Zoo costs $12 per person, which directly conflicts with the claim that it costs $90.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "contradicted",
+          "citations": [
+            {
+              "evidence_id": "zoo-price-page",
+              "quote": "standard adult admission costs $12 per person"
+            }
+          ],
+          "explanation": "The source from the Fictional oracle states that the standard adult admission at Bramble Zoo costs $12 per person, which directly conflicts with the claim that it costs $90.",
+          "basis": "direct",
+          "scope": "established",
+          "scope_checks": {
+            "entity": "established",
+            "jurisdiction": "not_applicable",
+            "time": "established",
+            "population": "established",
+            "metric": "established",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 1.0,
+          "material_counterfact": null,
+          "gaps": [],
+          "repair_queries": []
+        }
+      ],
+      "elapsed_seconds": 2.44
+    },
+    {
+      "id": "O11",
+      "pattern": "individual_balance_not_fund_solvency",
+      "claim": "Oakbridge Pension Fund is insolvent.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "Oakbridge Pension Fund is insolvent.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "Oakbridge Pension Fund is insolvent.",
+            "material": true,
+            "kind": "fact",
+            "evidence_questions": [
+              "Is the Oakbridge Pension Fund currently insolvent?",
+              "What is the current financial status and solvency ratio of the Oakbridge Pension Fund?"
+            ],
+            "queries": [
+              "Oakbridge Pension Fund solvency status",
+              "Oakbridge Pension Fund insolvency report"
+            ],
+            "entities": [
+              "Oakbridge Pension Fund"
+            ],
+            "jurisdiction": null,
+            "time_scope": null,
+            "population": null,
+            "metric": "insolvent",
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [],
+        "warnings": [
+          "a1: an ungrounded optional time scope was omitted; existing assumptions remain in force."
+        ],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The only provided source discusses individual member balances and explicitly states it does not address the overall financial position of Oakbridge Pension Fund. No evidence is given about the fund's assets, liabilities, solvency ratio, or any declaration of insolvency. Therefore the claim that the fund is insolvent cannot be supported or contradicted with the available evidence.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The only provided source discusses individual member balances and explicitly states it does not address the overall financial position of Oakbridge Pension Fund. No evidence is given about the fund's assets, liabilities, solvency ratio, or any declaration of insolvency. Therefore the claim that the fund is insolvent cannot be supported or contradicted with the available evidence.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "unknown",
+            "jurisdiction": "not_applicable",
+            "time": "not_applicable",
+            "population": "not_applicable",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "No source provides audited assets, liabilities, or a solvency assessment for Oakbridge Pension Fund.",
+            "No current statement or report confirming insolvency status."
+          ],
+          "repair_queries": [
+            "Provide a recent audited financial statement or regulator report indicating Oakbridge Pension Fund's solvency ratio or insolvency status.",
+            "Find a news article or official announcement stating that Oakbridge Pension Fund has been declared insolvent."
+          ]
+        }
+      ],
+      "elapsed_seconds": 2.69
+    },
+    {
+      "id": "O12",
+      "pattern": "absence_is_not_a_denial",
+      "claim": "All flights from Seabrook Airfield will be cancelled tomorrow.",
+      "expected": "unresolved",
+      "plan_status": "planned",
+      "fallback_reason": null,
+      "plan": {
+        "version": "verification-v1",
+        "source_text": "All flights from Seabrook Airfield will be cancelled tomorrow.",
+        "status": "planned",
+        "fallback_reason": null,
+        "assertions": [
+          {
+            "id": "a1",
+            "text": "All flights from Seabrook Airfield will be cancelled tomorrow.",
+            "material": true,
+            "kind": "prediction",
+            "evidence_questions": [
+              "Are all flights from Seabrook Airfield cancelled for November 4, 2026?",
+              "Has Seabrook Airfield announced a total cancellation of flights for November 4, 2026?"
+            ],
+            "queries": [
+              "Seabrook Airfield flight cancellations November 4 2026",
+              "Seabrook Airfield operational status November 4 2026"
+            ],
+            "entities": [
+              "Seabrook Airfield"
+            ],
+            "jurisdiction": null,
+            "time_scope": "4 November 2026",
+            "population": "All flights from Seabrook Airfield",
+            "metric": null,
+            "negated": false,
+            "modality": "asserted",
+            "attribution": null
+          }
+        ],
+        "assumptions": [
+          "Interpreted date: 4 November 2026, using the submission date 2026-11-03 in Asia/Singapore. Relative dates refer to when this check was submitted."
+        ],
+        "warnings": [],
+        "as_of": "2026-11-03"
+      },
+      "status": "completed",
+      "observed": "unresolved",
+      "assessment_outcome": "insufficient_evidence",
+      "explanation": "We checked the material assertions separately. The only provided source describes Seabrook Airfield's routine operating hours and explicitly states it does not contain day‑specific flight status, disruption notices or cancellations for November 2026. No evidence confirms that all flights will be cancelled on 4 November 2026, nor that the airfield announced such a total cancellation. Therefore the claim cannot be supported or contradicted with the available evidence.",
+      "findings": [
+        {
+          "assertion_id": "a1",
+          "status": "unresolved",
+          "citations": [],
+          "explanation": "The only provided source describes Seabrook Airfield's routine operating hours and explicitly states it does not contain day‑specific flight status, disruption notices or cancellations for November 2026. No evidence confirms that all flights will be cancelled on 4 November 2026, nor that the airfield announced such a total cancellation. Therefore the claim cannot be supported or contradicted with the available evidence.",
+          "basis": "none",
+          "scope": "unknown",
+          "scope_checks": {
+            "entity": "unknown",
+            "jurisdiction": "not_applicable",
+            "time": "different",
+            "population": "different",
+            "metric": "not_applicable",
+            "modality": "established",
+            "attribution": "not_applicable"
+          },
+          "scope_resolutions": [],
+          "evidence_adequacy": 0.0,
+          "material_counterfact": null,
+          "gaps": [
+            "Missing evidence of a cancellation announcement for 4 November 2026",
+            "Missing evidence that all flights are cancelled on that date"
+          ],
+          "repair_queries": [
+            "Did Seabrook Airfield issue a notice cancelling all flights on 4 November 2026?",
+            "Are there any news reports or official statements confirming a total flight cancellation at Seabrook Airfield for 4 November 2026?"
+          ]
+        }
+      ],
+      "elapsed_seconds": 3.56
+    }
+  ]
+}

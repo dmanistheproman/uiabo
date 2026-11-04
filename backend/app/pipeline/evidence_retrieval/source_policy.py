@@ -2,7 +2,8 @@
 
 Eligibility permits assessment; it does not establish expertise, independence,
 page authorship or truth. Unknown publishers remain leads. No model trust score.
-All network extraction goes through Tavily, never arbitrary backend URL fetches.
+Page extraction uses Tavily. The optional PDF reader separately enforces eligible
+HTTPS sources, pinned public DNS addresses, no redirects and download limits.
 """
 
 from dataclasses import dataclass
@@ -11,7 +12,7 @@ import re
 from urllib.parse import urlsplit, urlunsplit
 
 from .sources import SOURCES, canonical_url, source_details, SourceNotAllowed
-from app.pipeline.shared.interpretation import claim_relationship
+from app.pipeline.shared.interpretation import claim_relationship, corporate_search_text
 from app.pipeline.shared.rankings import political_salary_ranking
 
 # Registry policies are linked in evaluation/trusted_sources/README.md.
@@ -61,6 +62,12 @@ def public_url(value: str) -> str:
 def url_identity(value: str) -> str:
     """Deduplication key only: never send this normalised URL to extraction."""
     clean = public_url(value)
+    parsed = urlsplit(clean)
+    if parsed.hostname in {'singaporeair.com', 'www.singaporeair.com'}:
+        # Locale copies of the same investor page do not add evidence coverage.
+        path = re.sub(r'^/en_[A-Z]{2}/[a-z]{2}/(?=about-us/information-for-investors/)',
+                      '/en_UK/sg/', parsed.path)
+        clean = urlunsplit((parsed.scheme, parsed.hostname, path.rstrip('/'), parsed.query, ''))
     try:
         return canonical_url(clean)
     except SourceNotAllowed:
@@ -81,13 +88,19 @@ class SourceDecision:
 
 def classify_source(url: str, claim: str = "") -> SourceDecision:
     host = urlsplit(public_url(url)).hostname
+    if host in {'chas.sg', 'www.chas.sg'} and re.search(r'\b(?:CHAS|healthcare|medical|subsid\w*)\b', claim, re.I):
+        return SourceDecision(True, 'scoped_first_party', 'CHAS', 'government', 'gov.sg',
+            'Scheme operator for CHAS eligibility and benefits; applicability to other subsidies must be checked separately.')
+    if host in {'changiairport.com', 'www.changiairport.com'} and re.search(r'\b(?:airport|Changi)\b', claim, re.I):
+        return SourceDecision(True, 'scoped_first_party', 'Changi Airport Group', 'other', 'changiairport.com',
+            'Airport operator for its own operations and advisories. Check the airport, affected facilities and dates separately.')
     if (host in {"politicalsalaries.com", "www.politicalsalaries.com"}
             and political_salary_ranking(claim)):
         return SourceDecision(True, "catalogue", "Political Salaries", "other", "politicalsalaries.com",
             "Reviewed political-pay comparison project for salary-ranking claims only. Manually compiled public figures can be incomplete or dated; verify metric, period and underlying sources.")
     for domain, (publisher, subjects, origin) in FIRST_PARTY.items():
         if ((host == domain or host.endswith("." + domain))
-                and claim_relationship(claim) != "general" and re.search(subjects, claim, re.I)):
+                and claim_relationship(claim) != "general" and re.search(subjects, corporate_search_text(claim), re.I)):
             return SourceDecision(True, "scoped_first_party", publisher, "other", origin,
                 "Reviewed first-party publisher for its own corporate relationships. Check that the passage establishes the named company's scope; self-publication is not independent corroboration.")
     for domain in SOURCES:

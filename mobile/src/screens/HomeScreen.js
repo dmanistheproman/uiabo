@@ -1,21 +1,21 @@
 import React from 'react';
-import { Alert, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 const features = [
-  { icon: 'Aa', label: 'Check text', colour: '#E5F3FA', ink: '#164D73', page: 'text' },
-  { icon: 'URL', label: 'Check link\nsafety', colour: '#E2F4F0', ink: '#008980', page: 'link' },
-  { icon: 'IMG', label: 'Image + caption', colour: '#FFF3D7', ink: '#946100', locked: true },
-  { icon: 'OCR', label: 'Read image text', colour: '#FFF3D7', ink: '#946100', page: 'ocr', premiumOnly: true },
-  { icon: 'CTX', label: 'Check image\ncontext', colour: '#EEE9F9', ink: '#7952AE', page: 'imageContext' },
-  { icon: 'AI', label: 'Deepfake / AI\nimage check', colour: '#EEE9F9', ink: '#7952AE', page: 'deepfakeAI', premiumOnly: true },
+  { icon: 'type', label: 'Check text', colour: colours.infoBackground, ink: colours.blueDark, page: 'text' },
+  { icon: 'link', label: 'Check link safety', colour: colours.successBackground, ink: colours.teal, page: 'link' },
+  { icon: 'file-text', label: 'Read image text', colour: colours.warningBackground, ink: colours.warning, page: 'ocr', premiumOnly: true },
+  { icon: 'image', label: 'Check image context', colour: colours.infoBackground, ink: colours.blueDark, page: 'imageContext', premiumOnly: true },
+  { icon: 'eye', label: 'Deepfake / AI image check', colour: colours.infoBackground, ink: colours.blueDark, page: 'deepfakeAI', premiumOnly: true },
 ];
 
 export default function HomeScreen({ onNavigate }) {
+  const { fontScale } = useWindowDimensions();
   const { firebaseUser, profile, refreshProfile } = useAuth();
   const [refreshing, setRefreshing] = React.useState(false);
   const name = profile?.name || firebaseUser.displayName || 'there';
@@ -37,53 +37,58 @@ export default function HomeScreen({ onNavigate }) {
     </View></PageHeader>
     <PageBody refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
       <View><Text style={styles.greeting}>{greeting}, {firstName}</Text><Text style={styles.subtitle}>What would you like to check?</Text></View>
-      <LinearGradient colors={['#123D5C', '#176F9C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.allowance}>
+      <LinearGradient colors={[colours.blueDark, '#14577D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.allowance}>
         <View style={{ flex: 1 }}><Text style={styles.allowanceLabel}>{premium ? "This month's allowance" : "Today's allowance"}</Text>
           <View style={styles.allowanceRow}><Text style={styles.available}>{remaining === 1 ? 'Check available:' : 'Checks available:'}</Text><Text style={styles.number}>{remaining ?? '—'}</Text></View>
           <View style={styles.track}><View style={[styles.fill, { width: `${Math.min(100, 100 * (remaining || 0) / (profile?.allowance?.submission_limit || 1))}%` }]} /></View>
         </View><Feather name={remaining === 0 ? 'clock' : 'check'} color="white" size={28} />
       </LinearGradient>
-      {!profile && <Pressable onPress={refresh} accessibilityRole="button"><Text style={styles.notice}>Your allowance could not be loaded. Tap to retry.</Text></Pressable>}
+      {!profile && <Pressable onPress={refresh} accessibilityRole="button" style={styles.retry}><Text style={styles.notice}>Your allowance could not be loaded. Tap to retry.</Text></Pressable>}
       {remaining === 0 && <Text style={styles.subtitle}>Your allowance resets {profile?.allowance?.reset_at ? `${new Date(profile.allowance.reset_at).toLocaleString([], { timeZone: 'Asia/Singapore', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} SGT` : 'at the next reset'}.</Text>}
       <View style={styles.grid}>{features.map(feature => <Pressable key={feature.icon} accessibilityRole="button"
         accessibilityLabel={`${feature.label.replace('\n', ' ')}${feature.locked ? premium ? ', coming soon' : ', premium feature' : feature.premiumOnly && !premium ? ', premium feature' : ''}`}
-        onPress={() => onNavigate(feature.locked ? 'premium' : feature.page)}
-        style={({ pressed }) => [styles.tile, (feature.locked || (feature.premiumOnly && !premium)) && styles.locked, pressed && { opacity: 0.7 }]}>
-        <View style={styles.tileTop}><View style={[styles.icon, { backgroundColor: feature.colour }]}><Text style={[styles.iconText, { color: feature.ink }]}>{feature.icon}</Text></View>
-          {feature.locked && <Text style={styles.lock}>{premium ? 'SOON' : 'LOCK'}</Text>}</View>
-        {feature.premiumOnly && !premium && <Text style={styles.lock}>PREMIUM</Text>}
-        <Text style={[styles.tileLabel, feature.locked && { color: '#657A88' }]}>{feature.label}</Text>
+        onPress={() => onNavigate(feature.locked || (feature.premiumOnly && !premium && profile) ? 'premium' : feature.page)}
+        style={({ pressed }) => [styles.tile, fontScale > 1.5 && styles.tileLarge, (feature.locked || (feature.premiumOnly && !premium)) && styles.locked, pressed && styles.tilePressed]}>
+        <View style={[styles.icon, { backgroundColor: feature.colour }]}><Feather name={feature.icon} size={28} color={feature.ink} /></View>
+        <View style={[styles.tileContent, fontScale > 1.5 && styles.tileContentLarge]}>
+          <Text style={styles.tileLabel}>{feature.label}</Text>
+          {feature.locked ? <Text style={styles.lock}>{premium ? 'Coming soon' : 'Premium'}</Text> : feature.premiumOnly && !premium && <Text style={styles.lock}>Premium</Text>}
+        </View>
+        {fontScale <= 1.5 && <Feather name="chevron-right" size={24} color={colours.blueDark} />}
       </Pressable>)}</View>
       <Pressable accessibilityRole="button" onPress={() => onNavigate('premium')} style={styles.upgrade}>
-        <Text style={styles.upgradeText}>{premium ? <><Text style={{ fontWeight: '700' }}>Premium active</Text> · Read image text is ready. Other image checks are coming soon.</> : <><Text style={{ fontWeight: '700' }}>Read image text with Premium</Text> · View plan details.</>}</Text>
+        <Text style={styles.upgradeText}>{premium ? <><Text style={{ fontWeight: '700' }}>Premium active</Text> · Read image text, check image context and check AI images.</> : <><Text style={{ fontWeight: '700' }}>Read image text with Premium</Text> · View plan details.</>}</Text>
       </Pressable>
     </PageBody>
   </View>;
 }
 
 const styles = StyleSheet.create({
-  account: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  plan: { backgroundColor: '#E5F3FA', color: colours.blueDark, borderRadius: 16, paddingHorizontal: 11, paddingVertical: 6, fontSize: 12, fontWeight: '700' },
-  avatar: { width: 42, height: 42, borderRadius: 12, borderWidth: 1, borderColor: '#DCE5EB', justifyContent: 'center', alignItems: 'center' },
-  initials: { color: colours.blueDark, fontSize: 15, fontWeight: '800' },
-  greeting: { color: '#173447', fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
-  subtitle: { color: '#667F90', fontSize: 13, lineHeight: 19, marginTop: 3 },
-  allowance: { borderRadius: 18, minHeight: 106, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 18 },
-  allowanceLabel: { color: '#DAEAF3', fontSize: 12, fontWeight: '500' },
-  allowanceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7 },
-  number: { color: 'white', fontSize: 32, fontWeight: '800' },
-  available: { color: 'white', fontSize: 13 },
+  account: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
+  plan: { ...typography.small, backgroundColor: colours.infoBackground, color: colours.blueDark, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 8, fontWeight: '700', flexShrink: 1 },
+  avatar: { minWidth: 56, minHeight: 56, padding: 8, borderRadius: 12, borderWidth: 2, borderColor: colours.border, justifyContent: 'center', alignItems: 'center' },
+  initials: { ...typography.secondary, color: colours.blueDark, fontWeight: '700' },
+  greeting: { ...typography.title, color: colours.ink },
+  subtitle: { ...typography.body, color: colours.muted, marginTop: 8 },
+  allowance: { borderRadius: 18, minHeight: 120, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16 },
+  allowanceLabel: { ...typography.secondary, color: colours.white },
+  allowanceRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8, marginVertical: 6 },
+  number: { color: colours.white, fontSize: 32, lineHeight: 42, fontWeight: '700' },
+  available: { ...typography.body, color: colours.white },
   track: { height: 5, backgroundColor: '#91B6C6', marginTop: 1, borderRadius: 5, overflow: 'hidden' },
   fill: { height: 5, backgroundColor: 'white' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  tile: { width: '48.4%', flexGrow: 1, minHeight: 115, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#D9E4EA', backgroundColor: 'white', justifyContent: 'space-between', gap: 12 },
-  tileTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  icon: { width: 42, height: 42, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  iconText: { fontWeight: '900', fontSize: 14 },
-  tileLabel: { color: '#173447', fontSize: 14, fontWeight: '800', lineHeight: 18 },
-  locked: { backgroundColor: '#EFF3F4' },
-  lock: { fontSize: 7, color: '#9A750B', backgroundColor: '#FFF6D8', padding: 5, borderRadius: 7 },
-  upgrade: { backgroundColor: '#FFF4D2', borderLeftWidth: 3, borderLeftColor: '#D49A00', borderRadius: 13, padding: 14 },
-  upgradeText: { color: '#80600A', lineHeight: 18, fontSize: 12 },
-  notice: { color: colours.danger, fontSize: 14 },
+  grid: { gap: 12 },
+  tile: { minHeight: 88, padding: 16, borderRadius: 16, borderWidth: 2, borderColor: colours.border, backgroundColor: colours.white, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  tileLarge: { flexDirection: 'column', alignItems: 'flex-start' },
+  tileContent: { flex: 1, flexShrink: 1, gap: 8, alignSelf: 'stretch', justifyContent: 'center' },
+  tileContentLarge: { flex: 0, flexShrink: 0 },
+  icon: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  tileLabel: { ...typography.label, color: colours.ink },
+  locked: { backgroundColor: colours.background },
+  tilePressed: { backgroundColor: colours.infoBackground },
+  lock: { ...typography.small, color: colours.warning, backgroundColor: colours.warningBackground, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7, alignSelf: 'flex-start' },
+  upgrade: { backgroundColor: colours.warningBackground, borderLeftWidth: 3, borderLeftColor: colours.warning, borderRadius: 13, padding: 18, minHeight: 56 },
+  upgradeText: { ...typography.secondary, color: colours.warning },
+  retry: { minHeight: 56, justifyContent: 'center' },
+  notice: { ...typography.secondary, color: colours.danger },
 });

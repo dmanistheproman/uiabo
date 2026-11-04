@@ -7,75 +7,53 @@ import {
   View,
 } from 'react-native';
 
-import * as ImagePicker from 'expo-image-picker';
+import { chooseImageFor } from '../services/imagePicker';
+import { confirmedImageFailure, imageInputError } from '../utils/inputFlows';
 
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 
 import { checkDeepfakeAI_Image } from '../services/api';
+import { colours, typography } from '../theme';
 
-function isSupportedImage(asset) {
-  const mimeType = (asset?.mimeType || '').toLowerCase();
-  const fileName = (asset?.fileName || '').toLowerCase();
-  const uri = (asset?.uri || '').toLowerCase().split('?')[0];
-
-  if (mimeType) {
-    return [
-      'image/png',
-      'image/jpeg',
-      'image/jpg',
-    ].includes(mimeType);
-  }
-
-  return /\.(png|jpg|jpeg)$/i.test(fileName)
-    || /\.(png|jpg|jpeg)$/i.test(uri);
-}
-
-
-export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
+export default function Deepfake_AI_Check_Screen({ onNavigate, onResult, setWorking, initialSelection = null }) {
   const { profile, firebaseUser, refreshProfile } = useAuth();
 
   const [selectedImage, setSelectedImage] = React.useState(null);
   const [analysing, setAnalysing] = React.useState(false);
+  const [selecting, setSelecting] = React.useState(false);
+  const sending = React.useRef(false);
+  const busy = analysing || selecting;
 
   const requestKeyRef = React.useRef(null);
 
   const premium = profile?.role === 'premium';
   const remaining = profile?.allowance?.remaining_submissions;
 
+  function acceptSelection(result) {
+    if (!result || result.canceled) return;
+    const image = result.assets?.[0];
+    const problem = result.code ? 'Please select the image again.' : imageInputError(image);
+    if (problem) { Alert.alert('Unable to use this image', problem); return; }
+    requestKeyRef.current = null;
+    setSelectedImage(image);
+  }
+
+  React.useEffect(() => { acceptSelection(initialSelection); }, [initialSelection]);
+
   async function chooseImage() {
+    if (sending.current) return;
+    sending.current = true; setSelecting(true); setWorking(true);
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
+      const result = await chooseImageFor(firebaseUser.uid, 'deepfakeAI', {
         mediaTypes: ['images'],
+        allowsMultipleSelection: false,
         allowsEditing: false,
         quality: 1,
       });
 
-      if (result.canceled) {
-        return;
-      }
-
-      const image = result.assets?.[0];
-
-      if (!image) {
-        Alert.alert(
-          'Unable to select image',
-          'Please try selecting the image again.',
-        );
-        return;
-      }
-
-      if (!isSupportedImage(image)) {
-        Alert.alert(
-          'Unsupported image',
-          'Please select a PNG, JPG or JPEG image.',
-        );
-        return;
-      }
-      
-      requestKeyRef.current = null;
-      setSelectedImage(image);
+      acceptSelection(result);
     } catch (error) {
       console.error('Image picker error:', error);
 
@@ -83,19 +61,24 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
         'Unable to open your images',
         'Please try again.',
       );
+    } finally {
+      sending.current = false; setSelecting(false); setWorking(false);
     }
   }
 
 
   function removeImage() {
+    if (sending.current) return;
     requestKeyRef.current = null;
     setSelectedImage(null);
   }
 
   async function analyseImage() {
-  if (!selectedImage || !firebaseUser || analysing) {
+  if (!selectedImage || !firebaseUser || sending.current || !premium) {
     return;
   }
+  sending.current = true;
+  setWorking(true);
 
   // Reuse the key if retrying a request that may have completed despite a connection error or timeout.
   if (!requestKeyRef.current) {
@@ -105,7 +88,7 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
 
   try {
     setAnalysing(true);
-    
+
     const imageToUpload = {
       ...selectedImage,
       fileName: selectedImage.fileName || 'image',
@@ -132,18 +115,17 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
     console.error('Deepfake_AI analysis error:', error);
 
     // A recorded model failure needs a new key for a fresh attempt.
-    if (
-      error.code === 'IMAGE_ANALYSIS_FAILED' ||
-      error.code === 'PREVIOUS_ANALYSIS_FAILED'
-    ) {
+    if (confirmedImageFailure(error.code)) {
       requestKeyRef.current = null;
     }
+    await refreshProfile().catch(() => {});
 
     Alert.alert(
       'Analysis failed',
       error.message || 'Unable to analyse the image. Please try again.',
     );
   } finally {
+    sending.current = false; setWorking(false);
     setAnalysing(false);
   }
 }
@@ -159,7 +141,7 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
         <PageBody>
           <View style={styles.card}>
             <Text style={styles.title}>
-              Premium feature
+              {profile ? 'Premium feature' : 'Load your account'}
             </Text>
 
             <Text style={styles.copy}>
@@ -167,8 +149,8 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
               for Premium users.
             </Text>
 
-            <Button onPress={() => onNavigate('premium')}>
-              View Premium
+            <Button onPress={() => profile ? onNavigate('premium') : refreshProfile().catch(error => Alert.alert('Account unavailable', error.message))}>
+              {profile ? 'View Premium' : 'Refresh account'}
             </Button>
 
             <Button
@@ -187,16 +169,12 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
     <View style={{ flex: 1 }}>
       <PageHeader
         title="Deepfake/AI image check"
-        onBack={() => onNavigate('home')}
+        onBack={() => !busy && onNavigate('home')}
         badge={remaining == null ? '— left' : `${remaining} left`}
       />
 
       <PageBody>
         <View>
-          <Text style={styles.eyebrow}>
-            IMAGE ANALYSIS
-          </Text>
-
           <Text style={styles.title}>
             Choose an image
           </Text>
@@ -215,10 +193,10 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
             </Text>
 
             <Text style={styles.copy}>
-              Supported formats: PNG, JPG and JPEG.
+              PNG or JPEG, up to 10 MB and 25 megapixels.
             </Text>
 
-            <Button onPress={chooseImage}>
+            <Button disabled={busy} onPress={chooseImage}>
               Choose image
             </Button>
           </View>
@@ -257,6 +235,7 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
 
             <Button
               secondary
+              disabled={busy}
               onPress={chooseImage}
             >
               Choose another image
@@ -264,25 +243,29 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
 
             <Button
               secondary
+              disabled={busy}
               onPress={removeImage}
             >
               Remove image
             </Button>
           </>
         )}
-        
+
         <View style={styles.info}><Text style={styles.label}>How your image is checked</Text>
-          <Text style={styles.copy}>The image is passed into a machine learning model trained specifically to detect AI images. The output score is then passed to Gemini API (Gemini 3.5 Flash Lite) to perform a secondary analysis and reasoning, to provide an explanation for the result. The results are saved privately in your result history. Do not submit images containing sensitive information.</Text>
+          <Text style={styles.copy}>The image is passed into a machine learning model trained specifically to detect AI images. The output score is then passed to Gemini API (Gemini 3.5 Flash Lite) to perform a secondary analysis and reasoning, to provide an explanation for the result. Completed results are saved privately in your history. When image saving is enabled, the uploaded image is also kept with the result; you can remove it from the result page. Do not submit images containing sensitive information.</Text>
           <Text style={styles.copy}>This checks for AI generated images or AI deepfakes. To fact-check an image's caption, try Check Image Context.</Text>
         </View>
 
         <Button
-          disabled={!selectedImage || analysing}
+          disabled={!selectedImage || busy || remaining == null || remaining <= 0}
           onPress={analyseImage}
         >
           {analysing ? 'Analysing...' : 'Analyse image'}
         </Button>
-        
+
+        {remaining === 0 && <Text style={styles.copy}>You have used your allowance. You can still view saved results.</Text>}
+        {remaining == null && <Button secondary disabled={busy} onPress={() => refreshProfile().catch(error => Alert.alert('Allowance unavailable', error.message))}>Refresh allowance</Button>}
+
         <Text style={styles.hintCentre}>
           {analysing
             ? 'Please wait while the image is analysed.'
@@ -295,38 +278,27 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult }) {
 }
 
 const styles = StyleSheet.create({
-  eyebrow: {
-    color: '#7952AE',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
+  title: {
+    ...typography.title,
+    color: colours.ink,
     marginBottom: 8,
   },
 
-  title: {
-    color: '#173447',
-    fontSize: 25,
-    fontWeight: '800',
-    marginBottom: 5,
-  },
-
   copy: {
-    color: '#526F83',
-    fontSize: 14,
-    lineHeight: 21,
+    ...typography.body,
+    color: colours.text,
   },
 
   label: {
-    color: '#173447',
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 7,
+    ...typography.label,
+    color: colours.ink,
+    marginBottom: 8,
   },
 
   uploadCard: {
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderColor: '#D9E4EA',
+    backgroundColor: colours.white,
+    borderColor: colours.border,
     borderRadius: 18,
     borderStyle: 'dashed',
     borderWidth: 2,
@@ -335,32 +307,30 @@ const styles = StyleSheet.create({
   },
 
   imageIcon: {
-    backgroundColor: '#EEE9F9',
+    ...typography.label,
+    backgroundColor: colours.infoBackground,
     borderRadius: 12,
-    color: '#7952AE',
-    fontSize: 17,
-    fontWeight: '900',
+    color: colours.blueDark,
     overflow: 'hidden',
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
 
   uploadTitle: {
-    color: '#173447',
-    fontSize: 20,
-    fontWeight: '800',
+    ...typography.heading,
+    color: colours.ink,
   },
 
   previewCard: {
-    backgroundColor: 'white',
-    borderColor: '#D9E4EA',
+    backgroundColor: colours.white,
+    borderColor: colours.divider,
     borderRadius: 18,
     borderWidth: 1,
     overflow: 'hidden',
   },
 
   preview: {
-    backgroundColor: '#EFF3F4',
+    backgroundColor: colours.infoBackground,
     height: 300,
     width: '100%',
   },
@@ -370,33 +340,31 @@ const styles = StyleSheet.create({
   },
 
   fileName: {
-    color: '#173447',
-    fontSize: 16,
-    fontWeight: '700',
+    ...typography.secondary,
+    color: colours.ink,
+    fontWeight: '600',
     marginBottom: 5,
   },
 
   hint: {
-    color: '#617D90',
-    fontSize: 12,
-    lineHeight: 18,
+    ...typography.secondary,
+    color: colours.muted,
   },
 
   hintCentre: {
-    color: '#617D90',
-    fontSize: 12,
-    lineHeight: 18,
+    ...typography.secondary,
+    color: colours.muted,
     textAlign: 'center',
   },
 
   card: {
-    backgroundColor: 'white',
-    borderColor: '#D9E4EA',
+    backgroundColor: colours.white,
+    borderColor: colours.divider,
     borderRadius: 18,
     borderWidth: 1,
     gap: 16,
     padding: 20,
   },
 
-  info: { backgroundColor: '#E5F3FA', borderLeftWidth: 3, borderLeftColor: '#1778A3', padding: 16, borderRadius: 14, gap: 10 },
+  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, padding: 18, borderRadius: 14, gap: 12 },
 });

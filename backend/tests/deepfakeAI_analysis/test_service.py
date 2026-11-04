@@ -27,6 +27,7 @@ IMAGE_PATH = os.path.join(
 # WARNING: This test consumes an Gemini API usage
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(os.getenv("UIABO_RUN_LIVE_IMAGE_TESTS") != "1", reason="Opt-in live Gemini test")
 def test_analyse_deepfakeAI():
     with Image.open(IMAGE_PATH) as source:
         image = source.convert("RGB")
@@ -193,11 +194,13 @@ def test_deepfake_AI_disagreement_output():
 #   image -> FastAPI router -> service.py -> Model -> JSON response
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(os.getenv("UIABO_RUN_LIVE_IMAGE_TESTS") != "1", reason="Opt-in live Gemini test")
 def test_deepfake_AI_endpoint(signed_analysis, monkeypatch):
     # Create a fake authenticated user for this test.
     store, identity = signed_analysis
+    store.documents["users", identity["user"].uid]["role"] = "premium"
     fake_user = identity["user"]
-    
+
     from app.routers import deepfakeAI_analysis as deepfakeAI_router
 
     monkeypatch.setattr(
@@ -205,7 +208,7 @@ def test_deepfake_AI_endpoint(signed_analysis, monkeypatch):
         "get_analysis_store",
         lambda: store,
     )
-    
+
     # Replace the real Firebase authentication dependency.
     app.dependency_overrides[get_verified_user] = lambda: fake_user
 
@@ -290,6 +293,7 @@ def test_deepfake_AI_endpoint_idempotent_retry(signed_analysis, monkeypatch):
     from app.routers import deepfakeAI_analysis as deepfakeAI_router
 
     store, _ = signed_analysis
+    store.documents["users", "analysis-user"]["role"] = "premium"
     monkeypatch.setattr(
         deepfakeAI_router,
         "get_analysis_store",
@@ -300,7 +304,7 @@ def test_deepfake_AI_endpoint_idempotent_retry(signed_analysis, monkeypatch):
 
     def fake_analyse(image):
         nonlocal detector_calls
-        detector_calls += 1    
+        detector_calls += 1
         return {
             "label": "Fake",
             "confidence": 0.9,
@@ -366,7 +370,7 @@ def test_deepfake_AI_endpoint_idempotent_retry(signed_analysis, monkeypatch):
         # The successful analysis only consumes one allowance.
         allowance = store.documents["usage_allowances", "analysis-user"]
         assert allowance["successful_submissions"] == 1
-        assert allowance["remaining_submissions"] == 0
+        assert allowance["remaining_submissions"] == 59
 
 
 # ---------------------------------------------------------------------------

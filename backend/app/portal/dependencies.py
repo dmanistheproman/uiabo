@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 
 from app.accounts.models import UserProfile
 from app.accounts.repository import AccountRepository, get_account_repository
@@ -56,6 +56,7 @@ def require_role(*roles: str):
     def dependency(
         user: Annotated[AuthenticatedUser, Depends(get_verified_user)],
         repository: Annotated[AccountRepository, Depends(get_account_repository)],
+        request: Request = None,
     ) -> OperationalContext:
         try:
             profile = repository.get_profile(user.uid)
@@ -69,10 +70,12 @@ def require_role(*roles: str):
                     "message": "The portal is temporarily unavailable. Please retry.",
                 },
             ) from error
-        if profile is None or profile.role not in allowed:
+        if profile is None or profile.account_type != "staff" or not allowed.intersection(profile.operational_roles):
             raise _access_denied()
         if profile.account_status != "active":
             raise _account_unavailable()
+        if request is not None and len(allowed) == 1:
+            request.state.operational_role = next(iter(allowed))
         return OperationalContext(user=user, profile=profile)
 
     return dependency

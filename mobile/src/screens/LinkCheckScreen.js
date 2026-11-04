@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 import { checkLink } from '../services/api';
-import { colours } from '../theme';
+import { colours, typography } from '../theme';
 
 export default function LinkCheckScreen({ onNavigate, onResult, setWorking }) {
   const { firebaseUser, profile, refreshProfile } = useAuth();
@@ -45,7 +45,7 @@ export default function LinkCheckScreen({ onNavigate, onResult, setWorking }) {
       <View><Text style={styles.label}>Webpage link</Text>
         <TextInput accessibilityLabel="Webpage link" value={url} editable={!busy} maxLength={4096}
           autoCapitalize="none" autoCorrect={false} keyboardType="url" placeholder="https://example.com/page"
-          placeholderTextColor="#7D909E" style={styles.input}
+          placeholderTextColor={colours.muted} style={styles.input}
           onChangeText={value => { setUrl(value); setError(''); requestKey.current = null; }} />
       </View>
       <View style={styles.info}><Text style={styles.label}>How your link is checked</Text>
@@ -66,12 +66,12 @@ export default function LinkCheckScreen({ onNavigate, onResult, setWorking }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: '#173447', fontSize: 25, fontWeight: '800', marginBottom: 6 },
-  copy: { color: '#526F83', lineHeight: 22, fontSize: 14 },
-  label: { color: '#173447', fontWeight: '700', fontSize: 15, marginBottom: 8 },
-  input: { backgroundColor: 'white', borderColor: '#B8CDD9', borderWidth: 1, borderRadius: 14, padding: 16, color: '#173447', fontSize: 16, minHeight: 60 },
-  info: { backgroundColor: '#E5F3FA', borderLeftWidth: 3, borderLeftColor: '#1778A3', padding: 16, borderRadius: 14, gap: 10 },
-  error: { color: '#A12020', fontSize: 14, lineHeight: 21 },
+  title: { ...typography.title, color: colours.ink, marginBottom: 8 },
+  copy: { ...typography.body, color: colours.text },
+  label: { ...typography.label, color: colours.ink, marginBottom: 8 },
+  input: { ...typography.body, backgroundColor: colours.white, borderColor: colours.border, borderWidth: 2, borderRadius: 14, padding: 16, color: colours.ink, minHeight: 64 },
+  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, padding: 18, borderRadius: 14, gap: 12 },
+  error: { ...typography.secondary, color: colours.danger },
   progress: { alignItems: 'center', padding: 18, gap: 14 },
-  hint: { color: '#617D90', fontSize: 12, lineHeight: 19 },
+  hint: { ...typography.secondary, color: colours.muted },
 });

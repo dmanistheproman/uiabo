@@ -73,11 +73,13 @@ class ReportAuditEntry(BaseModel):
 class ReportSnapshot(BaseModel):
     """Denormalised result facts that power dashboard aggregates."""
 
-    claim_category: str
-    checkable: bool
+    claim_category: str | None = None
+    checkable: bool | None = None
     concern_label: str
     misinformation_risk_score: float | None = None
-    uncertainty: str
+    uncertainty: str | None = None
+    confidence: float | None = None
+    safety_status: str | None = None
     pipeline_version: str
     result_created_at: datetime
 

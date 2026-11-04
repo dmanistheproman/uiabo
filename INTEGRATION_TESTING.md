@@ -1,5 +1,7 @@
 # Team integration testing
 
+**2 November update:** The latest local fixes are in `C:\Dev\uiabo-vision` on `feature/evidence-label-consistency`; they have not been pushed. See [the completed fixes and connected app functions](RELIABILITY_UPDATES.md). The older combined-branch instructions below apply until those changes are shared.
+
 Use branch `integration/jev-ocr`. This is the combined testing version, not the final release.
 
 ## Get the code
@@ -54,28 +56,33 @@ Open the portal at http://localhost:5174. Use a verified operational account wit
 - [ ] Submit text; check label-first result, explanation, sources and credibility details.
 - [ ] Reopen text and link results from history.
 - [ ] Report an incorrect result and submit general feedback from Profile.
+- [ ] Report completed deepfake, image-context and link results; inspect their details and saved images in the Data Engineer portal.
+- [ ] Enable `DEMO_PAYMENTS_ENABLED=1`; use a Free app account to cancel checkout, then complete it and check Premium access. Retry without resetting consumed allowance. See `DEMO_PREMIUM_SETUP.md`.
 - [ ] Premium account: select an image, extract OCR text, edit it and check the text.
 - [ ] Run deepfake image analysis and reopen its result from history.
 - [ ] Run image-context screenshot analysis and reopen its result from history.
 - [ ] Check admin and data-engineer portal pages with separate test accounts.
+- [ ] With a former staff test account, remove portal permissions, convert it to Free in Find users, then sign in to the app with the existing credentials. Confirm portal access is refused and repeated conversion cannot reset allowance.
 - [ ] Check service-error messages, retry behaviour and allowance changes.
 
 Use test accounts. Record the branch/commit, feature, input, expected result, actual result, error text and screenshot for each issue. Never attach API keys or tokens.
 
-## Known issues to fix after integration
+## Remaining acceptance work after the 2 November fixes
 
-- Image-context failures after caption extraction can consume allowance. Search provider failures can appear as completed insufficient-evidence results.
-- Image-context and deepfake endpoints need server-side Premium checks.
-- Admin suspension lacks self/last-admin protection, suspension reasons, session revocation and full audit logging. Do not suspend your only administrator.
-- Data-engineer monitoring uses an undefined error setter; investigation save failures may be hidden.
-- Pipeline run IDs and saved result IDs need alignment; completion must follow successful result storage.
-- Access and monitoring audit trails remain incomplete; operational account creation is still CLI-based.
-- Image upload limits, concurrency and provider timeouts need strengthening.
-- Image + caption remains locked. Current image-context implementation extracts a caption from a screenshot; it does not provide reverse-image provenance checking or an editable caption step.
-- Image result labels and supporting-citation requirements need alignment with the agreed label definitions.
-- Test Android photo-picker activity recovery across OCR and the new image screens; current recovery originated in the OCR-only app.
+Webpage-text extraction is deferred. Copy article text into Check text. Check link safety remains available.
 
-Make fixes on feature branches and merge them into integration after review.
+- Exercise the authenticated emulator journeys after restarting the updated backend.
+- Check image context: compare a screenshot with no typed caption against an image with an explicit caption. Confirm Premium access and that failed requests do not reduce allowance.
+- With a disposable account only, use Profile ? Delete my account. An incorrect password must not submit deletion. Cancelling confirmation must keep the account. A confirmed valid request should sign out after acceptance; check cleanup after the backend worker runs. Never use a team member's real account for this destructive test.
+- While an image check is running, verify that duplicate submits and navigation are blocked. Recover a photo-picker activity interruption into its original feature.
+- Confirm Help, Premium and image-result caption wording match the features now available.
+- Present one image-context/image-caption feature; remove the duplicate locked tile.
+- Align image labels and explanations with the team-reviewed definitions.
+- Test photo-picker activity recovery across OCR and image screens.
+- Evaluate detection accuracy on the agreed review set.
+- Check live Firebase IAM and deletion behaviour with a disposable test account only.
+
+The earlier image allowance/Premium checks, portal error display, run-ID/persistence ordering and administrator safeguards have been addressed locally. See `RELIABILITY_UPDATES.md` for the remaining limits and verification evidence.
 
 ## Merge verification (1 November 2026)
 
