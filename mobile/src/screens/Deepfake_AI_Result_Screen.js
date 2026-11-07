@@ -1,6 +1,7 @@
 import { colours, typography } from '../theme';
 import ReportResultPanel from '../components/ReportResultPanel';
 import SavedResultImage from '../components/SavedResultImage';
+import FeatureExplanation from '../components/FeatureExplanation';
 import React from 'react';
 
 import {
@@ -16,17 +17,12 @@ import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
 
 export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }) {
-  const confidence = Number(result?.confidence);
-  const realProbability = Number(result?.real_probability);
-  const fakeProbability = Number(result?.fake_probability);
-
   const formatPercent = (value) => {
     const num = Number(value);
     // Checks if it's a valid finite number AND greater than 0
     return Number.isFinite(num) && num > 0 ? `${(num * 100).toFixed(1)}%` : '-';
   };
 
-  const confidencePercent = formatPercent(result?.confidence);
   const realPercent = formatPercent(result?.real_probability);
   const fakePercent = formatPercent(result?.fake_probability);
 
@@ -118,25 +114,7 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
           </Text>
         </View>
 
-        <View style={styles.card}>
-          <Text accessibilityRole="header" style={styles.heading}>
-            Confidence
-          </Text>
-
-          <Text style={styles.score}>
-            {confidencePercent}
-          </Text>
-
-          <Text style={styles.secondary}>
-            This is the model's confidence in its classification.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text accessibilityRole="header" style={styles.heading}>
-            Model probabilities
-          </Text>
-
+        <FeatureExplanation title="Model probabilities" key={result?.result_id}>
           <View style={styles.row}>
             <Text style={styles.label}>Real</Text>
             <Text style={styles.value}>{realPercent}</Text>
@@ -146,7 +124,7 @@ export default function Deepfake_AI_Result_Screen({ result, onNavigate, onBack }
             <Text style={styles.label}>AI-generated</Text>
             <Text style={styles.value}>{fakePercent}</Text>
           </View>
-        </View>
+        </FeatureExplanation>
 
         <View style={styles.card}>
           <Text accessibilityRole="header" style={styles.heading}>
@@ -211,8 +189,6 @@ const styles = StyleSheet.create({
   copy: { ...typography.body, color: colours.text },
   card: { borderRadius: 16, backgroundColor: colours.white, borderWidth: 1, borderColor: colours.divider, padding: 18, gap: 16 },
   heading: { ...typography.heading, color: colours.ink },
-  score: { color: colours.ink, fontWeight: '700', fontSize: 36, lineHeight: 48 },
-  secondary: { ...typography.secondary, color: colours.muted },
   row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', columnGap: 16, rowGap: 8, borderTopWidth: 1, borderTopColor: colours.divider, paddingTop: 16 },
   label: { ...typography.body, color: colours.text, flexShrink: 1 },
   value: { ...typography.label, color: colours.ink },
