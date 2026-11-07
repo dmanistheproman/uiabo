@@ -25,7 +25,7 @@ class DemoPaymentResult(BaseModel):
 
 def demo_offer():
     return {"enabled": os.environ.get("DEMO_PAYMENTS_ENABLED", "0").lower() in {"1", "true", "yes"},
-            "mode": "demo", "currency": "SGD", "display_price_cents": 200,
+            "mode": "demo", "currency": "SGD", "display_price_cents": 2000,
             "amount_charged": 0, "monthly_checks": 60}
 
 

@@ -21,7 +21,7 @@ Free users obtain Premium for no charge.
 1. Sign in with a verified, active **Free app account**.
 2. Open **Premium** using the banner on Home.
 3. Select **Continue to demo checkout**.
-4. Review the simulated S$2.00 monthly price and the actual S$0.00 charge.
+4. Review the simulated S$20.00 monthly price and the actual S$0.00 charge.
 5. Select **Complete demo payment**, or **Cancel** to keep the Free account.
 6. On success, Home shows Premium and its monthly allowance; image features unlock.
 
