@@ -22,6 +22,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    ValidationError,
     model_validator,
 )
 
@@ -265,6 +266,61 @@ class RetrievalTrace(PipelineModel):
     relevance_calls: int = 0
     decisions: list[dict[str, str]] = Field(default_factory=list)
     coverage_issues: list[CoverageIssue] = Field(default_factory=list)
+
+
+class ProviderTransportDiagnostic(PipelineModel):
+    """Small, allowlisted provider-attempt metadata; never request or error text."""
+
+    provider: Literal['openai'] = 'openai'
+    phase: Literal['research_response', 'research_recovery_response', 'assessment_response']
+    attempt: int = Field(ge=1, le=3)
+    outcome: Literal['success', 'retry', 'failed']
+    http_status: int | None = Field(default=None, ge=100, le=599)
+    error_code: Literal[
+        'invalid_json_schema', 'model_not_found', 'invalid_api_key',
+        'rate_limit_exceeded', 'slow_down', 'server_is_overloaded',
+        'server_error', 'internal_server_error', 'insufficient_quota',
+        'quota_exceeded', 'billing_hard_limit_reached', 'billing_not_active',
+        'organization_spend_limit_exceeded',
+        'project_spend_limit_exceeded', 'organization_usage_limit_exceeded',
+        'service_unavailable', 'context_length_exceeded', 'invalid_request_error', 'other',
+    ] | None = None
+    error_type: Literal[
+        'invalid_request_error', 'authentication_error', 'permission_error',
+        'rate_limit_error', 'insufficient_quota', 'server_error',
+        'service_unavailable_error', 'other',
+    ] | None = None
+    exception_type: Literal[
+        'ConnectError', 'ConnectTimeout', 'ReadError', 'ReadTimeout',
+        'WriteError', 'WriteTimeout', 'RemoteProtocolError', 'PoolTimeout',
+        'TimeoutException', 'RequestError', 'HTTPError', 'other',
+    ] | None = None
+    request_id: str | None = Field(default=None, pattern=r'^req_[A-Za-z0-9_-]{1,100}$')
+    elapsed_ms: int = Field(ge=0, le=240000)
+    retry_delay_ms: int | None = Field(default=None, ge=0, le=180000)
+    stop_reason: Literal['attempt_limit', 'deadline', 'search_budget', 'non_retryable'] | None = None
+
+
+def provider_transport_diagnostics(trace: RetrievalTrace) -> list[ProviderTransportDiagnostic]:
+    """Project metadata only; malformed diagnostics cannot replace a pipeline error."""
+    records = []
+    entries = getattr(trace, 'decisions', None)
+    if not isinstance(entries, list):
+        return records
+    for item in entries:
+        if not isinstance(item, dict) or item.get('decision') != 'openai_transport':
+            continue
+        if item.get('provider') != 'openai':
+            continue
+        safe = {key: value for key, value in item.items()
+                if key in ProviderTransportDiagnostic.model_fields and value is not None}
+        try:
+            record = ProviderTransportDiagnostic.model_validate(safe)
+        except (ValidationError, TypeError, ValueError):
+            continue
+        records.append(record)
+    # A bounded view remains useful even if a future caller emits excess entries.
+    return records[-12:]
 
 
 class ClimateRecord(PipelineModel):
@@ -718,5 +774,6 @@ class FailedAnalysisRecord(PipelineModel):
     message: str
     retryable: bool
     warnings: list[str] = Field(default_factory=list)
+    provider_diagnostics: list[ProviderTransportDiagnostic] = Field(default_factory=list, max_length=12)
     pipeline_version: str
     created_at: datetime

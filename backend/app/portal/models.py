@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.pipeline.shared.models import ProviderTransportDiagnostic
+
 
 ReportStatus = Literal["open", "reviewing", "resolved", "dismissed"]
 ReportReason = Literal["wrong_label", "wrong_score", "wrong_evidence", "other"]
@@ -156,6 +158,7 @@ class PipelineRun(BaseModel):
     failure_stage: str | None = None
     error_code: str | None = None
     message: str | None = None
+    provider_diagnostics: list[ProviderTransportDiagnostic] = Field(default_factory=list, max_length=12)
 
 
 class RunListResponse(BaseModel):

@@ -8,6 +8,7 @@ import httpx
 import pytest
 
 from app.pipeline.evidence_assessment import openai_research as research
+from app.pipeline.evidence_assessment import openai_transport as transport
 from app.pipeline.shared.errors import PipelineComponentError
 from app.pipeline.shared.models import RetrievalTrace
 from app.pipeline.shared.runtime_budget import request_budget
@@ -77,6 +78,9 @@ def run(monkeypatch, responses, *, trace=None, claim=CLAIM):
     monkeypatch.setenv('OPENAI_REASONING_EFFORT', 'medium')
     monkeypatch.setattr(research.httpx, 'AsyncClient', lambda **kwargs:
         original(**kwargs, transport=httpx.MockTransport(handler)))
+    async def no_wait(seconds):
+        pass
+    monkeypatch.setattr(transport, '_sleep', no_wait)
     return requests, lambda: asyncio.run(research.research_claim(claim, as_of=TODAY, trace=trace))
 
 
@@ -164,7 +168,7 @@ def test_longer_provider_read_timeout_keeps_connect_and_total_deadlines_bounded(
     requests, invoke = run(monkeypatch, [search_response(), assessment_response()])
     invoke()
     assert requests[0].extensions['timeout']['read'] == 120
-    assert requests[0].extensions['timeout']['connect'] == 5
+    assert requests[0].extensions['timeout']['connect'] == 15
     assert research.TOTAL_SECONDS == 180
 
 
@@ -320,14 +324,17 @@ def test_provider_defects_do_not_become_claim_verdicts(monkeypatch, mutation, co
     (400, 'invalid_json_schema', 'OPENAI_SCHEMA_INVALID'),
     (404, 'model_not_found', 'OPENAI_MODEL_UNAVAILABLE'),
     (400, None, 'OPENAI_REQUEST_REJECTED'),
+    (429, 'insufficient_quota', 'OPENAI_QUOTA_EXCEEDED'),
+    (408, None, 'OPENAI_UNAVAILABLE'), (409, None, 'OPENAI_UNAVAILABLE'),
 ])
 def test_http_failures_are_safe_and_never_trigger_fallback(monkeypatch, status, api_code, expected):
     response = httpx.Response(status, json={'error': {'code': api_code,
         'message': KEY + ' PRIVATE_PROVIDER_ERROR'}})
-    requests, invoke = run(monkeypatch, [response])
+    attempts = 3 if status == 429 and api_code is None else 2 if status in {408, 409, 503} else 1
+    requests, invoke = run(monkeypatch, [response] * attempts)
     with pytest.raises(PipelineComponentError) as error:
         invoke()
-    assert error.value.error_code == expected and len(requests) == 1
+    assert error.value.error_code == expected and len(requests) == attempts
     assert KEY not in str(error.value) and 'PRIVATE_PROVIDER_ERROR' not in str(error.value)
 
 
@@ -338,12 +345,96 @@ def test_missing_key_is_rejected_before_network(monkeypatch):
     assert error.value.error_code == 'OPENAI_NOT_CONFIGURED'
 
 
+def test_first_connection_failure_recovers_without_reducing_search_budget(monkeypatch):
+    trace = RetrievalTrace()
+    requests, invoke = run(monkeypatch, [httpx.ConnectTimeout('PRIVATE_CONNECTION'),
+        search_response(), assessment_response()], trace=trace)
+    assert invoke().verdict == 'false'
+    payloads = [json.loads(request.content) for request in requests]
+    assert len(requests) == 3 and payloads[0] == payloads[1]
+    assert payloads[1]['max_tool_calls'] == 10
+    assert not any(item['decision'] == 'openai_web_research_retry_reservation' for item in trace.decisions)
+    events = [item for item in trace.decisions if item['decision'] == 'openai_transport']
+    assert [item['outcome'] for item in events] == ['retry', 'success', 'success']
+    assert events[0]['exception_type'] == 'ConnectTimeout'
+    assert 'PRIVATE_CONNECTION' not in trace.model_dump_json()
+
+
+def test_assessment_service_retry_keeps_completed_research(monkeypatch):
+    trace = RetrievalTrace()
+    requests, invoke = run(monkeypatch, [search_response(),
+        httpx.Response(503, json={'error': {'code': 'server_is_overloaded'}}),
+        assessment_response()], trace=trace)
+    assert invoke().verdict == 'false'
+    payloads = [json.loads(request.content) for request in requests]
+    assert len(requests) == 3 and payloads[1] == payloads[2]
+    assert sum(bool(payload.get('tools')) for payload in payloads) == 1
+    assert trace.search_requests == 1
+    events = [item for item in trace.decisions if item['decision'] == 'openai_transport']
+    assert events[1]['phase'] == events[2]['phase'] == 'assessment_response'
+    assert events[1]['http_status'] == '503' and events[2]['attempt'] == '2'
+
+
+def test_ambiguous_research_failure_reserves_unobserved_tool_work(monkeypatch):
+    trace = RetrievalTrace()
+    requests, invoke = run(monkeypatch, [httpx.Response(502, text='PRIVATE_GATEWAY'),
+        search_response(), assessment_response()], trace=trace)
+    assert invoke().verdict == 'false'
+    payloads = [json.loads(request.content) for request in requests]
+    assert [payload['max_tool_calls'] for payload in payloads if 'tools' in payload] == [10, 2]
+    assert 'at most 2 web tool actions' in payloads[1]['instructions']
+    usage = next(item for item in trace.decisions if item['decision'] == 'openai_web_research_tool_usage')
+    assert usage['reserved_tool_actions'] == '10' and usage['granted_tool_actions'] == '2'
+    assert trace.search_requests == 1
+
+
+def test_research_retry_cannot_exceed_its_reduced_tool_grant(monkeypatch):
+    oversized = search_response()
+    oversized['output'][2:2] = [deepcopy(oversized['output'][1]) for _ in range(2)]
+    requests, invoke = run(monkeypatch, [httpx.Response(503), oversized])
+    with pytest.raises(PipelineComponentError) as error:
+        invoke()
+    assert error.value.error_code == 'OPENAI_RESEARCH_INVALID' and len(requests) == 2
+
+
+def test_failed_research_and_citation_recovery_share_reserved_budget(monkeypatch):
+    requests, invoke = run(monkeypatch, [httpx.Response(503), mismatched_response(),
+        search_response(), assessment_response()])
+    assert invoke().verdict == 'false'
+    research_calls = [json.loads(request.content) for request in requests if 'tools' in json.loads(request.content)]
+    assert [payload['max_tool_calls'] for payload in research_calls] == [10, 2, 1]
+    # The failed first request reserved ten actions; the two successful requests
+    # actually used one each. Overlapping grants are not extra executed actions.
+
+
+def test_network_failure_retries_stay_within_original_deadline(monkeypatch):
+    requests, invoke = run(monkeypatch, [httpx.ConnectError('PRIVATE_CONNECTION')])
+    with request_budget(10), pytest.raises(PipelineComponentError) as error:
+        invoke()
+    assert error.value.error_code == 'OPENAI_UNAVAILABLE' and len(requests) == 1
+
+
+@pytest.mark.parametrize('provider_code,expected,retryable,attempts', [
+    ('rate_limit_exceeded', 'OPENAI_RATE_LIMITED', True, 3),
+    ('slow_down', 'OPENAI_RATE_LIMITED', True, 3),
+    ('insufficient_quota', 'OPENAI_QUOTA_EXCEEDED', False, 1),
+    ('server_error', 'OPENAI_UNAVAILABLE', True, 3),
+])
+def test_failed_response_envelopes_preserve_operational_error(monkeypatch, provider_code, expected, retryable, attempts):
+    failed = {'status': 'failed', 'error': {'code': provider_code, 'message': 'PRIVATE_PROVIDER_MESSAGE'}}
+    requests, invoke = run(monkeypatch, [search_response()] + [failed] * attempts)
+    with pytest.raises(PipelineComponentError) as error:
+        invoke()
+    assert error.value.error_code == expected and error.value.retryable is retryable
+    assert len(requests) == 1 + attempts and 'PRIVATE_PROVIDER_MESSAGE' not in str(error.value)
+
+
 def test_shared_budget_is_respected(monkeypatch):
     requests, invoke = run(monkeypatch, [search_response(), assessment_response()])
     original_post = research._post
-    async def slow(client, payload):
+    async def slow(client, payload, **kwargs):
         await asyncio.sleep(.05)
-        return await original_post(client, payload)
+        return await original_post(client, payload, **kwargs)
     monkeypatch.setattr(research, '_post', slow)
     with request_budget(.001):
         with pytest.raises(PipelineComponentError) as error:
@@ -520,10 +611,11 @@ def test_assessment_transport_or_refusal_failure_never_triggers_review(monkeypat
         response['output'][0]['content'] = [{'type': 'refusal', 'refusal': 'PRIVATE_PROVIDER_MESSAGE'}]
     else:
         response['status'] = 'incomplete'
-    requests, invoke = run(monkeypatch, [search_response(), response])
+    responses = [search_response()] + [response] * (3 if failure == 'http' else 1)
+    requests, invoke = run(monkeypatch, responses)
     with pytest.raises(PipelineComponentError) as error:
         invoke()
-    assert error.value.error_code == code and len(requests) == 2
+    assert error.value.error_code == code and len(requests) == len(responses)
 
 
 def test_assessment_review_shares_the_original_deadline(monkeypatch):
@@ -531,12 +623,12 @@ def test_assessment_review_shares_the_original_deadline(monkeypatch):
     requests, invoke = run(monkeypatch, [search_response(), assessment_response(invalid), assessment_response()])
     original_post = research._post
     calls = 0
-    async def slow_repair(client, payload):
+    async def slow_repair(client, payload, **kwargs):
         nonlocal calls
         calls += 1
         if calls == 3:
             await asyncio.sleep(.1)
-        return await original_post(client, payload)
+        return await original_post(client, payload, **kwargs)
     monkeypatch.setattr(research, '_post', slow_repair)
     with request_budget(.03):
         with pytest.raises(PipelineComponentError) as error:
@@ -793,12 +885,12 @@ def test_provenance_recovery_shares_the_original_deadline(monkeypatch):
     requests, invoke = run(monkeypatch, [mismatched_response(), search_response()])
     original_post = research._post
     calls = 0
-    async def slow_recovery(client, payload):
+    async def slow_recovery(client, payload, **kwargs):
         nonlocal calls
         calls += 1
         if calls == 2:
             await asyncio.sleep(.1)
-        return await original_post(client, payload)
+        return await original_post(client, payload, **kwargs)
     monkeypatch.setattr(research, '_post', slow_recovery)
     monkeypatch.setattr(research, 'MIN_RECOVERY_SECONDS', 0)
     with request_budget(.03):
@@ -812,11 +904,11 @@ def test_provenance_recovery_cannot_reset_the_research_stage_deadline(monkeypatc
     requests, invoke = run(monkeypatch, [mismatched_response(), search_response()])
     original_post = research._post
     calls = 0
-    async def slow_research(client, payload):
+    async def slow_research(client, payload, **kwargs):
         nonlocal calls
         calls += 1
         await asyncio.sleep(.06)
-        return await original_post(client, payload)
+        return await original_post(client, payload, **kwargs)
     monkeypatch.setattr(research, '_post', slow_research)
     monkeypatch.setattr(research, 'TOTAL_SECONDS', .1)
     monkeypatch.setattr(research, 'MIN_RECOVERY_SECONDS', 0)

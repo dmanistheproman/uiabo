@@ -25,6 +25,7 @@ from app.pipeline.shared.web_research import ResearchAssessment, ResearchSource
 from .openai_provider import OpenAIProviderError, get_settings, strict_schema, _safe_usage
 from .citation_urls import citation_comparison_key, url_fingerprint
 from .research_decisions import DecisionDraft, bind_decision
+from .openai_transport import post_with_retries, error_metadata, quota_error, CONNECT_SECONDS
 
 
 TOTAL_SECONDS = 180
@@ -264,13 +265,20 @@ def _public_url(value):
         raise _invalid('citation_url') from None
 
 
-async def _post(client, payload):
-    response = await client.post("/v1/responses", json=payload)
+async def _post(client, payload, *, deadline=None, phase='research_response', trace=None, reserve_retry=None):
+    response = await post_with_retries(client, payload,
+        deadline=deadline if deadline is not None else asyncio.get_running_loop().time() + TOTAL_SECONDS,
+        phase=phase, trace=trace, reserve_retry=reserve_retry)
+    metadata = error_metadata(response)
     if response.status_code in {401, 403}:
         raise _error("OPENAI_ACCESS_DENIED", "The OpenAI research service could not authenticate or access this model.", retryable=False)
     if response.status_code == 429:
+        if quota_error(metadata):
+            raise _error("OPENAI_QUOTA_EXCEEDED", "Analysis is unavailable because the service's API credit or spending limit has been reached.", retryable=False)
         raise _error("OPENAI_RATE_LIMITED", "OpenAI research capacity or API quota is unavailable. Please try again later.")
     if response.status_code >= 500:
+        raise _error("OPENAI_UNAVAILABLE", "OpenAI web research is temporarily unavailable. Please retry.")
+    if response.status_code in {408, 409}:
         raise _error("OPENAI_UNAVAILABLE", "OpenAI web research is temporarily unavailable. Please retry.")
     if response.status_code != 200:
         try:
@@ -292,6 +300,14 @@ async def _post(client, payload):
         raise _invalid()
     if body.get("status") == "incomplete":
         raise _error("OPENAI_RESPONSE_INCOMPLETE", "OpenAI could not finish the researched assessment. Please retry.")
+    if body.get('status') == 'failed':
+        if quota_error(metadata):
+            raise _error("OPENAI_QUOTA_EXCEEDED", "Analysis is unavailable because the service's API credit or spending limit has been reached.", retryable=False)
+        if metadata.get('error_code') in {'rate_limit_exceeded', 'slow_down'}:
+            raise _error("OPENAI_RATE_LIMITED", "OpenAI research is temporarily busy. Please try again later.")
+        if metadata.get('error_code') in {
+                'server_error', 'internal_server_error', 'service_unavailable', 'server_is_overloaded'}:
+            raise _error("OPENAI_UNAVAILABLE", "OpenAI web research is temporarily unavailable. Please retry.")
     if body.get("status") != "completed" or body.get("error") is not None:
         raise _invalid()
     return body
@@ -525,10 +541,29 @@ async def research_claim(text: str, *, as_of: date, trace=None) -> ResearchAsses
         deadline = loop.time() + remaining_seconds(TOTAL_SECONDS)
         async with asyncio.timeout_at(deadline), httpx.AsyncClient(
                 base_url="https://api.openai.com", headers={"Authorization": f"Bearer {settings.api_key}"},
-                timeout=httpx.Timeout(120, connect=5)) as client:
-            tools_used = 0
+                timeout=httpx.Timeout(120, connect=CONNECT_SECONDS)) as client:
+            tools_used, tools_reserved = 0, 0
+
+            def reserve_research_retry(payload):
+                nonlocal tools_reserved, attempt_calls
+                previous_grant = payload['max_tool_calls']
+                # A lost response may already have executed tools. Reserve its
+                # entire grant rather than assume failed work was free.
+                tools_reserved += previous_grant
+                remaining = MAX_SEARCH_CALLS - tools_used - tools_reserved
+                _trace(trace, 'openai_web_research_retry_reservation',
+                    reserved_tool_actions=previous_grant, remaining_tool_actions=max(0, remaining))
+                if remaining <= 0:
+                    return None
+                grant = min(previous_grant, remaining)
+                attempt_calls = grant
+                return {**payload, 'max_tool_calls': grant,
+                    'instructions': payload['instructions'].replace(
+                        f'This attempt has at most {previous_grant} web tool actions',
+                        f'This attempt has at most {grant} web tool actions')}
+
             for research_attempt in (0, 1):
-                remaining_calls = MAX_SEARCH_CALLS - tools_used
+                remaining_calls = MAX_SEARCH_CALLS - tools_used - tools_reserved
                 # Keep recovery capacity even when a difficult first attempt
                 # uses its full grant. Unused initial actions remain available.
                 attempt_calls = min(INITIAL_SEARCH_CALLS, remaining_calls) if research_attempt == 0 else remaining_calls
@@ -549,7 +584,7 @@ async def research_claim(text: str, *, as_of: date, trace=None) -> ResearchAsses
                     "tools": [{"type": "web_search", "user_location": {"type": "approximate",
                         "country": "SG", "city": "Singapore", "timezone": "Asia/Singapore"}}],
                     "tool_choice": "required", "include": ["web_search_call.action.sources"],
-                })
+                }, deadline=deadline, phase=phase, trace=trace, reserve_retry=reserve_research_retry)
                 _record_usage(trace, body, settings, 'research_recovery' if research_attempt else 'research')
                 phase = 'research_recovery_parse' if research_attempt else 'research_parse'
                 # Observe only structurally identifiable completed tool actions
@@ -568,7 +603,7 @@ async def research_claim(text: str, *, as_of: date, trace=None) -> ResearchAsses
                 _trace(trace, 'openai_web_research_tool_usage', provider='openai',
                     research_attempt=research_attempt + 1, tool_actions=len(completed_actions),
                     search_actions=search_count, total_tool_actions=tools_used,
-                    granted_tool_actions=attempt_calls)
+                    reserved_tool_actions=tools_reserved, granted_tool_actions=attempt_calls)
                 _, actions = _messages(body, search=True)
                 if len(actions) > attempt_calls:
                     raise _invalid('search_budget')
@@ -580,14 +615,14 @@ async def research_claim(text: str, *, as_of: date, trace=None) -> ResearchAsses
                         raise
                     _record_failure(trace, phase, 'citation_provenance_mismatch')
                     error.diagnostics_recorded = True
-                    if (research_attempt == 0 and tools_used < MAX_SEARCH_CALLS
+                    if (research_attempt == 0 and tools_used + tools_reserved < MAX_SEARCH_CALLS
                             and min(deadline - loop.time(), remaining_seconds(TOTAL_SECONDS)) >= MIN_RECOVERY_SECONDS):
                         _trace(trace, 'openai_web_research_citation_recovery',
-                            action='fresh_research', remaining_tool_actions=MAX_SEARCH_CALLS - tools_used)
+                            action='fresh_research', remaining_tool_actions=MAX_SEARCH_CALLS - tools_used - tools_reserved)
                         continue
                     _trace(trace, 'openai_web_research_citation_recovery_stopped',
                         reason=('attempt_limit' if research_attempt else
-                                'tool_budget' if tools_used >= MAX_SEARCH_CALLS else 'time_budget'))
+                                'tool_budget' if tools_used + tools_reserved >= MAX_SEARCH_CALLS else 'time_budget'))
                     raise
                 _trace(trace, "web_search_completed", provider="openai", count=len(searches),
                     search_count=search_count, cited_sources=len(sources))
@@ -610,7 +645,7 @@ async def research_claim(text: str, *, as_of: date, trace=None) -> ResearchAsses
                     "input": [{"role": "user", "content": json.dumps(context, ensure_ascii=False)}],
                     "text": {"format": {"type": "json_schema", "name": "uiabo_research_decisions",
                         "strict": True, "schema": strict_schema(DecisionDraft.model_json_schema())}},
-                })
+                }, deadline=deadline, phase=phase, trace=trace)
                 _record_usage(trace, assessed, settings, 'assessment' if attempt == 1 else 'assessment_review')
                 phase = 'assessment_parse'
                 blocks, _ = _messages(assessed, search=False)

@@ -53,14 +53,17 @@ def analyse_text(request: TextAnalysisRequest, user: User, store: Store,
                 "message": "The previous check failed. Start a new check to retry."})
         # Compute with request-local storage; the authoritative result and quota
         # are committed together in one Firestore transaction below.
-        isolated = pipeline.with_repository(InMemoryResultRepository(),
+        request_repository = InMemoryResultRepository()
+        isolated = pipeline.with_repository(request_repository,
             id_factory=lambda: reservation["result_id"], run_recorder=pending_runs.append)
         try:
             result = isolated.analyze(request.text)
         except PipelineError as error:
+            recorded_failure = request_repository.failures.get(reservation['result_id'])
             failure = FailedAnalysisRecord(result_id=reservation["result_id"],
                 original_text=request.text, input_source=request.input_source, failure_stage=error.stage, error_code=error.error_code,
                 message=error.message, retryable=error.retryable,
+                provider_diagnostics=(recorded_failure.provider_diagnostics if recorded_failure else []),
                 pipeline_version=getattr(pipeline, "pipeline_version", "unknown"),
                 created_at=datetime.now(timezone.utc))
             store.finish(user.uid, reservation, failure)

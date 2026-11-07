@@ -12,7 +12,9 @@ from app.pipeline.input_preparation.service import prepare_text
 from app.pipeline.shared.errors import (
     PipelineComponentError, PipelineContractError, PipelineError, PipelineValidationError,
 )
-from app.pipeline.shared.models import FailedAnalysisRecord, PreparedText, RetrievalTrace
+from app.pipeline.shared.models import (
+    FailedAnalysisRecord, PreparedText, RetrievalTrace, provider_transport_diagnostics,
+)
 from app.pipeline.shared.runtime_budget import request_budget
 
 
@@ -103,18 +105,24 @@ class OpenAIResearchPipeline:
                 self._repository.save_result(result)
             self._record_run_best_effort({**base_run, 'status': 'completed',
                 'finished_at': self._clock(), 'duration_ms': int((time.perf_counter() - started) * 1000),
-                'stage_timings_ms': timings})
+                'stage_timings_ms': timings,
+                'provider_diagnostics': [event.model_dump(mode='json', exclude_none=True)
+                                         for event in provider_transport_diagnostics(trace)]})
             return result
         except PipelineError as error:
+            diagnostics = provider_transport_diagnostics(trace)
             self._record_run_best_effort({**base_run, 'status': 'failed',
                 'finished_at': self._clock(), 'duration_ms': int((time.perf_counter() - started) * 1000),
                 'stage_timings_ms': timings, 'failure_stage': error.stage,
-                'error_code': error.error_code, 'message': error.message})
+                'error_code': error.error_code, 'message': error.message,
+                'provider_diagnostics': [event.model_dump(mode='json', exclude_none=True)
+                                         for event in diagnostics]})
             if prepared is not None:
                 try:
                     self._repository.save_failure(FailedAnalysisRecord(result_id=result_id,
                         original_text=prepared.original_text, failure_stage=error.stage,
                         error_code=error.error_code, message=error.message, retryable=error.retryable,
+                        provider_diagnostics=diagnostics,
                         pipeline_version=self.pipeline_version, warnings=prepared.warnings, created_at=created_at))
                 except Exception:
                     pass
