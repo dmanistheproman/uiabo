@@ -13,6 +13,7 @@ import { confirmedImageFailure, imageInputError } from '../utils/inputFlows';
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
+import FeatureExplanation from '../components/FeatureExplanation';
 
 import { checkDeepfakeAI_Image } from '../services/api';
 import { colours, typography } from '../theme';
@@ -251,17 +252,17 @@ export default function Deepfake_AI_Check_Screen({ onNavigate, onResult, setWork
           </>
         )}
 
-        <View style={styles.info}><Text style={styles.label}>How your image is checked</Text>
-          <Text style={styles.copy}>The image is passed into a machine learning model trained specifically to detect AI images. The output score is then passed to Gemini API (Gemini 3.5 Flash Lite) to perform a secondary analysis and reasoning, to provide an explanation for the result. Completed results are saved privately in your history. When image saving is enabled, the uploaded image is also kept with the result; you can remove it from the result page. Do not submit images containing sensitive information.</Text>
-          <Text style={styles.copy}>This checks for AI generated images or AI deepfakes. To fact-check an image's caption, try Check Image Context.</Text>
-        </View>
-
         <Button
           disabled={!selectedImage || busy || remaining == null || remaining <= 0}
           onPress={analyseImage}
         >
           {analysing ? 'Analysing...' : 'Analyse image'}
         </Button>
+
+        <FeatureExplanation>
+          <Text style={styles.copy}>Looks for signs of AI-generated imagery. This is an assessment, not proof. To check a caption, use Check image context.</Text>
+          <Text style={styles.copy}>Results are saved privately. If image saving is enabled, your image is saved too and can be removed from the result. Avoid private images.</Text>
+        </FeatureExplanation>
 
         {remaining === 0 && <Text style={styles.copy}>You have used your allowance. You can still view saved results.</Text>}
         {remaining == null && <Button secondary disabled={busy} onPress={() => refreshProfile().catch(error => Alert.alert('Allowance unavailable', error.message))}>Refresh allowance</Button>}
@@ -366,5 +367,4 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
-  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, padding: 18, borderRadius: 14, gap: 12 },
 });

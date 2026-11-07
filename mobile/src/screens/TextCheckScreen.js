@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Keyboard, StyleSheet, Text, TextInput, View }
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
+import FeatureExplanation from '../components/FeatureExplanation';
 import { checkText } from '../services/api';
 import { colours, typography } from '../theme';
 
@@ -47,10 +48,14 @@ export default function TextCheckScreen({ onNavigate, onResult, setWorking, init
             onChangeText={value => { setText(value); setError(''); requestKey.current = null; }} />
           <View style={styles.caption}><Text style={styles.hint}>Do not include passwords or private information.</Text><Text style={styles.hint}>{text.length.toLocaleString()} / 5,000</Text></View>
         </View>
-        <View style={styles.info}><Text style={styles.label}>What happens next?</Text><Text style={styles.copy}>UIABO identifies a checkable claim, searches for evidence and explains any uncertainty.</Text></View>
         {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
-        {busy ? <View accessibilityLiveRegion="polite" style={styles.progress}><ActivityIndicator size="large" color={colours.blue} /><Text style={styles.label}>Checking the claim and its sources…</Text><Text style={styles.copy}>This may take a couple of minutes. Keep this screen open.</Text></View> : <>
+        {busy ? <View accessibilityLiveRegion="polite" style={styles.progress}><ActivityIndicator size="large" color={colours.blue} /><Text style={styles.label}>Checking the claim and its sources…</Text><Text style={styles.copy}>This may take a couple of minutes. Keep this screen open.</Text></View> :
           <Button onPress={submit} disabled={remaining === 0 || remaining == null}>Check this text</Button>
+        }
+        <FeatureExplanation>
+          <Text style={styles.copy}>We look for evidence about your message and explain what it supports. If evidence is limited, the result will say so.</Text>
+        </FeatureExplanation>
+        {!busy && <>
           {remaining === 0 && <Text style={styles.error}>You've used your allowance. You can still view your saved results.</Text>}
           {remaining == null && <Button secondary onPress={() => refreshProfile().catch(problem => Alert.alert('Could not refresh', problem.message))}>Refresh allowance</Button>}
           <Text style={[styles.hint, { textAlign: 'center' }]}>Only successful checks use your {profile?.role === 'premium' ? 'monthly' : 'daily'} allowance.</Text>

@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, Keyboard, StyleSheet, Text, TextInput, View }
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
+import FeatureExplanation from '../components/FeatureExplanation';
 import { checkImageContext } from '../services/api';
 import { chooseImageFor } from '../services/imagePicker';
 import { confirmedImageFailure, imageInputError } from '../utils/inputFlows';
@@ -82,13 +83,12 @@ export default function ImageContextScreen({ onNavigate, onResult, setWorking, i
           style={styles.input} value={caption} placeholder="What does the post say about this image?" placeholderTextColor={colours.muted}
           onChangeText={value => { setCaption(value); setError(''); requestKey.current = null; }} />
         <Text style={styles.hint}>{caption.length.toLocaleString()} / 5,000 characters</Text>
-        <Text style={styles.copy}>Leave this blank to read the caption from your screenshot. If you enter a caption, that is the message we will assess with the image.</Text>
-        <View style={styles.info}>
-          <Text style={styles.label}>What this check does</Text>
-          <Text style={styles.copy}>We compare the image and caption with web evidence. This does not prove the image's original date or location, or whether it was AI-generated.</Text>
-          <Text style={styles.copy}>Completed checks are saved in your history. When image saving is enabled, your image is saved privately too. Avoid sensitive or private images.</Text>
-        </View>
+        <Text style={styles.copy}>Leave blank to read the caption from your screenshot.</Text>
         <Button loading={busy === 'analysing'} disabled={!selectedImage || Boolean(busy) || remaining == null || remaining === 0} onPress={analyseImage}>Check image and caption</Button>
+        <FeatureExplanation>
+          <Text style={styles.copy}>Checks the image and its message against published evidence. It cannot prove the original date, location or whether the image was AI-generated.</Text>
+          <Text style={styles.copy}>Results are saved privately. If image saving is enabled, your image is saved too and can be removed from the result. Avoid private images.</Text>
+        </FeatureExplanation>
         {remaining === 0 && <Text style={styles.error}>You have used your allowance. You can still view saved results.</Text>}
         {remaining == null && <Button secondary disabled={Boolean(busy)} onPress={() => refreshProfile().catch(problem => setError(problem.message))}>Refresh allowance</Button>}
         {!!busy && <View accessibilityLiveRegion="polite" style={styles.progress}><ActivityIndicator /><Text style={styles.copy}>{busy === 'selecting' ? 'Opening your images…' : 'Checking the image and message. This may take a few minutes.'}</Text></View>}
@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
   input: { ...typography.body, minHeight: 160, backgroundColor: colours.white, borderColor: colours.border, borderWidth: 2, borderRadius: 14, padding: 16, color: colours.ink },
   card: { backgroundColor: colours.white, borderRadius: 16, padding: 18, gap: 12 },
   preview: { width: '100%', height: 240, backgroundColor: colours.infoBackground, borderRadius: 12 },
-  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, borderRadius: 14, padding: 18, gap: 12 },
   error: { ...typography.secondary, color: colours.danger },
   progress: { gap: 12, alignItems: 'center' },
 });

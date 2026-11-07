@@ -4,6 +4,7 @@ import { chooseImageFor } from '../services/imagePicker';
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
+import FeatureExplanation from '../components/FeatureExplanation';
 import { checkText, readImageText } from '../services/api';
 import { colours, typography } from '../theme';
 
@@ -78,13 +79,12 @@ export default function OcrScreen({ initialSelection = null, onNavigate, onResul
     <PageHeader title="Read image text" onBack={() => !busy && onNavigate('home')} badge={premium ? `${remaining ?? '—'} left` : 'Premium'} />
     <PageBody>
       {!premium ? <View style={styles.card}><Text style={styles.heading}>{profile ? 'A Premium feature' : 'Loading your account'}</Text><Text style={styles.copy}>Premium accounts can extract text from screenshots and photos, review it and check the message.</Text><Button secondary onPress={() => profile ? onNavigate('premium') : refreshProfile().catch(problem => setError(problem.message))}>{profile ? 'View Premium' : 'Refresh account'}</Button>{!!error && <Text style={styles.error}>{error}</Text>}</View> : <>
-        <View><Text style={styles.heading}>{extracted ? 'Review the words before checking' : 'Start with a clear screenshot'}</Text><Text style={styles.copy}>Choose an image containing a short English message. OCR reads the words; the fact-check happens after your review.</Text></View>
+        <View><Text style={styles.heading}>{extracted ? 'Review the words before checking' : 'Start with a clear screenshot'}</Text><Text style={styles.copy}>Choose a short English message. Review the extracted words before checking.</Text></View>
         {!!asset && <Image accessibilityLabel="Selected image for comparison with extracted text" source={{ uri: asset.uri }} style={styles.preview} resizeMode="contain" />}
         {!busy && <Button secondary onPress={chooseImage}>{asset ? 'Choose a different image' : 'Choose image'}</Button>}
-        {!extracted && <View style={styles.info}><Text style={styles.label}>Your image and allowance</Text><Text style={styles.copy}>The image is sent to UIABO's image reader and is not saved to your account. Avoid images containing passwords or private information.</Text><Text style={styles.copy}>Extracting text does not use your allowance. One check is used only when the fact-check completes.</Text></View>}
         {!!asset && !extracted && !busy && <Button onPress={extract}>Read text from image</Button>}
         {extracted && <>
-          <View style={styles.info}>{warnings.map((warning, index) => <Text key={index} style={styles.copy}>{warning}</Text>)}</View>
+          {!!warnings.length && <View style={styles.info}>{warnings.map((warning, index) => <Text key={index} style={styles.copy}>{warning}</Text>)}</View>}
           <View><Text style={styles.label}>Review and edit extracted text</Text>
             <TextInput accessibilityLabel="Review and edit extracted text" value={text} multiline textAlignVertical="top" editable={!busy}
               style={styles.input} onChangeText={value => { setText(value); setError(''); requestKey.current = null; }} />
@@ -100,6 +100,10 @@ export default function OcrScreen({ initialSelection = null, onNavigate, onResul
         {!!busy && <View accessibilityLiveRegion="polite" style={styles.progress}><ActivityIndicator size="large" color={colours.blue} /><Text style={styles.label}>{busy === 'checking' ? 'Checking the claim and its sources…' : busy === 'reading' ? 'Reading the image…' : 'Opening your photos…'}</Text><Text style={styles.copy}>{busy === 'checking' ? 'This may take a couple of minutes. Keep this screen open.' : 'Keep this screen open while the request finishes.'}</Text></View>}
         {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
         {!!error && extracted && !busy && <Button secondary onPress={() => onNavigate('results')}>View saved results</Button>}
+        <FeatureExplanation>
+          <Text style={styles.copy}>Read the words, correct any mistakes, then check the message. Reading text uses no checks; a completed fact-check uses one.</Text>
+          <Text style={styles.copy}>The image is not saved. Your reviewed text and result are saved after a completed check. Avoid images containing private information.</Text>
+        </FeatureExplanation>
       </>}
     </PageBody>
   </View>;

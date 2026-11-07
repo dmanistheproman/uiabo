@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Keyboard, StyleSheet, Text, TextInput, View }
 import { useAuth } from '../auth/AuthContext';
 import { PageBody, PageHeader } from '../components/AppShell';
 import Button from '../components/Button';
+import FeatureExplanation from '../components/FeatureExplanation';
 import { checkLink } from '../services/api';
 import { colours, typography } from '../theme';
 
@@ -48,13 +49,15 @@ export default function LinkCheckScreen({ onNavigate, onResult, setWorking }) {
           placeholderTextColor={colours.muted} style={styles.input}
           onChangeText={value => { setUrl(value); setError(''); requestKey.current = null; }} />
       </View>
-      <View style={styles.info}><Text style={styles.label}>How your link is checked</Text>
-        <Text style={styles.copy}>The full URL is sent to Google Web Risk and saved privately in your result history. Only submit public links. Do not submit password-reset links, private invitations or links containing access tokens.</Text>
-        <Text style={styles.copy}>This checks for known security threats. To fact-check a webpage's message, copy its text into Check text.</Text>
-      </View>
       {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
-      {busy ? <View accessibilityLiveRegion="polite" style={styles.progress}><ActivityIndicator size="large" color={colours.blue} /><Text style={styles.label}>Checking Google's threat lists…</Text></View> : <>
+      {busy ? <View accessibilityLiveRegion="polite" style={styles.progress}><ActivityIndicator size="large" color={colours.blue} /><Text style={styles.label}>Checking for known threats…</Text></View> :
         <Button onPress={submit} disabled={remaining === 0 || remaining == null}>Check this link</Button>
+      }
+      <FeatureExplanation>
+        <Text style={styles.copy}>Looks for known scams and harmful links. A clear result does not guarantee safety or check the page's facts.</Text>
+        <Text style={styles.copy}>Your full link is sent for online checking and saved privately in Results. Use public links only; avoid password-reset links, private invitations and links containing passwords or access codes.</Text>
+      </FeatureExplanation>
+      {!busy && <>
         {remaining === 0 && <Text style={styles.error}>You've used your allowance. You can still view saved results.</Text>}
         {remaining == null && <Button secondary onPress={() => refreshProfile().catch(problem => Alert.alert('Could not refresh', problem.message))}>Refresh allowance</Button>}
         <Text style={styles.hint}>Text and link checks share your {profile?.role === 'premium' ? 'monthly' : 'daily'} allowance. Only completed checks use one check; service failures do not.</Text>
@@ -70,7 +73,6 @@ const styles = StyleSheet.create({
   copy: { ...typography.body, color: colours.text },
   label: { ...typography.label, color: colours.ink, marginBottom: 8 },
   input: { ...typography.body, backgroundColor: colours.white, borderColor: colours.border, borderWidth: 2, borderRadius: 14, padding: 16, color: colours.ink, minHeight: 64 },
-  info: { backgroundColor: colours.infoBackground, borderLeftWidth: 3, borderLeftColor: colours.blue, padding: 18, borderRadius: 14, gap: 12 },
   error: { ...typography.secondary, color: colours.danger },
   progress: { alignItems: 'center', padding: 18, gap: 14 },
   hint: { ...typography.secondary, color: colours.muted },
